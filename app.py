@@ -16,18 +16,32 @@ import database
 
 # ── DB 就绪标志 ──────────────────────────────────────────────────────
 _db_ready = False
+_db_error: Optional[str] = None
 
-# ── Lifespan: DB 初始化移到启动事件，不阻塞路由注册 ─────────────────
+# ── Lifespan: DB 初始化在后台执行，不阻塞服务启动 ────────────────────
 @asynccontextmanager
 async def lifespan(application: FastAPI):
-    global _db_ready
-    # 在后台线程执行 DB 初始化，不阻塞事件循环
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, _startup)
-    _db_ready = True
-    print("✅ App ready")
+    # 后台任务执行 DB 初始化，让 /health 立即可响应
+    task = asyncio.create_task(_init_db_background())
+    print("🚀 Server started, DB initializing in background...")
     yield
-    # shutdown（可留空）
+    if not task.done():
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+
+async def _init_db_background():
+    global _db_ready, _db_error
+    loop = asyncio.get_event_loop()
+    try:
+        await loop.run_in_executor(None, _startup)
+        _db_ready = True
+        print("✅ DB ready — app fully operational")
+    except Exception as e:
+        _db_error = str(e)
+        print(f"❌ DB init failed: {e}")
 
 def _startup():
     """同步执行 DB 初始化，有重试逻辑"""
@@ -78,8 +92,14 @@ def auditlog(conn, user: dict, action: str, table: str, tid: str, detail: str = 
 # ══════════════════════════════════════════
 @app.get("/health")
 def health():
+    if _db_error:
+        status = "error"
+    elif _db_ready:
+        status = "ok"
+    else:
+        status = "starting"
     return {
-        "status": "ok" if _db_ready else "starting",
+        "status": status,
         "db_ready": _db_ready,
         "version": "6.0.0",
         "time": datetime.now().isoformat()
