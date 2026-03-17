@@ -34,7 +34,7 @@ async def lifespan(application: FastAPI):
 
 async def _init_db_background():
     global _db_ready, _db_error
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     try:
         await loop.run_in_executor(None, _startup)
         _db_ready = True
