@@ -16,7 +16,7 @@ def get_db():
         import psycopg2, psycopg2.extras
         # Railway 提供的 URL 有时是 postgres:// 需转为 postgresql://
         url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-        conn = psycopg2.connect(url, cursor_factory=psycopg2.extras.RealDictCursor)
+        conn = psycopg2.connect(url, connect_timeout=10, cursor_factory=psycopg2.extras.RealDictCursor)
         conn.autocommit = False
         return conn
     else:
