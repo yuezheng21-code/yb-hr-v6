@@ -325,9 +325,266 @@ def init_db():
         created_at TIMESTAMP DEFAULT {N}
     )""")
 
+    _migrate_schema(conn, pg)
     conn.commit()
     conn.close()
     print(f"✅ DB schema OK ({'PostgreSQL' if pg else 'SQLite'})")
+
+
+def _add_col(c, pg, table, col, defn):
+    """Safely add a column if it does not already exist."""
+    if pg:
+        c.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {defn}")
+    else:
+        import sqlite3 as _sqlite3
+        try:
+            c.execute(f"ALTER TABLE {table} ADD COLUMN {col} {defn}")
+        except _sqlite3.OperationalError as exc:
+            if "duplicate column" not in str(exc).lower():
+                raise
+
+
+def _migrate_schema(conn, pg=None):
+    """Ensure all current columns exist — safe to run on every startup."""
+    if pg is None:
+        pg = _is_pg(conn)
+    c = conn.cursor()
+    N = 'CURRENT_TIMESTAMP'
+    S = "SERIAL" if pg else "INTEGER"
+
+    # users
+    for col, defn in [
+        ("biz_line",      "TEXT DEFAULT ''"),
+        ("warehouse_code","TEXT DEFAULT ''"),
+        ("supplier_id",   "TEXT DEFAULT ''"),
+        ("active",        "INTEGER DEFAULT 1"),
+        ("created_at",    f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "users", col, defn)
+
+    # employees
+    for col, defn in [
+        ("phone",            "TEXT DEFAULT ''"),
+        ("nationality",      "TEXT DEFAULT 'DE'"),
+        ("gender",           "TEXT DEFAULT '男'"),
+        ("source",           "TEXT DEFAULT '自有'"),
+        ("supplier_id",      "TEXT DEFAULT ''"),
+        ("biz_line",         "TEXT DEFAULT '渊博'"),
+        ("warehouse_code",   "TEXT DEFAULT ''"),
+        ("position",         "TEXT DEFAULT ''"),
+        ("grade",            "TEXT DEFAULT 'P1'"),
+        ("settlement_type",  "TEXT DEFAULT '按小时'"),
+        ("hourly_rate",      "NUMERIC DEFAULT 13.0"),
+        ("status",           "TEXT DEFAULT '在职'"),
+        ("join_date",        "TEXT DEFAULT ''"),
+        ("pin",              "TEXT DEFAULT ''"),
+        ("tax_mode",         "TEXT DEFAULT '我方报税'"),
+        ("tax_id",           "TEXT DEFAULT ''"),
+        ("tax_no",           "TEXT DEFAULT ''"),
+        ("tax_class",        "TEXT DEFAULT '1'"),
+        ("ssn",              "TEXT DEFAULT ''"),
+        ("iban",             "TEXT DEFAULT ''"),
+        ("address",          "TEXT DEFAULT ''"),
+        ("birth_date",       "TEXT DEFAULT ''"),
+        ("id_type",          "TEXT DEFAULT '护照'"),
+        ("id_no",            "TEXT DEFAULT ''"),
+        ("contract_hours",   "NUMERIC DEFAULT 8.0"),
+        ("notes",            "TEXT DEFAULT ''"),
+        ("created_at",       f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "employees", col, defn)
+
+    # warehouses
+    for col, defn in [
+        ("biz_line",      "TEXT DEFAULT '渊博'"),
+        ("region",        "TEXT DEFAULT ''"),
+        ("manager",       "TEXT DEFAULT ''"),
+        ("address",       "TEXT DEFAULT ''"),
+        ("rate_p1",       "NUMERIC DEFAULT 13.00"),
+        ("rate_p2",       "NUMERIC DEFAULT 13.50"),
+        ("rate_p3",       "NUMERIC DEFAULT 14.00"),
+        ("rate_p4",       "NUMERIC DEFAULT 14.50"),
+        ("rate_p5",       "NUMERIC DEFAULT 15.00"),
+        ("night_bonus",   "NUMERIC DEFAULT 2.50"),
+        ("weekend_bonus", "NUMERIC DEFAULT 3.00"),
+        ("holiday_bonus", "NUMERIC DEFAULT 5.00"),
+        ("load_20gp",     "NUMERIC DEFAULT 80"),
+        ("unload_20gp",   "NUMERIC DEFAULT 70"),
+        ("load_40gp",     "NUMERIC DEFAULT 120"),
+        ("unload_40gp",   "NUMERIC DEFAULT 110"),
+        ("price_45hc",    "NUMERIC DEFAULT 140"),
+        ("perf_coeff",    "NUMERIC DEFAULT 0.12"),
+        ("kpi_bonus_rate","NUMERIC DEFAULT 0.05"),
+        ("active",        "INTEGER DEFAULT 1"),
+    ]:
+        _add_col(c, pg, "warehouses", col, defn)
+
+    # timesheets
+    for col, defn in [
+        ("employee_name",   "TEXT DEFAULT ''"),
+        ("source",          "TEXT DEFAULT '自有'"),
+        ("supplier_id",     "TEXT DEFAULT ''"),
+        ("biz_line",        "TEXT DEFAULT '渊博'"),
+        ("shift",           "TEXT DEFAULT '白班'"),
+        ("start_time",      "TEXT DEFAULT '08:00'"),
+        ("end_time",        "TEXT DEFAULT '16:00'"),
+        ("hours",           "NUMERIC DEFAULT 0"),
+        ("position",        "TEXT DEFAULT ''"),
+        ("settlement_type", "TEXT DEFAULT '按小时'"),
+        ("grade",           "TEXT DEFAULT 'P1'"),
+        ("base_rate",       "NUMERIC DEFAULT 13.00"),
+        ("shift_bonus",     "NUMERIC DEFAULT 0"),
+        ("effective_rate",  "NUMERIC DEFAULT 13.00"),
+        ("gross_pay",       "NUMERIC DEFAULT 0"),
+        ("perf_bonus",      "NUMERIC DEFAULT 0"),
+        ("other_allowance", "NUMERIC DEFAULT 0"),
+        ("ssi_deduct",      "NUMERIC DEFAULT 0"),
+        ("tax_deduct",      "NUMERIC DEFAULT 0"),
+        ("net_pay",         "NUMERIC DEFAULT 0"),
+        ("status",          "TEXT DEFAULT '待仓库审批'"),
+        ("wh_approver",     "TEXT DEFAULT ''"),
+        ("wh_approved_at",  "TEXT DEFAULT ''"),
+        ("fin_approver",    "TEXT DEFAULT ''"),
+        ("fin_approved_at", "TEXT DEFAULT ''"),
+        ("notes",           "TEXT DEFAULT ''"),
+        ("created_at",      f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "timesheets", col, defn)
+
+    # containers
+    for col, defn in [
+        ("container_type",  "TEXT DEFAULT '40GP'"),
+        ("load_type",       "TEXT DEFAULT '卸'"),
+        ("biz_line",        "TEXT DEFAULT '渊博'"),
+        ("start_time",      "TEXT DEFAULT '08:00'"),
+        ("end_time",        "TEXT DEFAULT ''"),
+        ("duration_hours",  "NUMERIC DEFAULT 0"),
+        ("worker_ids",      "TEXT DEFAULT '[]'"),
+        ("worker_count",    "INTEGER DEFAULT 0"),
+        ("client_revenue",  "NUMERIC DEFAULT 0"),
+        ("team_pay",        "NUMERIC DEFAULT 0"),
+        ("per_person_pay",  "NUMERIC DEFAULT 0"),
+        ("split_method",    "TEXT DEFAULT '平均'"),
+        ("seal_no",         "TEXT DEFAULT ''"),
+        ("video_recorded",  "INTEGER DEFAULT 0"),
+        ("status",          "TEXT DEFAULT '进行中'"),
+        ("wh_approved",     "INTEGER DEFAULT 0"),
+        ("wh_approver",     "TEXT DEFAULT ''"),
+        ("notes",           "TEXT DEFAULT ''"),
+        ("created_at",      f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "containers", col, defn)
+
+    # suppliers
+    for col, defn in [
+        ("biz_line",     "TEXT DEFAULT '渊博'"),
+        ("contact_name", "TEXT DEFAULT ''"),
+        ("phone",        "TEXT DEFAULT ''"),
+        ("email",        "TEXT DEFAULT ''"),
+        ("tax_handle",   "TEXT DEFAULT '供应商自行报税'"),
+        ("rating",       "TEXT DEFAULT 'B'"),
+        ("status",       "TEXT DEFAULT '合作中'"),
+        ("notes",        "TEXT DEFAULT ''"),
+        ("created_at",   f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "suppliers", col, defn)
+
+    # zeitkonto
+    for col, defn in [
+        ("employee_name",      "TEXT DEFAULT ''"),
+        ("contract_hours_day", "NUMERIC DEFAULT 8.0"),
+        ("plus_hours",         "NUMERIC DEFAULT 0"),
+        ("minus_hours",        "NUMERIC DEFAULT 0"),
+        ("updated_at",         f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "zeitkonto", col, defn)
+
+    # zeitkonto_logs
+    for col, defn in [
+        ("log_date",    "TEXT DEFAULT ''"),
+        ("entry_type",  "TEXT DEFAULT ''"),
+        ("hours",       "NUMERIC DEFAULT 0"),
+        ("reason",      "TEXT DEFAULT ''"),
+        ("approved_by", "TEXT DEFAULT ''"),
+        ("created_at",  f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "zeitkonto_logs", col, defn)
+
+    # abmahnungen
+    for col, defn in [
+        ("employee_name",        "TEXT DEFAULT ''"),
+        ("abmahnung_type",       "TEXT DEFAULT ''"),
+        ("incident_date",        "TEXT DEFAULT ''"),
+        ("issued_date",          "TEXT DEFAULT ''"),
+        ("issued_by",            "TEXT DEFAULT ''"),
+        ("incident_description", "TEXT DEFAULT ''"),
+        ("internal_notes",       "TEXT DEFAULT ''"),
+        ("status",               "TEXT DEFAULT '有效'"),
+        ("expiry_date",          "TEXT DEFAULT ''"),
+        ("revoked_at",           "TEXT DEFAULT ''"),
+        ("revoked_by",           "TEXT DEFAULT ''"),
+        ("revoke_reason",        "TEXT DEFAULT ''"),
+        ("delivery_method",      "TEXT DEFAULT '面交'"),
+        ("delivery_confirmed",   "INTEGER DEFAULT 0"),
+        ("created_at",           f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "abmahnungen", col, defn)
+
+    # wv_projects
+    for col, defn in [
+        ("client",          "TEXT DEFAULT ''"),
+        ("address",         "TEXT DEFAULT ''"),
+        ("service_type",    "TEXT DEFAULT ''"),
+        ("region",          "TEXT DEFAULT ''"),
+        ("project_manager", "TEXT DEFAULT ''"),
+        ("start_date",      "TEXT DEFAULT ''"),
+        ("end_date",        "TEXT DEFAULT ''"),
+        ("description",     "TEXT DEFAULT ''"),
+        ("phase",           "INTEGER DEFAULT 0"),
+        ("cost_data",       "TEXT DEFAULT '{}'"),
+        ("comp_data",       "TEXT DEFAULT '{}'"),
+        ("comp_approved",   "INTEGER DEFAULT 0"),
+        ("quote_approved",  "INTEGER DEFAULT 0"),
+        ("client_signed_off","INTEGER DEFAULT 0"),
+        ("staff_returned",  "INTEGER DEFAULT 0"),
+        ("equip_returned",  "INTEGER DEFAULT 0"),
+        ("final_billed",    "INTEGER DEFAULT 0"),
+        ("debrief",         "TEXT DEFAULT ''"),
+        ("closed",          "INTEGER DEFAULT 0"),
+        ("created_by",      "TEXT DEFAULT ''"),
+        ("created_at",      f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "wv_projects", col, defn)
+
+    # clock_records
+    for col, defn in [
+        ("employee_name", "TEXT DEFAULT ''"),
+        ("clock_type",    "TEXT DEFAULT 'in'"),
+        ("clock_time",    "TEXT DEFAULT ''"),
+        ("work_date",     "TEXT DEFAULT ''"),
+        ("created_at",    f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "clock_records", col, defn)
+
+    # audit_logs
+    for col, defn in [
+        ("username",     "TEXT DEFAULT ''"),
+        ("user_display", "TEXT DEFAULT ''"),
+        ("action",       "TEXT DEFAULT ''"),
+        ("target_table", "TEXT DEFAULT ''"),
+        ("target_id",    "TEXT DEFAULT ''"),
+        ("detail",       "TEXT DEFAULT ''"),
+        ("created_at",   f"TIMESTAMP DEFAULT {N}"),
+    ]:
+        _add_col(c, pg, "audit_logs", col, defn)
+
+    # grade_salaries
+    for col, defn in [
+        ("mgmt_allowance", "NUMERIC DEFAULT 0"),
+        ("overtime_hours", "INTEGER DEFAULT 0"),
+        ("description",    "TEXT DEFAULT ''"),
+    ]:
+        _add_col(c, pg, "grade_salaries", col, defn)
 
 
 # ─── 薪资计算函数 ─────────────────────────────────────────────────────
