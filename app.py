@@ -20,9 +20,10 @@ _db_ready = False
 _db_error: str = ""
 _db_status: str = "starting"
 
-# Max attempts × (connect_timeout=5s + sleep=3s) = ~240s, safely within
-# Railway's healthcheckTimeout of 300s.
-_MAX_DB_ATTEMPTS = 30
+# Max attempts × (connect_timeout=10s + sleep=3s) ≈ 13s/attempt.
+# 20 attempts × 13s = 260s worst-case DB wait, leaving ~40s for schema init
+# and seed — well within Railway's healthcheckTimeout of 300s.
+_MAX_DB_ATTEMPTS = 20
 
 def _init_db_background():
     """Run DB wait → init_db → seed_data in a background thread so uvicorn
@@ -38,7 +39,7 @@ def _init_db_background():
                 _db_status = "waiting_for_database"
             for attempt in range(_MAX_DB_ATTEMPTS):
                 try:
-                    conn = psycopg2.connect(url, connect_timeout=5)
+                    conn = psycopg2.connect(url, connect_timeout=10)
                     conn.close()
                     print(f"✅ Database reachable (attempt {attempt + 1})")
                     break
