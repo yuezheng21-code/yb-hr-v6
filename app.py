@@ -2,10 +2,9 @@
 渊博+579 HR V6 — FastAPI Backend
 PostgreSQL (Railway) / SQLite (本地开发) 自动切换
 """
-import os, json, uuid, hashlib, time, asyncio
+import os, json, uuid, hashlib, time
 from contextlib import asynccontextmanager
 from datetime import datetime, date, timedelta
-from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends, Request, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
@@ -14,46 +13,12 @@ from pydantic import BaseModel
 import bcrypt as _bcrypt
 import database
 
-# ── DB 就绪标志 ──────────────────────────────────────────────────────
-_db_ready = False
-_db_error: Optional[str] = None
-
-# ── Lifespan: DB 初始化在后台执行，不阻塞服务启动 ────────────────────
+# ── Lifespan ─────────────────────────────────────────────────────────
+# DB is fully initialised by start.sh before uvicorn launches.
 @asynccontextmanager
 async def lifespan(application: FastAPI):
-    # 后台任务执行 DB 初始化，让 /health 立即可响应
-    task = asyncio.create_task(_init_db_background())
-    print("🚀 Server started, DB initializing in background...")
+    print("🚀 Server ready — DB already initialised by startup script")
     yield
-    if not task.done():
-        task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
-
-async def _init_db_background():
-    global _db_ready, _db_error
-    loop = asyncio.get_running_loop()
-    try:
-        await loop.run_in_executor(None, _startup)
-        _db_ready = True
-        print("✅ DB ready — app fully operational")
-    except Exception as e:
-        _db_error = str(e)
-        print(f"❌ DB init failed: {e}")
-
-def _startup():
-    """同步执行 DB 初始化，有重试逻辑"""
-    for attempt in range(5):
-        try:
-            database.init_db()
-            database.seed_data()
-            return
-        except Exception as e:
-            print(f"⚠ DB init attempt {attempt+1}/5 failed: {e}")
-            time.sleep(3)
-    raise RuntimeError("DB init failed after 5 attempts")
 
 # ── App ──────────────────────────────────────────────────────────────
 app = FastAPI(title="渊博+579 HR V6", version="6.0.0", lifespan=lifespan)
@@ -88,28 +53,11 @@ def auditlog(conn, user: dict, action: str, table: str, tid: str, detail: str = 
         (user.get("username",""), user.get("display_name",""), action, table, tid, detail))
 
 # ══════════════════════════════════════════
-# HEALTH — 必须最先注册，启动即可响应
+# HEALTH
 # ══════════════════════════════════════════
 @app.get("/health")
 def health():
-    if _db_error:
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "error",
-                "db_ready": False,
-                "error": _db_error,
-                "version": "6.0.0",
-                "time": datetime.now().isoformat()
-            }
-        )
-    status = "ok" if _db_ready else "starting"
-    return {
-        "status": status,
-        "db_ready": _db_ready,
-        "version": "6.0.0",
-        "time": datetime.now().isoformat()
-    }
+    return {"status": "ok", "version": "6.0.0", "time": datetime.now().isoformat()}
 
 # ══════════════════════════════════════════
 # AUTH
@@ -588,7 +536,7 @@ def catch_all(full_path: str):
     index = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index):
         return FileResponse(index)
-    return JSONResponse({"status": "starting", "db_ready": _db_ready})
+    return JSONResponse({"status": "ok"})
 
 if __name__ == "__main__":
     import uvicorn
