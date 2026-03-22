@@ -119,12 +119,23 @@ const {useState,useEffect,useMemo,useCallback,useRef} = React;
 
 // ── API BASE ──
 const BASE = window.location.origin;
+let _sessionExpired = false;
 
 async function api(path, {method='GET', body, token} = {}) {
   const h = {'Content-Type':'application/json'};
   if (token) h['Authorization'] = 'Bearer ' + token;
   const r = await fetch(BASE + path, {method, headers:h, body: body ? JSON.stringify(body) : undefined});
   if (!r.ok) {
+    // Token rejected by server (e.g. server restarted and lost in-memory session).
+    // Clear stale credentials and return to the login screen.
+    // Guard with _sessionExpired so concurrent 401 responses only trigger one reload.
+    if (r.status === 401 && token && !_sessionExpired) {
+      _sessionExpired = true;
+      localStorage.removeItem('hr6_token');
+      localStorage.removeItem('hr6_user');
+      window.location.reload();
+      return;
+    }
     const e = await r.json().catch(()=>({detail:'Network error'}));
     throw new Error(e.detail || r.statusText);
   }
