@@ -93,11 +93,17 @@ def auditlog(conn, user: dict, action: str, table: str, tid: str, detail: str = 
 @app.get("/health")
 def health():
     if _db_error:
-        status = "error"
-    elif _db_ready:
-        status = "ok"
-    else:
-        status = "starting"
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "db_ready": False,
+                "error": _db_error,
+                "version": "6.0.0",
+                "time": datetime.now().isoformat()
+            }
+        )
+    status = "ok" if _db_ready else "starting"
     return {
         "status": status,
         "db_ready": _db_ready,
