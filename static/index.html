@@ -7,10 +7,13 @@
 <meta name="theme-color" content="#0b0d13">
 <title>渊博+579 HR V6</title>
 <link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;渊博579 HR V6&quot;,&quot;short_name&quot;:&quot;HR V6&quot;,&quot;start_url&quot;:&quot;/&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#0b0d13&quot;,&quot;theme_color&quot;:&quot;#0b0d13&quot;}">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<script src="/static/react.production.min.js"></script>
+<script>window.React||document.write('\x3Cscript src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js">\x3C/script>')</script>
+<script src="/static/react-dom.production.min.js"></script>
+<script>window.ReactDOM||document.write('\x3Cscript src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js">\x3C/script>')</script>
+<script src="/static/babel.min.js"></script>
+<script>window.Babel||document.write('\x3Cscript src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js">\x3C/script>')</script>
 <style>
 :root{--bg:#0b0d13;--bg2:#11141d;--bg3:#171b27;--sf:#212840;--bd:#2c3452;--bd2:#384470;--tx:#e8eaf0;--tx2:#a0a8c4;--tx3:#6a7498;--ac:#4f6ef7;--ac2:#6b8aff;--ac3:#3a56d4;--gn:#2dd4a0;--rd:#f0526c;--og:#f5a623;--pp:#a78bfa;--cy:#38bdf8;--R:10px;--R2:14px;--R3:20px}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -113,7 +116,8 @@ tr:hover td{background:#21284038}
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root"><div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0b0d13;color:#6a7498;font-family:'Outfit',sans-serif;font-size:13px;gap:16px"><div style="width:32px;height:32px;border:3px solid #2c3452;border-top-color:#4f6ef7;border-radius:50%;animation:spin 1s linear infinite"></div><span>正在加载…</span></div></div>
+<noscript><div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0b0d13;color:#e8eaf0;font-family:sans-serif;font-size:14px">请在浏览器中启用 JavaScript。</div></noscript>
 <script type="text/babel">
 const {useState,useEffect,useMemo,useCallback,useRef} = React;
 
