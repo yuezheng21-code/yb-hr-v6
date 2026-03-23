@@ -2,6 +2,8 @@ const {useState,useEffect,useMemo,useCallback,useRef} = React;
 
 // ── API BASE ──
 const BASE = window.location.origin;
+const HEALTH_ENDPOINT = '/health';
+const HEALTH_POLL_INTERVAL_MS = 3000;
 let _sessionExpired = false;
 
 async function api(path, {method='GET', body, token} = {}) {
@@ -2013,6 +2015,37 @@ function App() {
   const [page,setPage]=useState('dashboard');
   const [toast,setToast]=useState(null);
   const [mobNav,setMN]=useState(false);
+  // ── Backend readiness check ──────────────────────────────────────
+  // Poll /health until the backend signals it is ready (HTTP 200).
+  // While it returns 503 (DB still initialising) we show a splash screen
+  // instead of letting users hit confusing errors.  Any other response
+  // (network failure, unexpected status) is treated as "ready" so that
+  // a misconfigured health endpoint never locks users out permanently.
+  const [srvReady,setSrvReady]=useState(false);
+  const [srvStatus,setSrvStatus]=useState('');
+  useEffect(()=>{
+    let cancelled=false;
+    const check=async()=>{
+      try{
+        const r=await fetch(BASE+HEALTH_ENDPOINT);
+        if(cancelled) return;
+        if(r.ok){ setSrvReady(true); }
+        else if(r.status===503){
+          const j=await r.json().catch(()=>({}));
+          setSrvStatus(j.status||'initializing');
+          setTimeout(check,HEALTH_POLL_INTERVAL_MS);
+        } else { setSrvReady(true); }
+      } catch(e){ if(!cancelled) setSrvReady(true); }
+    };
+    check();
+    return ()=>{ cancelled=true; };
+  },[]);
+
+  if(!srvReady) return <div style={{position:'fixed',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'var(--bg)',gap:16}}>
+    <div style={{width:32,height:32,border:'3px solid var(--bd)',borderTopColor:'var(--ac)',borderRadius:'50%',animation:'spin 1s linear infinite'}}/>
+    <div style={{fontSize:12,color:'var(--tx3)'}}>系统正在启动…</div>
+    {srvStatus&&<div style={{fontSize:10,color:'var(--tx3)',opacity:.6}}>{srvStatus}</div>}
+  </div>;
 
   const onLogin = (t,u) => { setToken(t); setUser(u); localStorage.setItem('hr6_token',t); localStorage.setItem('hr6_user',JSON.stringify(u)); setPage(u.role==='worker'?'clock':'dashboard'); };
   const onLogout = () => { api('/api/auth/logout',{method:'POST',token}).catch(()=>{}); setToken(null); setUser(null); localStorage.removeItem('hr6_token'); localStorage.removeItem('hr6_user'); };
