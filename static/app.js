@@ -5190,6 +5190,14 @@ function App() {
             case 4:
               j = _context16.v;
               setSrvStatus(j.status || 'initializing');
+              // Server just restarted: in-memory token store is empty.
+              // Proactively clear stale browser credentials so the user sees
+              // the login page directly once the server is ready, instead of
+              // briefly rendering the main app and then bouncing back via 401.
+              localStorage.removeItem('hr6_token');
+              localStorage.removeItem('hr6_user');
+              setToken(null);
+              setUser(null);
               setTimeout(_check, HEALTH_POLL_INTERVAL_MS);
               _context16.n = 6;
               break;
