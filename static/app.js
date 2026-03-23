@@ -27,64 +27,66 @@ var _React = React,
 
 // ── API BASE ──
 var BASE = window.location.origin;
+var HEALTH_ENDPOINT = '/health';
+var HEALTH_POLL_INTERVAL_MS = 3000;
 var _sessionExpired = false;
 function api(_x) {
   return _api.apply(this, arguments);
 } // ── COLORS ──
 function _api() {
-  _api = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(path) {
-    var _ref69,
-      _ref69$method,
+  _api = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17(path) {
+    var _ref70,
+      _ref70$method,
       method,
       body,
       token,
       h,
       r,
       e,
-      _args16 = arguments;
-    return _regenerator().w(function (_context16) {
-      while (1) switch (_context16.n) {
+      _args17 = arguments;
+    return _regenerator().w(function (_context17) {
+      while (1) switch (_context17.n) {
         case 0:
-          _ref69 = _args16.length > 1 && _args16[1] !== undefined ? _args16[1] : {}, _ref69$method = _ref69.method, method = _ref69$method === void 0 ? 'GET' : _ref69$method, body = _ref69.body, token = _ref69.token;
+          _ref70 = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : {}, _ref70$method = _ref70.method, method = _ref70$method === void 0 ? 'GET' : _ref70$method, body = _ref70.body, token = _ref70.token;
           h = {
             'Content-Type': 'application/json'
           };
           if (token) h['Authorization'] = 'Bearer ' + token;
-          _context16.n = 1;
+          _context17.n = 1;
           return fetch(BASE + path, {
             method: method,
             headers: h,
             body: body ? JSON.stringify(body) : undefined
           });
         case 1:
-          r = _context16.v;
+          r = _context17.v;
           if (r.ok) {
-            _context16.n = 4;
+            _context17.n = 4;
             break;
           }
           if (!(r.status === 401 && token && !_sessionExpired)) {
-            _context16.n = 2;
+            _context17.n = 2;
             break;
           }
           _sessionExpired = true;
           localStorage.removeItem('hr6_token');
           localStorage.removeItem('hr6_user');
           window.location.reload();
-          return _context16.a(2);
+          return _context17.a(2);
         case 2:
-          _context16.n = 3;
+          _context17.n = 3;
           return r.json().catch(function () {
             return {
               detail: 'Network error'
             };
           });
         case 3:
-          e = _context16.v;
+          e = _context17.v;
           throw new Error(e.detail || r.statusText);
         case 4:
-          return _context16.a(2, r.json());
+          return _context17.a(2, r.json());
       }
-    }, _callee16);
+    }, _callee17);
   }));
   return _api.apply(this, arguments);
 }
@@ -5136,6 +5138,116 @@ function App() {
     _useState130 = _slicedToArray(_useState129, 2),
     mobNav = _useState130[0],
     setMN = _useState130[1];
+  // ── Backend readiness check ──────────────────────────────────────
+  // Poll /health until the backend signals it is ready (HTTP 200).
+  // While it returns 503 (DB still initialising) we show a splash screen
+  // instead of letting users hit confusing errors.  Any other response
+  // (network failure, unexpected status) is treated as "ready" so that
+  // a misconfigured health endpoint never locks users out permanently.
+  var _useState131 = useState(false),
+    _useState132 = _slicedToArray(_useState131, 2),
+    srvReady = _useState132[0],
+    setSrvReady = _useState132[1];
+  var _useState133 = useState(''),
+    _useState134 = _slicedToArray(_useState133, 2),
+    srvStatus = _useState134[0],
+    setSrvStatus = _useState134[1];
+  useEffect(function () {
+    var cancelled = false;
+    var _check = /*#__PURE__*/function () {
+      var _ref69 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
+        var r, j, _t1;
+        return _regenerator().w(function (_context16) {
+          while (1) switch (_context16.p = _context16.n) {
+            case 0:
+              _context16.p = 0;
+              _context16.n = 1;
+              return fetch(BASE + HEALTH_ENDPOINT);
+            case 1:
+              r = _context16.v;
+              if (!cancelled) {
+                _context16.n = 2;
+                break;
+              }
+              return _context16.a(2);
+            case 2:
+              if (!r.ok) {
+                _context16.n = 3;
+                break;
+              }
+              setSrvReady(true);
+              _context16.n = 6;
+              break;
+            case 3:
+              if (!(r.status === 503)) {
+                _context16.n = 5;
+                break;
+              }
+              _context16.n = 4;
+              return r.json().catch(function () {
+                return {};
+              });
+            case 4:
+              j = _context16.v;
+              setSrvStatus(j.status || 'initializing');
+              setTimeout(_check, HEALTH_POLL_INTERVAL_MS);
+              _context16.n = 6;
+              break;
+            case 5:
+              setSrvReady(true);
+            case 6:
+              _context16.n = 8;
+              break;
+            case 7:
+              _context16.p = 7;
+              _t1 = _context16.v;
+              if (!cancelled) setSrvReady(true);
+            case 8:
+              return _context16.a(2);
+          }
+        }, _callee16, null, [[0, 7]]);
+      }));
+      return function check() {
+        return _ref69.apply(this, arguments);
+      };
+    }();
+    _check();
+    return function () {
+      cancelled = true;
+    };
+  }, []);
+  if (!srvReady) return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'fixed',
+      inset: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--bg)',
+      gap: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 32,
+      height: 32,
+      border: '3px solid var(--bd)',
+      borderTopColor: 'var(--ac)',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite'
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: 'var(--tx3)'
+    }
+  }, "\u7CFB\u7EDF\u6B63\u5728\u542F\u52A8\u2026"), srvStatus && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: 'var(--tx3)',
+      opacity: .6
+    }
+  }, srvStatus));
   var onLogin = function onLogin(t, u) {
     setToken(t);
     setUser(u);

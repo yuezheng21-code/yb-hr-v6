@@ -95,6 +95,25 @@ app = FastAPI(title="渊博+579 HR V6", version="6.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
 
+# ── DB-readiness gate ────────────────────────────────────────────────
+# Block all /api/* requests with 503 until the DB init background
+# thread has completed successfully.  This prevents confusing 500
+# errors / hangs that users see when they open the app immediately
+# after a cold-start deployment.  Static files and the /health
+# endpoint (which is NOT under /api/) are unaffected.
+@app.middleware("http")
+async def db_readiness_gate(request: Request, call_next):
+    if request.url.path.startswith("/api/"):
+        with _db_lock:
+            ready = _db_ready
+        if not ready:
+            return JSONResponse(
+                status_code=503,
+                headers={"Retry-After": "5"},
+                content={"detail": "系统正在启动，请稍候…"},
+            )
+    return await call_next(request)
+
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 os.makedirs(STATIC_DIR, exist_ok=True)
 
