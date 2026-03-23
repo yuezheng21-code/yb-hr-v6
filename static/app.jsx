@@ -2033,6 +2033,14 @@ function App() {
         else if(r.status===503){
           const j=await r.json().catch(()=>({}));
           setSrvStatus(j.status||'initializing');
+          // Server just restarted: in-memory token store is empty.
+          // Proactively clear stale browser credentials so the user sees
+          // the login page directly once the server is ready, instead of
+          // briefly rendering the main app and then bouncing back via 401.
+          localStorage.removeItem('hr6_token');
+          localStorage.removeItem('hr6_user');
+          setToken(null);
+          setUser(null);
           setTimeout(check,HEALTH_POLL_INTERVAL_MS);
         } else { setSrvReady(true); }
       } catch(e){ if(!cancelled) setSrvReady(true); }

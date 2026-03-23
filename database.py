@@ -639,11 +639,10 @@ def _upsert(conn, table, pk_col, pk_val, data):
 
 def seed_data():
     conn = get_db()
-    if fetchone(conn, "SELECT COUNT(*) as c FROM users")['c'] > 0:
-        conn.close(); return
+    existing = fetchone(conn, "SELECT COUNT(*) as c FROM users")['c']
 
     # Users
-    for u,pw,dn,role,biz,wh,sup in [
+    _seed_users = [
         ("admin","admin123","系统管理员","admin","","",""),
         ("hr","hr123","赵慧（HR）","hr","渊博","",""),
         ("wh_una","una123","王磊（UNA）","wh","渊博","UNA",""),
@@ -651,8 +650,17 @@ def seed_data():
         ("mgr579","579pass","张伟（579）","mgr","579","",""),
         ("sup001","sup123","陈刚（德信）","sup","","","SUP-001"),
         ("worker","w123","工人入口","worker","","",""),
-    ]:
+    ]
+    for u,pw,dn,role,biz,wh,sup in _seed_users:
         _upsert(conn,"users","username",u,{"username":u,"password_hash":_bcrypt.hashpw(pw.encode(),_bcrypt.gensalt(rounds=4)).decode(),"display_name":dn,"role":role,"biz_line":biz,"warehouse_code":wh,"supplier_id":sup})
+
+    # Ensure all seed users are active (repairs any stale active=0/NULL rows)
+    seed_usernames = tuple(row[0] for row in _seed_users)
+    placeholders = ",".join(["%s" if DATABASE_URL else "?"] * len(seed_usernames))
+    execute(conn, f"UPDATE users SET active=1 WHERE username IN ({placeholders})", seed_usernames)
+
+    if existing > 0:
+        conn.commit(); conn.close(); return
 
     # Grade salaries
     for g in [
