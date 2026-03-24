@@ -6,6 +6,495 @@ const HEALTH_ENDPOINT = '/health';
 const HEALTH_POLL_INTERVAL_MS = 3000;
 let _sessionExpired = false;
 
+// ── I18N ──
+const I18N = {
+  zh: {
+    'login.title':'渊博+579 HR','login.admin':'👔 管理员登录','login.worker':'👷 工人PIN',
+    'login.username':'用户名','login.password':'密码','login.btn':'登 录',
+    'login.pin_label':'工人PIN（4位）','login.pin_btn':'打卡入口',
+    'login.err_empty':'请填写用户名和密码','login.err_pin':'请输入4位PIN',
+    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
+    'login.pin_hint':'测试PIN: 1001(张三) 1002(李四) 1003(王五)',
+    'c.loading':'加载中...','c.load_fail':'加载失败','c.save':'保存','c.cancel':'取消',
+    'c.edit':'编辑','c.add':'新增','c.submit':'提交','c.all':'全部','c.search':'搜索',
+    'c.close':'关闭','c.confirm':'确认','c.logout':'退出登录','c.no_data':'暂无数据',
+    'c.notes':'备注','c.date':'日期','c.status':'状态','c.action':'操作','c.name':'姓名',
+    'c.phone':'电话','c.starting':'系统正在启动…',
+    'nav.dashboard':'仪表盘','nav.employees':'员工花名册','nav.timesheets':'工时记录',
+    'nav.zeitkonto':'Zeitkonto','nav.settlement':'月度结算','nav.containers':'卸柜记录',
+    'nav.werkvertrag':'Werkvertrag项目','nav.abmahnung':'Abmahnung','nav.clock':'打卡',
+    'nav.grades':'职级薪资体系','nav.warehouse_rates':'仓库价格配置',
+    'nav.cost_calc':'岗位成本测算','nav.docs':'企业文档库','nav.logs':'审计日志',
+    'dash.employees':'在职员工','dash.pending_ts':'待审批工时','dash.total_hours':'本期总工时',
+    'dash.abmahnung':'有效Abmahnung','dash.zk_alerts':'Zeitkonto预警',
+    'dash.wv_active':'WV项目进行中','dash.chart':'📊 近7日工时分布','dash.no_data':'暂无工时数据',
+    'emp.new':'+ 新增员工','emp.search':'搜索姓名/ID/电话...','emp.status_active':'在职',
+    'emp.status_left':'离职','emp.col_id':'ID','emp.col_name':'姓名','emp.col_biz':'业务线',
+    'emp.col_wh':'仓库','emp.col_pos':'职位','emp.col_grade':'级别','emp.col_src':'来源',
+    'emp.col_rate':'时薪','emp.col_status':'状态','emp.col_join':'入职',
+    'emp.add_title':'新增员工','emp.edit_title':'编辑员工','emp.f_name':'姓名 *',
+    'emp.f_phone':'电话','emp.f_biz':'业务线','emp.f_wh':'仓库','emp.f_pos':'职位',
+    'emp.f_grade':'职级','emp.f_src':'来源','emp.f_rate':'时薪 (€/h)',
+    'emp.f_settle':'结算方式','emp.f_contract_hrs':'合同工时/日','emp.f_nationality':'国籍',
+    'emp.f_join':'入职日期','emp.f_tax':'报税方式','emp.f_pin':'PIN (4位)',
+    'emp.f_notes':'备注','emp.src_own':'自有','emp.src_sup':'供应商',
+    'ts.add':'+ 录入工时','ts.batch':'✓ 批量审批','ts.add_title':'录入工时',
+    'ts.col_id':'ID','ts.col_emp':'员工','ts.col_grade':'级别','ts.col_wh':'仓库',
+    'ts.col_date':'日期','ts.col_shift':'班次','ts.col_hrs':'工时',
+    'ts.col_base':'基础薪','ts.col_shift_b':'班次+','ts.col_eff':'实际率',
+    'ts.col_brutto':'Brutto','ts.col_perf':'绩效','ts.col_net':'Net',
+    'ts.col_status':'状态','ts.col_action':'操作','ts.f_emp':'员工 *',
+    'ts.f_date':'工作日期','ts.f_start':'开始时间','ts.f_end':'结束时间',
+    'ts.f_wh':'仓库（留空=员工默认仓库）','ts.f_shift':'班次','ts.f_notes':'备注',
+    'ts.auto_calc':'工时、Brutto、SSI、Net 由系统根据员工时薪自动计算',
+    'ts.wh_approve':'✓仓库','ts.fin_approve':'✓财务',
+    'zk.add':'+ 手动录入','zk.add_title':'手动录入 Zeitkonto',
+    'zk.col_emp':'员工','zk.col_wh':'仓库','zk.col_grade':'级别','zk.col_status':'合规状态',
+    'zk.arrange_rest':'安排休息','zk.f_emp':'员工','zk.f_date':'日期',
+    'zk.f_type':'类型','zk.f_hrs':'工时（h）','zk.f_reason':'原因说明',
+    'settle.emp_count':'员工数','settle.hours':'总工时','settle.brutto':'总Brutto',
+    'settle.net':'总Net','settle.col_emp':'员工','settle.col_wh':'仓库',
+    'settle.col_biz':'业务线','settle.col_src':'来源','settle.col_hrs':'工时',
+    'settle.col_count':'记录数',
+    'ct.add':'+ 新增卸柜记录','ct.add_title':'新增卸柜记录',
+    'ct.col_no':'柜号','ct.col_type':'类型','ct.col_wh':'仓库','ct.col_date':'日期',
+    'ct.col_start':'开始','ct.col_end':'结束','ct.col_hrs':'工时','ct.col_workers':'人数',
+    'ct.col_video':'视频','ct.col_status':'状态','ct.complete':'完成',
+    'ct.f_no':'柜号 *','ct.f_type':'柜型','ct.f_date':'作业日期','ct.f_seal':'铅封号',
+    'ct.f_start':'开始时间','ct.f_revenue':'客户结算(€)','ct.f_workers':'参与工人',
+    'ct.f_notes':'备注',
+    'clock.clock_in':'上班打卡','clock.clock_out':'下班打卡',
+    'clock.clocked_in':'✓ 已上班打卡','clock.not_clocked':'○ 尚未打卡',
+    'log.col_time':'时间','log.col_user':'用户','log.col_action':'操作',
+    'log.col_table':'对象','log.col_id':'ID','log.col_detail':'详情',
+    'kb.search':'搜索文档...','kb.all_cats':'全部','kb.print':'⎙ 打印',
+    'grade.title':'职级薪资体系','grade.col_grade':'职级','grade.col_base':'基础薪',
+    'grade.col_mult':'倍数','grade.col_gross':'月Brutto','grade.col_mgmt':'管理津贴',
+    'grade.col_ot':'超时h','grade.col_cost':'真实成本','grade.col_hourly':'等效时薪',
+    'grade.col_desc':'描述',
+    'wh.select':'← 选择仓库','wh.edit':'编辑价格','wh.f_save':'保存',
+    'cost.title':'岗位成本测算','cost.calc':'测算','cost.f_type':'雇佣类型',
+    'cost.f_grade':'职级','cost.f_wh':'仓库','cost.f_weekly':'周工时','cost.f_months':'月数',
+  },
+  en: {
+    'login.title':'Yuanbo+579 HR','login.admin':'👔 Admin Login','login.worker':'👷 Worker PIN',
+    'login.username':'Username','login.password':'Password','login.btn':'Sign In',
+    'login.pin_label':'Worker PIN (4 digits)','login.pin_btn':'Clock In',
+    'login.err_empty':'Please enter username and password','login.err_pin':'Please enter 4-digit PIN',
+    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
+    'login.pin_hint':'Test PIN: 1001(Zhang San) 1002(Li Si) 1003(Wang Wu)',
+    'c.loading':'Loading...','c.load_fail':'Load failed','c.save':'Save','c.cancel':'Cancel',
+    'c.edit':'Edit','c.add':'Add','c.submit':'Submit','c.all':'All','c.search':'Search',
+    'c.close':'Close','c.confirm':'Confirm','c.logout':'Logout','c.no_data':'No data',
+    'c.notes':'Notes','c.date':'Date','c.status':'Status','c.action':'Action','c.name':'Name',
+    'c.phone':'Phone','c.starting':'System starting…',
+    'nav.dashboard':'Dashboard','nav.employees':'Employees','nav.timesheets':'Timesheets',
+    'nav.zeitkonto':'Zeitkonto','nav.settlement':'Monthly Settlement',
+    'nav.containers':'Container Records','nav.werkvertrag':'Werkvertrag Projects',
+    'nav.abmahnung':'Abmahnung','nav.clock':'Clock In/Out',
+    'nav.grades':'Grade & Pay Structure','nav.warehouse_rates':'Warehouse Rates',
+    'nav.cost_calc':'Cost Calculator','nav.docs':'Company Docs','nav.logs':'Audit Logs',
+    'dash.employees':'Active Staff','dash.pending_ts':'Pending Approval',
+    'dash.total_hours':'Total Hours (Period)','dash.abmahnung':'Active Abmahnungen',
+    'dash.zk_alerts':'Zeitkonto Alerts','dash.wv_active':'Active WV Projects',
+    'dash.chart':'📊 Last 7 Days Hours','dash.no_data':'No timesheet data',
+    'emp.new':'+ New Employee','emp.search':'Search name/ID/phone...',
+    'emp.status_active':'Active','emp.status_left':'Left',
+    'emp.col_id':'ID','emp.col_name':'Name','emp.col_biz':'Biz Line',
+    'emp.col_wh':'Warehouse','emp.col_pos':'Position','emp.col_grade':'Grade',
+    'emp.col_src':'Source','emp.col_rate':'Rate','emp.col_status':'Status',
+    'emp.col_join':'Join Date','emp.add_title':'New Employee','emp.edit_title':'Edit Employee',
+    'emp.f_name':'Name *','emp.f_phone':'Phone','emp.f_biz':'Business Line',
+    'emp.f_wh':'Warehouse','emp.f_pos':'Position','emp.f_grade':'Grade',
+    'emp.f_src':'Source','emp.f_rate':'Hourly Rate (€/h)','emp.f_settle':'Settlement Type',
+    'emp.f_contract_hrs':'Contract Hours/Day','emp.f_nationality':'Nationality',
+    'emp.f_join':'Join Date','emp.f_tax':'Tax Method','emp.f_pin':'PIN (4 digits)',
+    'emp.f_notes':'Notes','emp.src_own':'Own','emp.src_sup':'Supplier',
+    'ts.add':'+ Log Hours','ts.batch':'✓ Batch Approve','ts.add_title':'Log Hours',
+    'ts.col_id':'ID','ts.col_emp':'Employee','ts.col_grade':'Grade','ts.col_wh':'Warehouse',
+    'ts.col_date':'Date','ts.col_shift':'Shift','ts.col_hrs':'Hours',
+    'ts.col_base':'Base Rate','ts.col_shift_b':'Shift+','ts.col_eff':'Eff. Rate',
+    'ts.col_brutto':'Brutto','ts.col_perf':'Perf.','ts.col_net':'Net',
+    'ts.col_status':'Status','ts.col_action':'Action','ts.f_emp':'Employee *',
+    'ts.f_date':'Work Date','ts.f_start':'Start Time','ts.f_end':'End Time',
+    'ts.f_wh':'Warehouse (leave blank = employee default)','ts.f_shift':'Shift',
+    'ts.f_notes':'Notes',
+    'ts.auto_calc':'Hours, Brutto, SSI, Net calculated automatically from employee rate',
+    'ts.wh_approve':'✓WH','ts.fin_approve':'✓Fin',
+    'zk.add':'+ Manual Entry','zk.add_title':'Manual Zeitkonto Entry',
+    'zk.col_emp':'Employee','zk.col_wh':'Warehouse','zk.col_grade':'Grade',
+    'zk.col_status':'Compliance','zk.arrange_rest':'Schedule Rest',
+    'zk.f_emp':'Employee','zk.f_date':'Date','zk.f_type':'Type',
+    'zk.f_hrs':'Hours (h)','zk.f_reason':'Reason',
+    'settle.emp_count':'Employees','settle.hours':'Total Hours',
+    'settle.brutto':'Total Brutto','settle.net':'Total Net',
+    'settle.col_emp':'Employee','settle.col_wh':'Warehouse','settle.col_biz':'Biz Line',
+    'settle.col_src':'Source','settle.col_hrs':'Hours','settle.col_count':'Records',
+    'ct.add':'+ New Container','ct.add_title':'New Container Record',
+    'ct.col_no':'Container No.','ct.col_type':'Type','ct.col_wh':'Warehouse',
+    'ct.col_date':'Date','ct.col_start':'Start','ct.col_end':'End',
+    'ct.col_hrs':'Hours','ct.col_workers':'Workers','ct.col_video':'Video',
+    'ct.col_status':'Status','ct.complete':'Complete',
+    'ct.f_no':'Container No. *','ct.f_type':'Type','ct.f_date':'Work Date',
+    'ct.f_seal':'Seal No.','ct.f_start':'Start Time','ct.f_revenue':'Client Revenue (€)',
+    'ct.f_workers':'Workers','ct.f_notes':'Notes',
+    'clock.clock_in':'Clock In','clock.clock_out':'Clock Out',
+    'clock.clocked_in':'✓ Clocked In','clock.not_clocked':'○ Not Clocked In',
+    'log.col_time':'Time','log.col_user':'User','log.col_action':'Action',
+    'log.col_table':'Object','log.col_id':'ID','log.col_detail':'Detail',
+    'kb.search':'Search documents...','kb.all_cats':'All','kb.print':'⎙ Print',
+    'grade.title':'Grade & Pay Structure','grade.col_grade':'Grade',
+    'grade.col_base':'Base','grade.col_mult':'Mult.','grade.col_gross':'Gross/Month',
+    'grade.col_mgmt':'Mgmt Allow.','grade.col_ot':'OT h','grade.col_cost':'True Cost',
+    'grade.col_hourly':'Hourly Eq.','grade.col_desc':'Description',
+    'wh.select':'← Select Warehouse','wh.edit':'Edit Rates','wh.f_save':'Save',
+    'cost.title':'Position Cost Calculator','cost.calc':'Calculate',
+    'cost.f_type':'Employment Type','cost.f_grade':'Grade','cost.f_wh':'Warehouse',
+    'cost.f_weekly':'Weekly Hours','cost.f_months':'Months',
+  },
+  de: {
+    'login.title':'Yuanbo+579 HR','login.admin':'👔 Admin-Login','login.worker':'👷 Arbeiter-PIN',
+    'login.username':'Benutzername','login.password':'Passwort','login.btn':'Anmelden',
+    'login.pin_label':'Arbeiter-PIN (4 Ziffern)','login.pin_btn':'Stempeluhr',
+    'login.err_empty':'Bitte Benutzername und Passwort eingeben',
+    'login.err_pin':'Bitte 4-stellige PIN eingeben',
+    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
+    'login.pin_hint':'Test-PIN: 1001(Zhang San) 1002(Li Si) 1003(Wang Wu)',
+    'c.loading':'Laden...','c.load_fail':'Ladefehler','c.save':'Speichern',
+    'c.cancel':'Abbrechen','c.edit':'Bearbeiten','c.add':'Hinzufügen',
+    'c.submit':'Absenden','c.all':'Alle','c.search':'Suchen','c.close':'Schließen',
+    'c.confirm':'Bestätigen','c.logout':'Abmelden','c.no_data':'Keine Daten',
+    'c.notes':'Notizen','c.date':'Datum','c.status':'Status','c.action':'Aktion',
+    'c.name':'Name','c.phone':'Telefon','c.starting':'System startet…',
+    'nav.dashboard':'Dashboard','nav.employees':'Mitarbeiter',
+    'nav.timesheets':'Arbeitszeiterfassung','nav.zeitkonto':'Zeitkonto',
+    'nav.settlement':'Monatsabrechnung','nav.containers':'Container-Protokoll',
+    'nav.werkvertrag':'Werkvertrag-Projekte','nav.abmahnung':'Abmahnung',
+    'nav.clock':'Stempeluhr','nav.grades':'Lohn- & Gehaltsstufen',
+    'nav.warehouse_rates':'Lagertarife','nav.cost_calc':'Kostenkalkulation',
+    'nav.docs':'Unternehmensdoku','nav.logs':'Audit-Protokoll',
+    'dash.employees':'Aktive Mitarbeiter','dash.pending_ts':'Ausstehende Genehmigungen',
+    'dash.total_hours':'Gesamtstunden (Periode)','dash.abmahnung':'Aktive Abmahnungen',
+    'dash.zk_alerts':'Zeitkonto-Warnungen','dash.wv_active':'Aktive WV-Projekte',
+    'dash.chart':'📊 Arbeitsstunden letzte 7 Tage','dash.no_data':'Keine Zeitdaten vorhanden',
+    'emp.new':'+ Neuer Mitarbeiter','emp.search':'Name/ID/Telefon suchen...',
+    'emp.status_active':'Beschäftigt','emp.status_left':'Ausgeschieden',
+    'emp.col_id':'ID','emp.col_name':'Name','emp.col_biz':'Geschäftsbereich',
+    'emp.col_wh':'Lager','emp.col_pos':'Position','emp.col_grade':'Stufe',
+    'emp.col_src':'Quelle','emp.col_rate':'Stundenlohn','emp.col_status':'Status',
+    'emp.col_join':'Eintrittsdatum','emp.add_title':'Neuer Mitarbeiter',
+    'emp.edit_title':'Mitarbeiter bearbeiten','emp.f_name':'Name *',
+    'emp.f_phone':'Telefon','emp.f_biz':'Geschäftsbereich','emp.f_wh':'Lager',
+    'emp.f_pos':'Position','emp.f_grade':'Stufe','emp.f_src':'Quelle',
+    'emp.f_rate':'Stundenlohn (€/h)','emp.f_settle':'Abrechnungsart',
+    'emp.f_contract_hrs':'Vertragliche Stunden/Tag','emp.f_nationality':'Nationalität',
+    'emp.f_join':'Eintrittsdatum','emp.f_tax':'Steuermethode',
+    'emp.f_pin':'PIN (4 Ziffern)','emp.f_notes':'Notizen',
+    'emp.src_own':'Eigen','emp.src_sup':'Lieferant',
+    'ts.add':'+ Stunden erfassen','ts.batch':'✓ Sammelgenehmigung',
+    'ts.add_title':'Stunden erfassen','ts.col_id':'ID','ts.col_emp':'Mitarbeiter',
+    'ts.col_grade':'Stufe','ts.col_wh':'Lager','ts.col_date':'Datum',
+    'ts.col_shift':'Schicht','ts.col_hrs':'Stunden','ts.col_base':'Grundlohn',
+    'ts.col_shift_b':'Schicht+','ts.col_eff':'Eff. Satz','ts.col_brutto':'Brutto',
+    'ts.col_perf':'Leistung','ts.col_net':'Netto','ts.col_status':'Status',
+    'ts.col_action':'Aktion','ts.f_emp':'Mitarbeiter *','ts.f_date':'Arbeitsdatum',
+    'ts.f_start':'Startzeit','ts.f_end':'Endzeit','ts.f_wh':'Lager (leer = Standard)',
+    'ts.f_shift':'Schicht','ts.f_notes':'Notizen',
+    'ts.auto_calc':'Stunden, Brutto, SSI und Netto werden automatisch berechnet',
+    'ts.wh_approve':'✓Lager','ts.fin_approve':'✓Fin',
+    'zk.add':'+ Manueller Eintrag','zk.add_title':'Zeitkonto manuell erfassen',
+    'zk.col_emp':'Mitarbeiter','zk.col_wh':'Lager','zk.col_grade':'Stufe',
+    'zk.col_status':'Compliance','zk.arrange_rest':'Ausgleich planen',
+    'zk.f_emp':'Mitarbeiter','zk.f_date':'Datum','zk.f_type':'Typ',
+    'zk.f_hrs':'Stunden (h)','zk.f_reason':'Begründung',
+    'settle.emp_count':'Mitarbeiter','settle.hours':'Gesamtstunden',
+    'settle.brutto':'Brutto gesamt','settle.net':'Netto gesamt',
+    'settle.col_emp':'Mitarbeiter','settle.col_wh':'Lager','settle.col_biz':'Bereich',
+    'settle.col_src':'Quelle','settle.col_hrs':'Stunden','settle.col_count':'Einträge',
+    'ct.add':'+ Neues Container-Protokoll','ct.add_title':'Container-Protokoll erfassen',
+    'ct.col_no':'Container-Nr.','ct.col_type':'Typ','ct.col_wh':'Lager',
+    'ct.col_date':'Datum','ct.col_start':'Start','ct.col_end':'Ende',
+    'ct.col_hrs':'Stunden','ct.col_workers':'Arbeiter','ct.col_video':'Video',
+    'ct.col_status':'Status','ct.complete':'Abschließen',
+    'ct.f_no':'Container-Nr. *','ct.f_type':'Typ','ct.f_date':'Datum',
+    'ct.f_seal':'Plomben-Nr.','ct.f_start':'Startzeit',
+    'ct.f_revenue':'Kundenabrechnung (€)','ct.f_workers':'Arbeiter','ct.f_notes':'Notizen',
+    'clock.clock_in':'Einstempeln','clock.clock_out':'Ausstempeln',
+    'clock.clocked_in':'✓ Eingestempelt','clock.not_clocked':'○ Noch nicht gestempelt',
+    'log.col_time':'Zeit','log.col_user':'Benutzer','log.col_action':'Aktion',
+    'log.col_table':'Objekt','log.col_id':'ID','log.col_detail':'Details',
+    'kb.search':'Dokumente suchen...','kb.all_cats':'Alle','kb.print':'⎙ Drucken',
+    'grade.title':'Lohn- & Gehaltsstufen','grade.col_grade':'Stufe',
+    'grade.col_base':'Grundlohn','grade.col_mult':'Faktor','grade.col_gross':'Brutto/Monat',
+    'grade.col_mgmt':'Führungszuschlag','grade.col_ot':'ÜSt h',
+    'grade.col_cost':'Echte Kosten','grade.col_hourly':'Effekt. Std.',
+    'grade.col_desc':'Beschreibung',
+    'wh.select':'← Lager auswählen','wh.edit':'Tarife bearbeiten','wh.f_save':'Speichern',
+    'cost.title':'Stellenkostenkalkulation','cost.calc':'Berechnen',
+    'cost.f_type':'Beschäftigungsart','cost.f_grade':'Stufe','cost.f_wh':'Lager',
+    'cost.f_weekly':'Wochenstunden','cost.f_months':'Monate',
+  },
+  ar: {
+    'login.title':'Yuanbo+579 HR','login.admin':'👔 دخول المسؤول','login.worker':'👷 رمز العامل',
+    'login.username':'اسم المستخدم','login.password':'كلمة المرور',
+    'login.btn':'تسجيل الدخول','login.pin_label':'رمز العامل (4 أرقام)',
+    'login.pin_btn':'تسجيل الحضور',
+    'login.err_empty':'يرجى إدخال اسم المستخدم وكلمة المرور',
+    'login.err_pin':'يرجى إدخال رمز مكون من 4 أرقام',
+    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123',
+    'login.pin_hint':'رموز الاختبار: 1001 1002 1003',
+    'c.loading':'جار التحميل...','c.load_fail':'فشل التحميل','c.save':'حفظ',
+    'c.cancel':'إلغاء','c.edit':'تعديل','c.add':'إضافة','c.submit':'إرسال',
+    'c.all':'الكل','c.search':'بحث','c.close':'إغلاق','c.confirm':'تأكيد',
+    'c.logout':'تسجيل الخروج','c.no_data':'لا توجد بيانات','c.notes':'ملاحظات',
+    'c.date':'التاريخ','c.status':'الحالة','c.action':'إجراء','c.name':'الاسم',
+    'c.phone':'الهاتف','c.starting':'يبدأ النظام…',
+    'nav.dashboard':'لوحة التحكم','nav.employees':'الموظفون',
+    'nav.timesheets':'سجلات الوقت','nav.zeitkonto':'Zeitkonto',
+    'nav.settlement':'التسوية الشهرية','nav.containers':'سجلات الحاويات',
+    'nav.werkvertrag':'مشاريع Werkvertrag','nav.abmahnung':'Abmahnung',
+    'nav.clock':'الحضور والانصراف','nav.grades':'هيكل الرواتب',
+    'nav.warehouse_rates':'تعريفات المستودع','nav.cost_calc':'حاسبة التكاليف',
+    'nav.docs':'وثائق الشركة','nav.logs':'سجل التدقيق',
+    'dash.employees':'الموظفون النشطون','dash.pending_ts':'في انتظار الموافقة',
+    'dash.total_hours':'إجمالي الساعات','dash.abmahnung':'Abmahnung النشطة',
+    'dash.zk_alerts':'تنبيهات Zeitkonto','dash.wv_active':'مشاريع WV النشطة',
+    'dash.chart':'📊 ساعات آخر 7 أيام','dash.no_data':'لا توجد بيانات',
+    'emp.new':'+ موظف جديد','emp.search':'بحث عن اسم/ID/هاتف...',
+    'emp.status_active':'نشط','emp.status_left':'منتهي',
+    'emp.col_id':'ID','emp.col_name':'الاسم','emp.col_biz':'خط العمل',
+    'emp.col_wh':'المستودع','emp.col_pos':'المنصب','emp.col_grade':'الدرجة',
+    'emp.col_src':'المصدر','emp.col_rate':'الأجر','emp.col_status':'الحالة',
+    'emp.col_join':'تاريخ التعيين','emp.add_title':'موظف جديد',
+    'emp.edit_title':'تعديل الموظف','emp.f_name':'الاسم *',
+    'emp.f_phone':'الهاتف','emp.f_biz':'خط العمل','emp.f_wh':'المستودع',
+    'emp.f_pos':'المنصب','emp.f_grade':'الدرجة','emp.f_src':'المصدر',
+    'emp.f_rate':'الأجر بالساعة (€/h)','emp.f_settle':'نوع التسوية',
+    'emp.f_contract_hrs':'ساعات العقد/يوم','emp.f_nationality':'الجنسية',
+    'emp.f_join':'تاريخ التعيين','emp.f_tax':'طريقة الضريبة',
+    'emp.f_pin':'رمز PIN (4 أرقام)','emp.f_notes':'ملاحظات',
+    'emp.src_own':'مباشر','emp.src_sup':'مورد',
+    'ts.add':'+ تسجيل الساعات','ts.batch':'✓ الموافقة الجماعية',
+    'ts.add_title':'تسجيل ساعات العمل','ts.col_id':'ID',
+    'ts.col_emp':'الموظف','ts.col_grade':'الدرجة','ts.col_wh':'المستودع',
+    'ts.col_date':'التاريخ','ts.col_shift':'الوردية','ts.col_hrs':'الساعات',
+    'ts.col_base':'الأساسي','ts.col_shift_b':'إضافة الوردية','ts.col_eff':'الفعلي',
+    'ts.col_brutto':'Brutto','ts.col_perf':'الأداء','ts.col_net':'Netto',
+    'ts.col_status':'الحالة','ts.col_action':'إجراء','ts.f_emp':'الموظف *',
+    'ts.f_date':'تاريخ العمل','ts.f_start':'وقت البداية','ts.f_end':'وقت النهاية',
+    'ts.f_wh':'المستودع','ts.f_shift':'الوردية','ts.f_notes':'ملاحظات',
+    'ts.auto_calc':'يتم الحساب تلقائياً',
+    'ts.wh_approve':'✓مستودع','ts.fin_approve':'✓مالية',
+    'zk.add':'+ إدخال يدوي','zk.add_title':'إدخال Zeitkonto يدوياً',
+    'zk.col_emp':'الموظف','zk.col_wh':'المستودع','zk.col_grade':'الدرجة',
+    'zk.col_status':'الامتثال','zk.arrange_rest':'جدولة الراحة',
+    'zk.f_emp':'الموظف','zk.f_date':'التاريخ','zk.f_type':'النوع',
+    'zk.f_hrs':'الساعات (h)','zk.f_reason':'السبب',
+    'settle.emp_count':'الموظفون','settle.hours':'إجمالي الساعات',
+    'settle.brutto':'إجمالي Brutto','settle.net':'إجمالي Netto',
+    'settle.col_emp':'الموظف','settle.col_wh':'المستودع','settle.col_biz':'الخط',
+    'settle.col_src':'المصدر','settle.col_hrs':'الساعات','settle.col_count':'السجلات',
+    'ct.add':'+ حاوية جديدة','ct.add_title':'تسجيل حاوية جديدة',
+    'ct.col_no':'رقم الحاوية','ct.col_type':'النوع','ct.col_wh':'المستودع',
+    'ct.col_date':'التاريخ','ct.col_start':'البداية','ct.col_end':'النهاية',
+    'ct.col_hrs':'الساعات','ct.col_workers':'العمال','ct.col_video':'فيديو',
+    'ct.col_status':'الحالة','ct.complete':'إنهاء',
+    'ct.f_no':'رقم الحاوية *','ct.f_type':'النوع','ct.f_date':'تاريخ العمل',
+    'ct.f_seal':'رقم الختم','ct.f_start':'وقت البداية',
+    'ct.f_revenue':'إيرادات العميل (€)','ct.f_workers':'العمال','ct.f_notes':'ملاحظات',
+    'clock.clock_in':'تسجيل الحضور','clock.clock_out':'تسجيل الانصراف',
+    'clock.clocked_in':'✓ تم تسجيل الحضور','clock.not_clocked':'○ لم تسجل حضوراً بعد',
+    'log.col_time':'الوقت','log.col_user':'المستخدم','log.col_action':'الإجراء',
+    'log.col_table':'الجدول','log.col_id':'ID','log.col_detail':'التفاصيل',
+    'kb.search':'بحث في الوثائق...','kb.all_cats':'الكل','kb.print':'⎙ طباعة',
+    'grade.title':'هيكل الرواتب','grade.col_grade':'الدرجة','grade.col_base':'الأساسي',
+    'grade.col_mult':'المضاعف','grade.col_gross':'Brutto/شهر',
+    'grade.col_mgmt':'بدل الإدارة','grade.col_ot':'إضافي h',
+    'grade.col_cost':'التكلفة الحقيقية','grade.col_hourly':'مكافئ الساعة',
+    'grade.col_desc':'الوصف',
+    'wh.select':'← اختر المستودع','wh.edit':'تعديل التعريفات','wh.f_save':'حفظ',
+    'cost.title':'حاسبة تكاليف المنصب','cost.calc':'احسب',
+    'cost.f_type':'نوع التوظيف','cost.f_grade':'الدرجة','cost.f_wh':'المستودع',
+    'cost.f_weekly':'ساعات أسبوعية','cost.f_months':'أشهر',
+  },
+  hu: {
+    'login.title':'Yuanbo+579 HR','login.admin':'👔 Admin bejelentkezés',
+    'login.worker':'👷 Munkás PIN','login.username':'Felhasználónév',
+    'login.password':'Jelszó','login.btn':'Bejelentkezés',
+    'login.pin_label':'Munkás PIN (4 jegyű)','login.pin_btn':'Jelenléti rögzítés',
+    'login.err_empty':'Kérem adja meg a felhasználónevet és jelszót',
+    'login.err_pin':'Kérem adja meg a 4 jegyű PIN-t',
+    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123',
+    'login.pin_hint':'Teszt PIN: 1001 1002 1003',
+    'c.loading':'Töltés...','c.load_fail':'Betöltési hiba','c.save':'Mentés',
+    'c.cancel':'Mégse','c.edit':'Szerkesztés','c.add':'Hozzáadás',
+    'c.submit':'Küldés','c.all':'Összes','c.search':'Keresés','c.close':'Bezárás',
+    'c.confirm':'Megerősítés','c.logout':'Kijelentkezés','c.no_data':'Nincs adat',
+    'c.notes':'Megjegyzések','c.date':'Dátum','c.status':'Állapot',
+    'c.action':'Művelet','c.name':'Név','c.phone':'Telefon','c.starting':'Rendszer indul…',
+    'nav.dashboard':'Irányítópult','nav.employees':'Alkalmazottak',
+    'nav.timesheets':'Munkaidő-nyilvántartás','nav.zeitkonto':'Zeitkonto',
+    'nav.settlement':'Havi elszámolás','nav.containers':'Konténer-nyilvántartás',
+    'nav.werkvertrag':'Werkvertrag projektek','nav.abmahnung':'Abmahnung',
+    'nav.clock':'Jelenléti','nav.grades':'Bérsáv struktúra',
+    'nav.warehouse_rates':'Raktári díjak','nav.cost_calc':'Költségkalkulátor',
+    'nav.docs':'Vállalati dokumentumok','nav.logs':'Audit napló',
+    'dash.employees':'Aktív alkalmazottak','dash.pending_ts':'Jóváhagyásra vár',
+    'dash.total_hours':'Összes óra (időszak)','dash.abmahnung':'Aktív Abmahnungen',
+    'dash.zk_alerts':'Zeitkonto figyelmeztetések','dash.wv_active':'Aktív WV projektek',
+    'dash.chart':'📊 Utolsó 7 nap munkaideje','dash.no_data':'Nincs munkaidő adat',
+    'emp.new':'+ Új alkalmazott','emp.search':'Név/ID/Telefon keresése...',
+    'emp.status_active':'Aktív','emp.status_left':'Kilépett',
+    'emp.col_id':'ID','emp.col_name':'Név','emp.col_biz':'Üzleti vonal',
+    'emp.col_wh':'Raktár','emp.col_pos':'Pozíció','emp.col_grade':'Fokozat',
+    'emp.col_src':'Forrás','emp.col_rate':'Órabér','emp.col_status':'Állapot',
+    'emp.col_join':'Belépés dátuma','emp.add_title':'Új alkalmazott',
+    'emp.edit_title':'Alkalmazott szerkesztése','emp.f_name':'Név *',
+    'emp.f_phone':'Telefon','emp.f_biz':'Üzleti vonal','emp.f_wh':'Raktár',
+    'emp.f_pos':'Pozíció','emp.f_grade':'Fokozat','emp.f_src':'Forrás',
+    'emp.f_rate':'Órabér (€/h)','emp.f_settle':'Elszámolás típusa',
+    'emp.f_contract_hrs':'Szerz. óra/nap','emp.f_nationality':'Állampolgárság',
+    'emp.f_join':'Belépés dátuma','emp.f_tax':'Adózás módja',
+    'emp.f_pin':'PIN (4 jegyű)','emp.f_notes':'Megjegyzések',
+    'emp.src_own':'Saját','emp.src_sup':'Szállító',
+    'ts.add':'+ Munkaidő rögzítése','ts.batch':'✓ Tömeges jóváhagyás',
+    'ts.add_title':'Munkaidő rögzítése','ts.col_id':'ID',
+    'ts.col_emp':'Alkalmazott','ts.col_grade':'Fokozat','ts.col_wh':'Raktár',
+    'ts.col_date':'Dátum','ts.col_shift':'Műszak','ts.col_hrs':'Órák',
+    'ts.col_base':'Alapbér','ts.col_shift_b':'Műszak+','ts.col_eff':'Eff. díj',
+    'ts.col_brutto':'Bruttó','ts.col_perf':'Teljesítmény','ts.col_net':'Nettó',
+    'ts.col_status':'Állapot','ts.col_action':'Művelet','ts.f_emp':'Alkalmazott *',
+    'ts.f_date':'Munkadátum','ts.f_start':'Kezdési idő','ts.f_end':'Befejezési idő',
+    'ts.f_wh':'Raktár (üres = alapért.)','ts.f_shift':'Műszak','ts.f_notes':'Megjegyzések',
+    'ts.auto_calc':'Az órákat, bruttót, SSI-t és nettót a rendszer automatikusan számítja',
+    'ts.wh_approve':'✓Raktár','ts.fin_approve':'✓Pénz',
+    'zk.add':'+ Manuális rögzítés','zk.add_title':'Zeitkonto manuális rögzítése',
+    'zk.col_emp':'Alkalmazott','zk.col_wh':'Raktár','zk.col_grade':'Fokozat',
+    'zk.col_status':'Megfelelőség','zk.arrange_rest':'Pihenő tervezése',
+    'zk.f_emp':'Alkalmazott','zk.f_date':'Dátum','zk.f_type':'Típus',
+    'zk.f_hrs':'Óra (h)','zk.f_reason':'Ok',
+    'settle.emp_count':'Alkalmazottak','settle.hours':'Összes óra',
+    'settle.brutto':'Összes bruttó','settle.net':'Összes nettó',
+    'settle.col_emp':'Alkalmazott','settle.col_wh':'Raktár','settle.col_biz':'Üzleti vonal',
+    'settle.col_src':'Forrás','settle.col_hrs':'Órák','settle.col_count':'Rekordok',
+    'ct.add':'+ Új konténer','ct.add_title':'Konténer-nyilvántartás rögzítése',
+    'ct.col_no':'Konténer sz.','ct.col_type':'Típus','ct.col_wh':'Raktár',
+    'ct.col_date':'Dátum','ct.col_start':'Kezdés','ct.col_end':'Befejezés',
+    'ct.col_hrs':'Órák','ct.col_workers':'Munkások','ct.col_video':'Videó',
+    'ct.col_status':'Állapot','ct.complete':'Befejezés',
+    'ct.f_no':'Konténer sz. *','ct.f_type':'Típus','ct.f_date':'Munkadátum',
+    'ct.f_seal':'Plomba sz.','ct.f_start':'Kezdési idő',
+    'ct.f_revenue':'Ügyfél bevétel (€)','ct.f_workers':'Munkások','ct.f_notes':'Megjegyzések',
+    'clock.clock_in':'Érkezés rögzítése','clock.clock_out':'Távozás rögzítése',
+    'clock.clocked_in':'✓ Rögzítve (érkezés)','clock.not_clocked':'○ Még nem rögzített',
+    'log.col_time':'Idő','log.col_user':'Felhasználó','log.col_action':'Művelet',
+    'log.col_table':'Objektum','log.col_id':'ID','log.col_detail':'Részletek',
+    'kb.search':'Dokumentumok keresése...','kb.all_cats':'Összes','kb.print':'⎙ Nyomtatás',
+    'grade.title':'Bérsáv struktúra','grade.col_grade':'Fokozat',
+    'grade.col_base':'Alap','grade.col_mult':'Szorzó','grade.col_gross':'Bruttó/hó',
+    'grade.col_mgmt':'Vezet. pótlék','grade.col_ot':'Túlóra h',
+    'grade.col_cost':'Valódi költség','grade.col_hourly':'Eff. órabér',
+    'grade.col_desc':'Leírás',
+    'wh.select':'← Raktár kiválasztása','wh.edit':'Díjak szerkesztése','wh.f_save':'Mentés',
+    'cost.title':'Pozíció-költségkalkulátor','cost.calc':'Számítás',
+    'cost.f_type':'Foglalkoztatás típusa','cost.f_grade':'Fokozat','cost.f_wh':'Raktár',
+    'cost.f_weekly':'Heti órák','cost.f_months':'Hónapok',
+  },
+  vi: {
+    'login.title':'Yuanbo+579 HR','login.admin':'👔 Đăng nhập Quản lý',
+    'login.worker':'👷 PIN Công nhân','login.username':'Tên đăng nhập',
+    'login.password':'Mật khẩu','login.btn':'Đăng nhập',
+    'login.pin_label':'PIN công nhân (4 chữ số)','login.pin_btn':'Chấm công',
+    'login.err_empty':'Vui lòng nhập tên đăng nhập và mật khẩu',
+    'login.err_pin':'Vui lòng nhập PIN 4 chữ số',
+    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123',
+    'login.pin_hint':'PIN thử nghiệm: 1001 1002 1003',
+    'c.loading':'Đang tải...','c.load_fail':'Tải thất bại','c.save':'Lưu',
+    'c.cancel':'Hủy','c.edit':'Chỉnh sửa','c.add':'Thêm mới','c.submit':'Gửi',
+    'c.all':'Tất cả','c.search':'Tìm kiếm','c.close':'Đóng','c.confirm':'Xác nhận',
+    'c.logout':'Đăng xuất','c.no_data':'Không có dữ liệu','c.notes':'Ghi chú',
+    'c.date':'Ngày','c.status':'Trạng thái','c.action':'Thao tác','c.name':'Họ tên',
+    'c.phone':'Điện thoại','c.starting':'Hệ thống đang khởi động…',
+    'nav.dashboard':'Bảng điều khiển','nav.employees':'Nhân viên',
+    'nav.timesheets':'Chấm công','nav.zeitkonto':'Zeitkonto',
+    'nav.settlement':'Quyết toán tháng','nav.containers':'Nhật ký container',
+    'nav.werkvertrag':'Dự án Werkvertrag','nav.abmahnung':'Abmahnung',
+    'nav.clock':'Chấm công','nav.grades':'Cơ cấu lương',
+    'nav.warehouse_rates':'Giá kho','nav.cost_calc':'Tính chi phí',
+    'nav.docs':'Tài liệu công ty','nav.logs':'Nhật ký kiểm toán',
+    'dash.employees':'Nhân viên đang làm','dash.pending_ts':'Chờ duyệt',
+    'dash.total_hours':'Tổng giờ làm','dash.abmahnung':'Abmahnung hiệu lực',
+    'dash.zk_alerts':'Cảnh báo Zeitkonto','dash.wv_active':'Dự án WV đang chạy',
+    'dash.chart':'📊 Giờ làm 7 ngày gần nhất','dash.no_data':'Chưa có dữ liệu chấm công',
+    'emp.new':'+ Thêm nhân viên','emp.search':'Tìm tên/ID/SĐT...',
+    'emp.status_active':'Đang làm','emp.status_left':'Đã nghỉ',
+    'emp.col_id':'ID','emp.col_name':'Họ tên','emp.col_biz':'Dòng KD',
+    'emp.col_wh':'Kho','emp.col_pos':'Vị trí','emp.col_grade':'Cấp',
+    'emp.col_src':'Nguồn','emp.col_rate':'Lương/h','emp.col_status':'Trạng thái',
+    'emp.col_join':'Ngày vào','emp.add_title':'Thêm nhân viên',
+    'emp.edit_title':'Sửa nhân viên','emp.f_name':'Họ tên *',
+    'emp.f_phone':'Điện thoại','emp.f_biz':'Dòng kinh doanh','emp.f_wh':'Kho',
+    'emp.f_pos':'Vị trí','emp.f_grade':'Cấp bậc','emp.f_src':'Nguồn',
+    'emp.f_rate':'Lương/giờ (€/h)','emp.f_settle':'Cách tính lương',
+    'emp.f_contract_hrs':'Giờ HĐ/ngày','emp.f_nationality':'Quốc tịch',
+    'emp.f_join':'Ngày vào','emp.f_tax':'Cách khai thuế',
+    'emp.f_pin':'PIN (4 số)','emp.f_notes':'Ghi chú',
+    'emp.src_own':'Trực tiếp','emp.src_sup':'Nhà cung cấp',
+    'ts.add':'+ Nhập giờ làm','ts.batch':'✓ Duyệt hàng loạt',
+    'ts.add_title':'Nhập giờ làm','ts.col_id':'ID','ts.col_emp':'Nhân viên',
+    'ts.col_grade':'Cấp','ts.col_wh':'Kho','ts.col_date':'Ngày','ts.col_shift':'Ca',
+    'ts.col_hrs':'Giờ','ts.col_base':'Lương CB','ts.col_shift_b':'Phụ ca',
+    'ts.col_eff':'Tỷ lệ TT','ts.col_brutto':'Brutto','ts.col_perf':'KPI',
+    'ts.col_net':'Netto','ts.col_status':'TT','ts.col_action':'Thao tác',
+    'ts.f_emp':'Nhân viên *','ts.f_date':'Ngày làm','ts.f_start':'Giờ bắt đầu',
+    'ts.f_end':'Giờ kết thúc','ts.f_wh':'Kho (để trống = mặc định)',
+    'ts.f_shift':'Ca làm','ts.f_notes':'Ghi chú',
+    'ts.auto_calc':'Giờ, Brutto, SSI, Netto được tính tự động',
+    'ts.wh_approve':'✓Kho','ts.fin_approve':'✓TC',
+    'zk.add':'+ Nhập thủ công','zk.add_title':'Nhập Zeitkonto thủ công',
+    'zk.col_emp':'Nhân viên','zk.col_wh':'Kho','zk.col_grade':'Cấp',
+    'zk.col_status':'Tuân thủ','zk.arrange_rest':'Sắp xếp nghỉ',
+    'zk.f_emp':'Nhân viên','zk.f_date':'Ngày','zk.f_type':'Loại',
+    'zk.f_hrs':'Giờ (h)','zk.f_reason':'Lý do',
+    'settle.emp_count':'Nhân viên','settle.hours':'Tổng giờ',
+    'settle.brutto':'Tổng Brutto','settle.net':'Tổng Netto',
+    'settle.col_emp':'Nhân viên','settle.col_wh':'Kho','settle.col_biz':'Dòng KD',
+    'settle.col_src':'Nguồn','settle.col_hrs':'Giờ','settle.col_count':'Bản ghi',
+    'ct.add':'+ Thêm container','ct.add_title':'Nhật ký container mới',
+    'ct.col_no':'Số container','ct.col_type':'Loại','ct.col_wh':'Kho',
+    'ct.col_date':'Ngày','ct.col_start':'Bắt đầu','ct.col_end':'Kết thúc',
+    'ct.col_hrs':'Giờ','ct.col_workers':'Công nhân','ct.col_video':'Video',
+    'ct.col_status':'TT','ct.complete':'Hoàn thành',
+    'ct.f_no':'Số container *','ct.f_type':'Loại','ct.f_date':'Ngày làm',
+    'ct.f_seal':'Số niêm phong','ct.f_start':'Giờ bắt đầu',
+    'ct.f_revenue':'Doanh thu KH (€)','ct.f_workers':'Công nhân','ct.f_notes':'Ghi chú',
+    'clock.clock_in':'Chấm công vào','clock.clock_out':'Chấm công ra',
+    'clock.clocked_in':'✓ Đã chấm công vào','clock.not_clocked':'○ Chưa chấm công',
+    'log.col_time':'Thời gian','log.col_user':'Người dùng','log.col_action':'Hành động',
+    'log.col_table':'Bảng','log.col_id':'ID','log.col_detail':'Chi tiết',
+    'kb.search':'Tìm kiếm tài liệu...','kb.all_cats':'Tất cả','kb.print':'⎙ In',
+    'grade.title':'Cơ cấu lương theo cấp','grade.col_grade':'Cấp',
+    'grade.col_base':'Lương cơ bản','grade.col_mult':'Hệ số',
+    'grade.col_gross':'Brutto/tháng','grade.col_mgmt':'PQ quản lý',
+    'grade.col_ot':'Tăng ca h','grade.col_cost':'Chi phí thực',
+    'grade.col_hourly':'Chi phí/giờ','grade.col_desc':'Mô tả',
+    'wh.select':'← Chọn kho','wh.edit':'Sửa giá','wh.f_save':'Lưu',
+    'cost.title':'Tính chi phí vị trí','cost.calc':'Tính toán',
+    'cost.f_type':'Loại hợp đồng','cost.f_grade':'Cấp','cost.f_wh':'Kho',
+    'cost.f_weekly':'Giờ/tuần','cost.f_months':'Số tháng',
+  },
+};
+const RTL_LANGS = new Set(['ar']);
+const LangCtx = React.createContext({t:key=>key, lang:'zh', setLang:()=>{}});
+function useLang() { return React.useContext(LangCtx); }
+function LangSwitcher() {
+  const {lang, setLang} = useLang();
+  const OPTS = [['zh','中文'],['en','English'],['de','Deutsch'],['ar','العربية'],['hu','Magyar'],['vi','Tiếng Việt']];
+  return <select className="fsl" value={lang} onChange={e=>setLang(e.target.value)} style={{fontSize:10,padding:'3px 6px',borderRadius:6,border:'1px solid var(--bd)',background:'var(--bg3)',color:'var(--tx)',cursor:'pointer',fontFamily:'inherit'}}>
+    {OPTS.map(([k,l])=><option key={k} value={k}>{l}</option>)}
+  </select>;
+}
+
 async function api(path, {method='GET', body, token} = {}) {
   const h = {'Content-Type':'application/json'};
   if (token) h['Authorization'] = 'Bearer ' + token;
@@ -44,7 +533,7 @@ function Modal({title,onClose,children,footer,wide}) {
   </div>;
 }
 function Spinner() { return <span className="spin">⟳</span>; }
-function Loading() { return <div className="loading"><Spinner/> 加载中...</div>; }
+function Loading() { const {t}=useLang(); return <div className="loading"><Spinner/> {t('c.loading')}</div>; }
 
 // ── AUTH CONTEXT ──
 const AuthCtx = React.createContext({});
@@ -54,9 +543,10 @@ function Login({onLogin}) {
   const [mode,setMode]=useState('admin');
   const [u,su]=useState(''); const [p,sp]=useState(''); const [pin,setPin]=useState('');
   const [err,setErr]=useState(''); const [loading,setLoading]=useState(false);
+  const {t,lang,setLang}=useLang();
 
   const doLogin = async () => {
-    if(!u||!p){setErr('请填写用户名和密码');return;}
+    if(!u||!p){setErr(t('login.err_empty'));return;}
     setLoading(true); setErr('');
     try {
       const r = await api('/api/auth/login', {method:'POST', body:{username:u,password:p}});
@@ -64,7 +554,7 @@ function Login({onLogin}) {
     } catch(e) { setErr(e.message); } finally { setLoading(false); }
   };
   const doPin = async () => {
-    if(pin.length<4){setErr('请输入4位PIN');return;}
+    if(pin.length<4){setErr(t('login.err_pin'));return;}
     setLoading(true); setErr('');
     try {
       const r = await api('/api/auth/pin', {method:'POST', body:{pin}});
@@ -75,23 +565,24 @@ function Login({onLogin}) {
   return <div style={{position:'fixed',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)',zIndex:9999}}>
     <div style={{position:'absolute',inset:0,overflow:'hidden'}}><div style={{position:'absolute',width:500,height:500,borderRadius:'50%',background:'radial-gradient(circle,#4f6ef720,transparent 70%)',top:-100,right:-100}}/></div>
     <div style={{position:'relative',width:380,background:'var(--bg2)',border:'1px solid var(--bd)',borderRadius:'var(--R3)',padding:'32px',boxShadow:'0 8px 40px #0008',animation:'fadeUp .4s ease'}}>
+      <div style={{position:'absolute',top:16,right:16}}><LangSwitcher/></div>
       <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:24}}>
         <div className="sb-logo" style={{width:44,height:44,fontSize:20}}>渊</div>
-        <div><div style={{fontSize:18,fontWeight:700}}>渊博+579 HR</div><div style={{fontSize:10,color:'var(--tx3)',letterSpacing:2}}>V6 · Warehouse Management</div></div>
+        <div><div style={{fontSize:18,fontWeight:700}}>{t('login.title')}</div><div style={{fontSize:10,color:'var(--tx3)',letterSpacing:2}}>V6 · Warehouse Management</div></div>
       </div>
       <div className="tb" style={{marginBottom:20,width:'100%'}}>
-        <button className={`tbn ${mode==='admin'?'on':''}`} style={{flex:1}} onClick={()=>setMode('admin')}>👔 管理员登录</button>
-        <button className={`tbn ${mode==='worker'?'on':''}`} style={{flex:1}} onClick={()=>setMode('worker')}>👷 工人PIN</button>
+        <button className={`tbn ${mode==='admin'?'on':''}`} style={{flex:1}} onClick={()=>setMode('admin')}>{t('login.admin')}</button>
+        <button className={`tbn ${mode==='worker'?'on':''}`} style={{flex:1}} onClick={()=>setMode('worker')}>{t('login.worker')}</button>
       </div>
       {mode==='admin' ? <>
-        <div style={{marginBottom:12}}><label className="fl">用户名</label><input className="fi" value={u} onChange={e=>{su(e.target.value);setErr('')}} onKeyDown={e=>e.key==='Enter'&&doLogin()} autoFocus/></div>
-        <div style={{marginBottom:16}}><label className="fl">密码</label><input className="fi" type="password" value={p} onChange={e=>{sp(e.target.value);setErr('')}} onKeyDown={e=>e.key==='Enter'&&doLogin()}/></div>
-        <button className="b bga bl" style={{width:'100%'}} onClick={doLogin} disabled={loading}>{loading?<Spinner/>:'登 录'}</button>
-        <div style={{marginTop:10,fontSize:9,color:'var(--tx3)',textAlign:'center'}}>admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123</div>
+        <div style={{marginBottom:12}}><label className="fl">{t('login.username')}</label><input className="fi" value={u} onChange={e=>{su(e.target.value);setErr('')}} onKeyDown={e=>e.key==='Enter'&&doLogin()} autoFocus/></div>
+        <div style={{marginBottom:16}}><label className="fl">{t('login.password')}</label><input className="fi" type="password" value={p} onChange={e=>{sp(e.target.value);setErr('')}} onKeyDown={e=>e.key==='Enter'&&doLogin()}/></div>
+        <button className="b bga bl" style={{width:'100%'}} onClick={doLogin} disabled={loading}>{loading?<Spinner/>:t('login.btn')}</button>
+        <div style={{marginTop:10,fontSize:9,color:'var(--tx3)',textAlign:'center'}}>{t('login.hint')}</div>
       </> : <>
-        <div style={{marginBottom:16}}><label className="fl">工人PIN（4位）</label><input className="fi" type="tel" maxLength={4} style={{fontSize:24,textAlign:'center',letterSpacing:12}} value={pin} onChange={e=>{setPin(e.target.value.replace(/\D/g,''));setErr('')}} onKeyDown={e=>e.key==='Enter'&&doPin()} placeholder="••••"/></div>
-        <button className="b bga bl" style={{width:'100%'}} onClick={doPin} disabled={loading}>{loading?<Spinner/>:'打卡入口'}</button>
-        <div style={{marginTop:10,fontSize:9,color:'var(--tx3)',textAlign:'center'}}>测试PIN: 1001(张三) 1002(李四) 1003(王五)</div>
+        <div style={{marginBottom:16}}><label className="fl">{t('login.pin_label')}</label><input className="fi" type="tel" maxLength={4} style={{fontSize:24,textAlign:'center',letterSpacing:12}} value={pin} onChange={e=>{setPin(e.target.value.replace(/\D/g,''));setErr('')}} onKeyDown={e=>e.key==='Enter'&&doPin()} placeholder="••••"/></div>
+        <button className="b bga bl" style={{width:'100%'}} onClick={doPin} disabled={loading}>{loading?<Spinner/>:t('login.pin_btn')}</button>
+        <div style={{marginTop:10,fontSize:9,color:'var(--tx3)',textAlign:'center'}}>{t('login.pin_hint')}</div>
       </>}
       {err && <div style={{marginTop:8,fontSize:11,color:'var(--rd)',textAlign:'center'}}>{err}</div>}
     </div>
@@ -101,26 +592,27 @@ function Login({onLogin}) {
 // ── DASHBOARD ──
 function Dashboard({token}) {
   const [data,setData]=useState(null); const [loading,setLoading]=useState(true);
+  const {t}=useLang();
   useEffect(()=>{ api('/api/analytics/dashboard',{token}).then(setData).catch(()=>{}).finally(()=>setLoading(false)); },[]);
   if(loading) return <Loading/>;
-  if(!data) return <div className="tm">加载失败</div>;
+  if(!data) return <div className="tm">{t('c.load_fail')}</div>;
   const mx = Math.max(...(data.daily_hours||[]).map(d=>d.total_hours),1);
   return <div>
     <div className="sr">
-      {[[data.employee_count,'在职员工','var(--cy)','👥'],[data.ts_pending,'待审批工时','var(--og)','⏳'],[data.ts_total_hours+'h','本期总工时','var(--pp)','⏱️'],[data.abmahnung_active,'有效Abmahnung','var(--rd)','⚠️'],[data.zeitkonto_alerts,'Zeitkonto预警','var(--og)','📊'],[data.wv_active_projects,'WV项目进行中','var(--gn)','📋']].map(([v,l,c,i],idx)=>
+      {[[data.employee_count,t('dash.employees'),'var(--cy)','👥'],[data.ts_pending,t('dash.pending_ts'),'var(--og)','⏳'],[data.ts_total_hours+'h',t('dash.total_hours'),'var(--pp)','⏱️'],[data.abmahnung_active,t('dash.abmahnung'),'var(--rd)','⚠️'],[data.zeitkonto_alerts,t('dash.zk_alerts'),'var(--og)','📊'],[data.wv_active_projects,t('dash.wv_active'),'var(--gn)','📋']].map(([v,l,c,i],idx)=>
         <div key={idx} className="sc"><div className="sl">{i} {l}</div><div className="sv" style={{color:c}}>{v}</div></div>
       )}
     </div>
     {data.zeitkonto_alerts>0 && <div className="alert alert-og">⚠ <b>{data.zeitkonto_alerts}</b> 名员工 Zeitkonto 超过+150h，请安排 Freizeitausgleich（§4 ArbZG）</div>}
     {data.abmahnung_active>0 && <div className="alert alert-rd">⚠ <b>{data.abmahnung_active}</b> 份 Abmahnung 有效中，请检查是否有员工达到 Kündigung 条件</div>}
-    <div className="cd"><div className="ct-t">📊 近7日工时分布</div>
+    <div className="cd"><div className="ct-t">{t('dash.chart')}</div>
       <div style={{display:'flex',alignItems:'flex-end',gap:8,height:100}}>
         {(data.daily_hours||[]).map((d,i)=><div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center'}}>
           <div style={{fontSize:9,color:'var(--tx3)',marginBottom:3}}>{d.total_hours}h</div>
           <div style={{width:'100%',background:'linear-gradient(180deg,var(--ac),var(--ac3))',borderRadius:'4px 4px 2px 2px',height:Math.max(4,(d.total_hours/mx)*88)}}/>
           <div style={{fontSize:8,color:'var(--tx3)',marginTop:3}}>{d.work_date?.slice(5)}</div>
         </div>)}
-        {(data.daily_hours||[]).length===0 && <div style={{color:'var(--tx3)',fontSize:11,padding:'20px 0'}}>暂无工时数据</div>}
+        {(data.daily_hours||[]).length===0 && <div style={{color:'var(--tx3)',fontSize:11,padding:'20px 0'}}>{t('dash.no_data')}</div>}
       </div>
     </div>
   </div>;
@@ -131,6 +623,7 @@ function Employees({token,user}) {
   const [emps,setEmps]=useState([]); const [loading,setLoading]=useState(true);
   const [search,setSearch]=useState(''); const [fSt,setFSt]=useState('在职');
   const [editM,setEM]=useState(null); const [form,setForm]=useState({});
+  const {t}=useLang();
 
   const load = useCallback(()=>{
     setLoading(true);
@@ -154,14 +647,14 @@ function Employees({token,user}) {
 
   return <div>
     <div className="ab">
-      <input className="si" placeholder="搜索姓名/ID/电话..." value={search} onChange={e=>setSearch(e.target.value)}/>
-      {['','在职','离职'].map(s=><button key={s} className={`fb ${fSt===s?'on':''}`} onClick={()=>setFSt(s)}>{s||'全部'}</button>)}
+      <input className="si" placeholder={t('emp.search')} value={search} onChange={e=>setSearch(e.target.value)}/>
+      {[['','c.all'],['在职','emp.status_active'],['离职','emp.status_left']].map(([s,tk])=><button key={s} className={`fb ${fSt===s?'on':''}`} onClick={()=>setFSt(s)}>{t(tk)}</button>)}
       <div className="ml" style={{display:'flex',gap:6}}>
-        {canEdit && <button className="b bga" onClick={openNew}>+ 新增员工</button>}
+        {canEdit && <button className="b bga" onClick={openNew}>{t('emp.new')}</button>}
       </div>
     </div>
     {loading ? <Loading/> : <div className="tw"><div className="ts"><table>
-      <thead><tr><th>ID</th><th>姓名</th><th>业务线</th><th>仓库</th><th>职位</th><th>级别</th><th>来源</th><th>时薪</th><th>状态</th><th>入职</th>{canEdit&&<th></th>}</tr></thead>
+      <thead><tr><th>{t('emp.col_id')}</th><th>{t('emp.col_name')}</th><th>{t('emp.col_biz')}</th><th>{t('emp.col_wh')}</th><th>{t('emp.col_pos')}</th><th>{t('emp.col_grade')}</th><th>{t('emp.col_src')}</th><th>{t('emp.col_rate')}</th><th>{t('emp.col_status')}</th><th>{t('emp.col_join')}</th>{canEdit&&<th></th>}</tr></thead>
       <tbody>{emps.map(e=><tr key={e.id}>
         <td className="mn gn">{e.id}</td>
         <td className="fw6">{e.name}</td>
@@ -173,28 +666,28 @@ function Employees({token,user}) {
         <td className="mn">€{fmt(e.hourly_rate)}/h</td>
         <td><Bg t={e.status}/></td>
         <td className="tm">{e.join_date}</td>
-        {canEdit && <td><button className="b bgh" onClick={()=>openEdit(e)}>编辑</button></td>}
+        {canEdit && <td><button className="b bgh" onClick={()=>openEdit(e)}>{t('c.edit')}</button></td>}
       </tr>)}</tbody>
     </table></div></div>}
 
-    {editM && <Modal title={editM==='new'?'新增员工':'编辑员工'} onClose={()=>setEM(null)}
-      footer={<><button className="b bgh" onClick={()=>setEM(null)}>取消</button><button className="b bga" onClick={save}>保存</button></>}>
+    {editM && <Modal title={editM==='new'?t('emp.add_title'):t('emp.edit_title')} onClose={()=>setEM(null)}
+      footer={<><button className="b bgh" onClick={()=>setEM(null)}>{t('c.cancel')}</button><button className="b bga" onClick={save}>{t('c.save')}</button></>}>
       <div className="fr">
-        <div className="fg"><label className="fl">姓名 *</label><input className="fi" value={form.name||''} onChange={e=>setForm({...form,name:e.target.value})}/></div>
-        <div className="fg"><label className="fl">电话</label><input className="fi" value={form.phone||''} onChange={e=>setForm({...form,phone:e.target.value})}/></div>
-        <div className="fg"><label className="fl">业务线</label><select className="fsl" value={form.biz_line||'渊博'} onChange={e=>setForm({...form,biz_line:e.target.value})}><option>渊博</option><option>579</option></select></div>
-        <div className="fg"><label className="fl">仓库</label><select className="fsl" value={form.warehouse_code||''} onChange={e=>setForm({...form,warehouse_code:e.target.value})}><option value="">-</option>{WHS.map(w=><option key={w}>{w}</option>)}</select></div>
-        <div className="fg"><label className="fl">职位</label><input className="fi" value={form.position||''} onChange={e=>setForm({...form,position:e.target.value})}/></div>
-        <div className="fg"><label className="fl">职级</label><select className="fsl" value={form.grade||'P1'} onChange={e=>setForm({...form,grade:e.target.value})}>{GRADES.map(g=><option key={g}>{g}</option>)}</select></div>
-        <div className="fg"><label className="fl">来源</label><select className="fsl" value={form.source||'自有'} onChange={e=>setForm({...form,source:e.target.value})}><option>自有</option><option>供应商</option></select></div>
-        <div className="fg"><label className="fl">时薪 (€/h)</label><input className="fi" type="number" step="0.5" value={form.hourly_rate||13} onChange={e=>setForm({...form,hourly_rate:+e.target.value})}/></div>
-        <div className="fg"><label className="fl">结算方式</label><select className="fsl" value={form.settlement_type||'按小时'} onChange={e=>setForm({...form,settlement_type:e.target.value})}><option>按小时</option><option>按件</option><option>按柜</option></select></div>
-        <div className="fg"><label className="fl">合同工时/日</label><input className="fi" type="number" value={form.contract_hours||8} onChange={e=>setForm({...form,contract_hours:+e.target.value})}/></div>
-        <div className="fg"><label className="fl">国籍</label><input className="fi" value={form.nationality||''} onChange={e=>setForm({...form,nationality:e.target.value})}/></div>
-        <div className="fg"><label className="fl">入职日期</label><input className="fi" type="date" value={form.join_date||''} onChange={e=>setForm({...form,join_date:e.target.value})}/></div>
-        <div className="fg"><label className="fl">报税方式</label><select className="fsl" value={form.tax_mode||'我方报税'} onChange={e=>setForm({...form,tax_mode:e.target.value})}><option>我方报税</option><option>供应商报税</option></select></div>
-        <div className="fg"><label className="fl">PIN (4位)</label><input className="fi" maxLength={4} value={form.pin||''} onChange={e=>setForm({...form,pin:e.target.value.replace(/\D/g,'')})}/></div>
-        <div className="fg ful"><label className="fl">备注</label><textarea className="fta" value={form.notes||''} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('emp.f_name')}</label><input className="fi" value={form.name||''} onChange={e=>setForm({...form,name:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('emp.f_phone')}</label><input className="fi" value={form.phone||''} onChange={e=>setForm({...form,phone:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('emp.f_biz')}</label><select className="fsl" value={form.biz_line||'渊博'} onChange={e=>setForm({...form,biz_line:e.target.value})}><option>渊博</option><option>579</option></select></div>
+        <div className="fg"><label className="fl">{t('emp.f_wh')}</label><select className="fsl" value={form.warehouse_code||''} onChange={e=>setForm({...form,warehouse_code:e.target.value})}><option value="">-</option>{WHS.map(w=><option key={w}>{w}</option>)}</select></div>
+        <div className="fg"><label className="fl">{t('emp.f_pos')}</label><input className="fi" value={form.position||''} onChange={e=>setForm({...form,position:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('emp.f_grade')}</label><select className="fsl" value={form.grade||'P1'} onChange={e=>setForm({...form,grade:e.target.value})}>{GRADES.map(g=><option key={g}>{g}</option>)}</select></div>
+        <div className="fg"><label className="fl">{t('emp.f_src')}</label><select className="fsl" value={form.source||'自有'} onChange={e=>setForm({...form,source:e.target.value})}><option value="自有">{t('emp.src_own')}</option><option value="供应商">{t('emp.src_sup')}</option></select></div>
+        <div className="fg"><label className="fl">{t('emp.f_rate')}</label><input className="fi" type="number" step="0.5" value={form.hourly_rate||13} onChange={e=>setForm({...form,hourly_rate:+e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('emp.f_settle')}</label><select className="fsl" value={form.settlement_type||'按小时'} onChange={e=>setForm({...form,settlement_type:e.target.value})}><option>按小时</option><option>按件</option><option>按柜</option></select></div>
+        <div className="fg"><label className="fl">{t('emp.f_contract_hrs')}</label><input className="fi" type="number" value={form.contract_hours||8} onChange={e=>setForm({...form,contract_hours:+e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('emp.f_nationality')}</label><input className="fi" value={form.nationality||''} onChange={e=>setForm({...form,nationality:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('emp.f_join')}</label><input className="fi" type="date" value={form.join_date||''} onChange={e=>setForm({...form,join_date:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('emp.f_tax')}</label><select className="fsl" value={form.tax_mode||'我方报税'} onChange={e=>setForm({...form,tax_mode:e.target.value})}><option>我方报税</option><option>供应商报税</option></select></div>
+        <div className="fg"><label className="fl">{t('emp.f_pin')}</label><input className="fi" maxLength={4} value={form.pin||''} onChange={e=>setForm({...form,pin:e.target.value.replace(/\D/g,'')})}/></div>
+        <div className="fg ful"><label className="fl">{t('emp.f_notes')}</label><textarea className="fta" value={form.notes||''} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
       </div>
     </Modal>}
   </div>;
@@ -206,6 +699,7 @@ function Timesheets({token,user}) {
   const [fSt,setFSt]=useState(''); const [addM,setAddM]=useState(false);
   const [form,setForm]=useState({work_date:new Date().toISOString().slice(0,10),start_time:'08:00',end_time:'16:00'});
   const [emps,setEmps]=useState([]);
+  const {t}=useLang();
 
   const load = () => { setLoading(true); api(`/api/timesheets?status=${fSt}`,{token}).then(setTS).finally(()=>setLoading(false)); };
   useEffect(()=>{ load(); api('/api/employees?status=在职',{token}).then(setEmps); },[fSt]);
@@ -223,49 +717,49 @@ function Timesheets({token,user}) {
     await api('/api/timesheets/batch-approve',{method:'PUT',body:{ids},token}); load();
   };
 
-  const pending = ts.filter(t=>t.status==='待仓库审批'||t.status==='待财务确认');
+  const pending = ts.filter(row=>row.status==='待仓库审批'||row.status==='待财务确认');
 
   return <div>
     <div className="ab">
-      {['','待仓库审批','待财务确认','已入账','驳回'].map(s=><button key={s} className={`fb ${fSt===s?'on':''}`} onClick={()=>setFSt(s)}>{s||'全部'}</button>)}
+      {[['','c.all'],['待仓库审批','待仓库审批'],['待财务确认','待财务确认'],['已入账','已入账'],['驳回','驳回']].map(([s,tk])=><button key={s} className={`fb ${fSt===s?'on':''}`} onClick={()=>setFSt(s)}>{s===''?t('c.all'):s}</button>)}
       <div className="ml" style={{display:'flex',gap:6}}>
-        {pending.length>0 && canApproveWH && <button className="b bgn" onClick={()=>batchApprove(pending.map(t=>t.id))}>✓ 批量审批 ({pending.length})</button>}
-        <button className="b bga" onClick={()=>setAddM(true)}>+ 录入工时</button>
+        {pending.length>0 && canApproveWH && <button className="b bgn" onClick={()=>batchApprove(pending.map(row=>row.id))}>{t('ts.batch')} ({pending.length})</button>}
+        <button className="b bga" onClick={()=>setAddM(true)}>{t('ts.add')}</button>
       </div>
     </div>
     {loading ? <Loading/> : <div className="tw"><div className="ts"><table>
-      <thead><tr><th>ID</th><th>员工</th><th>级别</th><th>仓库</th><th>日期</th><th>班次</th><th>工时</th><th>基础薪</th><th>班次+</th><th>实际率</th><th>Brutto</th><th>绩效</th><th>Net</th><th>状态</th><th>操作</th></tr></thead>
-      <tbody>{ts.map(t=><tr key={t.id}>
-        <td className="mn tm">{t.id?.slice(-10)}</td>
-        <td className="fw6">{t.employee_name}</td>
-        <td style={{color:'var(--pp)',fontWeight:600}}>{t.grade||'—'}</td>
-        <td>{t.warehouse_code}</td>
-        <td>{t.work_date}</td>
-        <td><span style={{color:t.shift==='夜班'?'var(--pp)':t.shift==='周末'?'var(--og)':t.shift==='节假日'?'var(--rd)':'var(--tx3)',fontSize:10}}>{t.shift||'白班'}</span></td>
-        <td className="mn fw6">{t.hours}h</td>
-        <td className="mn tm">€{fmt(t.base_rate)}</td>
-        <td className="mn" style={{color:t.shift_bonus>0?'var(--og)':'var(--tx3)'}}>+€{fmt(t.shift_bonus)}</td>
-        <td className="mn fw6" style={{color:'var(--ac2)'}}>€{fmt(t.effective_rate)}</td>
-        <td className="mn">€{fmt(t.gross_pay)}</td>
-        <td className="mn" style={{color:t.perf_bonus>0?'var(--gn)':'var(--tx3)'}}>+€{fmt(t.perf_bonus)}</td>
-        <td className="mn gn">€{fmt(t.net_pay)}</td>
-        <td><Bg t={t.status}/></td>
-        <td>{t.status==='待仓库审批'&&canApproveWH?<button className="b bgn" style={{fontSize:9}} onClick={()=>approve(t.id)}>✓仓库</button>:t.status==='待财务确认'&&canApproveFin?<button className="b bga" style={{fontSize:9}} onClick={()=>approve(t.id)}>✓财务</button>:<span className="tm" style={{fontSize:9}}>—</span>}</td>
+      <thead><tr><th>{t('ts.col_id')}</th><th>{t('ts.col_emp')}</th><th>{t('ts.col_grade')}</th><th>{t('ts.col_wh')}</th><th>{t('ts.col_date')}</th><th>{t('ts.col_shift')}</th><th>{t('ts.col_hrs')}</th><th>{t('ts.col_base')}</th><th>{t('ts.col_shift_b')}</th><th>{t('ts.col_eff')}</th><th>{t('ts.col_brutto')}</th><th>{t('ts.col_perf')}</th><th>{t('ts.col_net')}</th><th>{t('ts.col_status')}</th><th>{t('ts.col_action')}</th></tr></thead>
+      <tbody>{ts.map(row=><tr key={row.id}>
+        <td className="mn tm">{row.id?.slice(-10)}</td>
+        <td className="fw6">{row.employee_name}</td>
+        <td style={{color:'var(--pp)',fontWeight:600}}>{row.grade||'—'}</td>
+        <td>{row.warehouse_code}</td>
+        <td>{row.work_date}</td>
+        <td><span style={{color:row.shift==='夜班'?'var(--pp)':row.shift==='周末'?'var(--og)':row.shift==='节假日'?'var(--rd)':'var(--tx3)',fontSize:10}}>{row.shift||'白班'}</span></td>
+        <td className="mn fw6">{row.hours}h</td>
+        <td className="mn tm">€{fmt(row.base_rate)}</td>
+        <td className="mn" style={{color:row.shift_bonus>0?'var(--og)':'var(--tx3)'}}>+€{fmt(row.shift_bonus)}</td>
+        <td className="mn fw6" style={{color:'var(--ac2)'}}>€{fmt(row.effective_rate)}</td>
+        <td className="mn">€{fmt(row.gross_pay)}</td>
+        <td className="mn" style={{color:row.perf_bonus>0?'var(--gn)':'var(--tx3)'}}>+€{fmt(row.perf_bonus)}</td>
+        <td className="mn gn">€{fmt(row.net_pay)}</td>
+        <td><Bg t={row.status}/></td>
+        <td>{row.status==='待仓库审批'&&canApproveWH?<button className="b bgn" style={{fontSize:9}} onClick={()=>approve(row.id)}>{t('ts.wh_approve')}</button>:row.status==='待财务确认'&&canApproveFin?<button className="b bga" style={{fontSize:9}} onClick={()=>approve(row.id)}>{t('ts.fin_approve')}</button>:<span className="tm" style={{fontSize:9}}>—</span>}</td>
       </tr>)}</tbody>
     </table></div></div>}
 
-    {addM && <Modal title="录入工时" onClose={()=>setAddM(false)}
-      footer={<><button className="b bgh" onClick={()=>setAddM(false)}>取消</button><button className="b bga" onClick={addTS}>提交</button></>}>
+    {addM && <Modal title={t('ts.add_title')} onClose={()=>setAddM(false)}
+      footer={<><button className="b bgh" onClick={()=>setAddM(false)}>{t('c.cancel')}</button><button className="b bga" onClick={addTS}>{t('c.submit')}</button></>}>
       <div className="fr">
-        <div className="fg"><label className="fl">员工 *</label><select className="fsl" value={form.employee_id||''} onChange={e=>setForm({...form,employee_id:e.target.value})}><option value="">—选择员工—</option>{emps.map(e=><option key={e.id} value={e.id}>{e.name}（{e.id}）</option>)}</select></div>
-        <div className="fg"><label className="fl">工作日期</label><input className="fi" type="date" value={form.work_date} onChange={e=>setForm({...form,work_date:e.target.value})}/></div>
-        <div className="fg"><label className="fl">开始时间</label><input className="fi" type="time" value={form.start_time} onChange={e=>setForm({...form,start_time:e.target.value})}/></div>
-        <div className="fg"><label className="fl">结束时间</label><input className="fi" type="time" value={form.end_time} onChange={e=>setForm({...form,end_time:e.target.value})}/></div>
-        <div className="fg"><label className="fl">仓库（留空=员工默认仓库）</label><input className="fi" value={form.warehouse_code||''} onChange={e=>setForm({...form,warehouse_code:e.target.value})}/></div>
-        <div className="fg"><label className="fl">班次</label><select className="fsl" value={form.shift||'白班'} onChange={e=>setForm({...form,shift:e.target.value})}><option>白班</option><option>夜班</option><option>周末</option><option>节假日</option></select></div>
-        <div className="fg"><label className="fl">备注</label><input className="fi" value={form.notes||''} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('ts.f_emp')}</label><select className="fsl" value={form.employee_id||''} onChange={e=>setForm({...form,employee_id:e.target.value})}><option value="">—选择员工—</option>{emps.map(e=><option key={e.id} value={e.id}>{e.name}（{e.id}）</option>)}</select></div>
+        <div className="fg"><label className="fl">{t('ts.f_date')}</label><input className="fi" type="date" value={form.work_date} onChange={e=>setForm({...form,work_date:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('ts.f_start')}</label><input className="fi" type="time" value={form.start_time} onChange={e=>setForm({...form,start_time:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('ts.f_end')}</label><input className="fi" type="time" value={form.end_time} onChange={e=>setForm({...form,end_time:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('ts.f_wh')}</label><input className="fi" value={form.warehouse_code||''} onChange={e=>setForm({...form,warehouse_code:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('ts.f_shift')}</label><select className="fsl" value={form.shift||'白班'} onChange={e=>setForm({...form,shift:e.target.value})}><option>白班</option><option>夜班</option><option>周末</option><option>节假日</option></select></div>
+        <div className="fg"><label className="fl">{t('ts.f_notes')}</label><input className="fi" value={form.notes||''} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
       </div>
-      <div className="alert alert-ac">工时、Brutto、SSI、Net 由系统根据员工时薪自动计算</div>
+      <div className="alert alert-ac">{t('ts.auto_calc')}</div>
     </Modal>}
   </div>;
 }
@@ -293,6 +787,7 @@ function Zeitkonto({token,user}) {
   };
 
   const canEdit = ['admin','hr','mgr'].includes(user.role);
+  const {t}=useLang();
   const getStatus = (z) => {
     if(z.plus_hours>200||z.daily_max>10) return {c:'var(--rd)',t:'⛔ 违规'};
     if(z.plus_hours>150) return {c:'var(--og)',t:'⚠ 预警'};
@@ -310,10 +805,10 @@ function Zeitkonto({token,user}) {
     </div>}
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
       <div className="tm" style={{fontSize:10}}>§4 ArbZG: 10h/日上限 · Zeitkonto上限+200h · MTV DGB/GVP 2026</div>
-      {canEdit && <button className="b bga" onClick={()=>setAddM(true)}>+ 手动录入</button>}
+      {canEdit && <button className="b bga" onClick={()=>setAddM(true)}>{t('zk.add')}</button>}
     </div>
     {loading ? <Loading/> : <div className="tw"><div className="ts"><table>
-      <thead><tr><th>员工</th><th>仓库</th><th>级别</th><th>Plusstunden</th><th>Minusstunden</th><th>日最高工时</th><th>合规状态</th><th></th></tr></thead>
+      <thead><tr><th>{t('zk.col_emp')}</th><th>{t('zk.col_wh')}</th><th>{t('zk.col_grade')}</th><th>Plusstunden</th><th>Minusstunden</th><th>日最高工时</th><th>{t('zk.col_status')}</th><th></th></tr></thead>
       <tbody>{zk.map(z=>{const s=getStatus(z);return<tr key={z.employee_id} onClick={()=>openLogs(z.employee_id)} style={{cursor:'pointer',background:sel===z.employee_id?'#4f6ef710':''}}>
         <td className="fw6">{z.employee_name}<br/><span className="mn tm">{z.employee_id}</span></td>
         <td>{z.warehouse_code}</td>
@@ -322,7 +817,7 @@ function Zeitkonto({token,user}) {
         <td style={{color:z.minus_hours>0?'var(--pp)':'var(--tx3)',fontFamily:'monospace'}}>-{z.minus_hours}h</td>
         <td style={{color:z.daily_max>10?'var(--rd)':z.daily_max>9?'var(--og)':'var(--tx)',fontFamily:'monospace'}}>{z.daily_max||'—'}h</td>
         <td><span className="bg" style={{background:s.c+'22',color:s.c,border:`1px solid ${s.c}44`}}>{s.t}</span></td>
-        <td>{z.plus_hours>150&&canEdit&&<button className="b bgo" style={{fontSize:9}} onClick={e=>{e.stopPropagation();doFreizeitausgleich(z.employee_id,z.plus_hours)}}>安排休息</button>}</td>
+        <td>{z.plus_hours>150&&canEdit&&<button className="b bgo" style={{fontSize:9}} onClick={e=>{e.stopPropagation();doFreizeitausgleich(z.employee_id,z.plus_hours)}}>{t('zk.arrange_rest')}</button>}</td>
       </tr>;})}
       </tbody>
     </table></div></div>}
@@ -351,14 +846,14 @@ function Zeitkonto({token,user}) {
       </table></div>
     </div>}
 
-    {addM && <Modal title="手动录入 Zeitkonto" onClose={()=>setAddM(false)}
-      footer={<><button className="b bgh" onClick={()=>setAddM(false)}>取消</button><button className="b bga" onClick={addLog}>保存</button></>}>
+    {addM && <Modal title={t('zk.add_title')} onClose={()=>setAddM(false)}
+      footer={<><button className="b bgh" onClick={()=>setAddM(false)}>{t('c.cancel')}</button><button className="b bga" onClick={addLog}>{t('c.save')}</button></>}>
       <div className="fr">
-        <div className="fg"><label className="fl">员工</label><select className="fsl" value={form.employee_id} onChange={e=>setForm({...form,employee_id:e.target.value})}><option value="">—选择—</option>{zk.map(z=><option key={z.employee_id} value={z.employee_id}>{z.employee_name}（{z.employee_id}）</option>)}</select></div>
-        <div className="fg"><label className="fl">日期</label><input className="fi" type="date" value={form.log_date} onChange={e=>setForm({...form,log_date:e.target.value})}/></div>
-        <div className="fg"><label className="fl">类型</label><select className="fsl" value={form.entry_type} onChange={e=>setForm({...form,entry_type:e.target.value})}><option value="plus">+ Plusstunden（加班）</option><option value="minus">- Minusstunden（短时）</option></select></div>
-        <div className="fg"><label className="fl">工时（h）</label><input className="fi" type="number" step="0.5" value={form.hours} onChange={e=>setForm({...form,hours:e.target.value})}/></div>
-        <div className="fg ful"><label className="fl">原因说明</label><input className="fi" value={form.reason} onChange={e=>setForm({...form,reason:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('zk.f_emp')}</label><select className="fsl" value={form.employee_id} onChange={e=>setForm({...form,employee_id:e.target.value})}><option value="">—选择—</option>{zk.map(z=><option key={z.employee_id} value={z.employee_id}>{z.employee_name}（{z.employee_id}）</option>)}</select></div>
+        <div className="fg"><label className="fl">{t('zk.f_date')}</label><input className="fi" type="date" value={form.log_date} onChange={e=>setForm({...form,log_date:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('zk.f_type')}</label><select className="fsl" value={form.entry_type} onChange={e=>setForm({...form,entry_type:e.target.value})}><option value="plus">+ Plusstunden（加班）</option><option value="minus">- Minusstunden（短时）</option></select></div>
+        <div className="fg"><label className="fl">{t('zk.f_hrs')}</label><input className="fi" type="number" step="0.5" value={form.hours} onChange={e=>setForm({...form,hours:e.target.value})}/></div>
+        <div className="fg ful"><label className="fl">{t('zk.f_reason')}</label><input className="fi" value={form.reason} onChange={e=>setForm({...form,reason:e.target.value})}/></div>
       </div>
     </Modal>}
   </div>;
@@ -678,6 +1173,7 @@ function Containers({token,user}) {
   const [addM,setAddM]=useState(false);
   const [emps,setEmps]=useState([]);
   const [form,setForm]=useState({container_no:'',container_type:'40GP',work_date:new Date().toISOString().slice(0,10),start_time:'08:00',seal_no:'',worker_ids:[],client_revenue:0,team_pay:0,notes:''});
+  const {t}=useLang();
 
   const load = ()=>{ setLoading(true); api('/api/containers',{token}).then(setCts).finally(()=>setLoading(false)); };
   useEffect(()=>{ load(); api('/api/employees?status=在职',{token}).then(setEmps); },[]);
@@ -696,10 +1192,10 @@ function Containers({token,user}) {
 
   return <div>
     <div style={{display:'flex',justifyContent:'flex-end',marginBottom:10}}>
-      <button className="b bga" onClick={()=>setAddM(true)}>+ 新增卸柜记录</button>
+      <button className="b bga" onClick={()=>setAddM(true)}>{t('ct.add')}</button>
     </div>
     {loading ? <Loading/> : <div className="tw"><div className="ts"><table>
-      <thead><tr><th>柜号</th><th>类型</th><th>仓库</th><th>日期</th><th>开始</th><th>结束</th><th>工时</th><th>人数</th><th>视频</th><th>状态</th><th></th></tr></thead>
+      <thead><tr><th>{t('ct.col_no')}</th><th>{t('ct.col_type')}</th><th>{t('ct.col_wh')}</th><th>{t('ct.col_date')}</th><th>{t('ct.col_start')}</th><th>{t('ct.col_end')}</th><th>{t('ct.col_hrs')}</th><th>{t('ct.col_workers')}</th><th>{t('ct.col_video')}</th><th>{t('ct.col_status')}</th><th></th></tr></thead>
       <tbody>{cts.map(c=><tr key={c.id}>
         <td className="mn fw6 gn">{c.container_no}</td>
         <td>{c.container_type}</td>
@@ -711,25 +1207,25 @@ function Containers({token,user}) {
         <td>{c.worker_count}</td>
         <td>{c.video_recorded?<span className="gn">✓</span>:<span className="rd">✗</span>}</td>
         <td><Bg t={c.status}/></td>
-        <td>{c.status==='进行中'&&<button className="b bgn" style={{fontSize:9}} onClick={()=>complete(c.id)}>完成</button>}</td>
+        <td>{c.status==='进行中'&&<button className="b bgn" style={{fontSize:9}} onClick={()=>complete(c.id)}>{t('ct.complete')}</button>}</td>
       </tr>)}</tbody>
     </table></div></div>}
 
-    {addM && <Modal title="新增卸柜记录" onClose={()=>setAddM(false)}
-      footer={<><button className="b bgh" onClick={()=>setAddM(false)}>取消</button><button className="b bga" onClick={addCt}>提交</button></>}>
+    {addM && <Modal title={t('ct.add_title')} onClose={()=>setAddM(false)}
+      footer={<><button className="b bgh" onClick={()=>setAddM(false)}>{t('c.cancel')}</button><button className="b bga" onClick={addCt}>{t('c.submit')}</button></>}>
       <div className="alert alert-og">⚠ 开柜前必须录制视频（HGB §438），记录铅封号、货物初始状态（一镜到底，禁止中断）</div>
       <div className="fr">
-        <div className="fg"><label className="fl">柜号 *</label><input className="fi" value={form.container_no} onChange={e=>setForm({...form,container_no:e.target.value})} placeholder="TCKU1234567"/></div>
-        <div className="fg"><label className="fl">柜型</label><select className="fsl" value={form.container_type} onChange={e=>setForm({...form,container_type:e.target.value})}>{TYPES.map(t=><option key={t}>{t}</option>)}</select></div>
-        <div className="fg"><label className="fl">作业日期</label><input className="fi" type="date" value={form.work_date} onChange={e=>setForm({...form,work_date:e.target.value})}/></div>
-        <div className="fg"><label className="fl">铅封号</label><input className="fi" value={form.seal_no} onChange={e=>setForm({...form,seal_no:e.target.value})}/></div>
-        <div className="fg"><label className="fl">开始时间</label><input className="fi" type="time" value={form.start_time} onChange={e=>setForm({...form,start_time:e.target.value})}/></div>
-        <div className="fg"><label className="fl">客户结算(€)</label><input className="fi" type="number" value={form.client_revenue} onChange={e=>setForm({...form,client_revenue:+e.target.value})}/></div>
-        <div className="fg ful"><label className="fl">参与工人</label>
+        <div className="fg"><label className="fl">{t('ct.f_no')}</label><input className="fi" value={form.container_no} onChange={e=>setForm({...form,container_no:e.target.value})} placeholder="TCKU1234567"/></div>
+        <div className="fg"><label className="fl">{t('ct.f_type')}</label><select className="fsl" value={form.container_type} onChange={e=>setForm({...form,container_type:e.target.value})}>{TYPES.map(tp=><option key={tp}>{tp}</option>)}</select></div>
+        <div className="fg"><label className="fl">{t('ct.f_date')}</label><input className="fi" type="date" value={form.work_date} onChange={e=>setForm({...form,work_date:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('ct.f_seal')}</label><input className="fi" value={form.seal_no} onChange={e=>setForm({...form,seal_no:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('ct.f_start')}</label><input className="fi" type="time" value={form.start_time} onChange={e=>setForm({...form,start_time:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('ct.f_revenue')}</label><input className="fi" type="number" value={form.client_revenue} onChange={e=>setForm({...form,client_revenue:+e.target.value})}/></div>
+        <div className="fg ful"><label className="fl">{t('ct.f_workers')}</label>
           <div style={{display:'flex',flexWrap:'wrap',gap:4}}>{emps.map(e=>{const sel=form.worker_ids.includes(e.id);return<button key={e.id} onClick={()=>setForm(f=>({...f,worker_ids:sel?f.worker_ids.filter(x=>x!==e.id):[...f.worker_ids,e.id]}))} style={{padding:'4px 8px',borderRadius:6,border:`1px solid ${sel?'var(--ac)':'var(--bd)'}`,background:sel?'#4f6ef722':'transparent',color:sel?'var(--ac2)':'var(--tx3)',fontSize:10,cursor:'pointer'}}>{e.name}</button>})}
           </div>
         </div>
-        <div className="fg ful"><label className="fl">备注</label><input className="fi" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
+        <div className="fg ful"><label className="fl">{t('ct.f_notes')}</label><input className="fi" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
       </div>
     </Modal>}
   </div>;
@@ -739,6 +1235,7 @@ function Containers({token,user}) {
 function Settlement({token}) {
   const [data,setData]=useState(null); const [loading,setLoading]=useState(true);
   const [month,setMonth]=useState(new Date().toISOString().slice(0,7));
+  const {t}=useLang();
   const load = ()=>{ setLoading(true); api(`/api/settlement/monthly?month=${month}`,{token}).then(setData).finally(()=>setLoading(false)); };
   useEffect(()=>{ load(); },[month]);
   return <div>
@@ -746,10 +1243,10 @@ function Settlement({token}) {
       <input type="month" className="fs" value={month} onChange={e=>setMonth(e.target.value)}/>
     </div>
     {data && <div className="sr">
-      {[['员工数',data.summary.employee_count,'var(--cy)'],[`总工时 ${data.summary.total_hours}h`,'','var(--pp)'],['总Brutto','€'+fmtE(data.summary.total_gross),'var(--og)'],['总Net','€'+fmtE(data.summary.total_net),'var(--gn)']].map(([l,v,c],i)=><div key={i} className="sc"><div className="sl">{l}</div><div className="sv" style={{color:c}}>{v||l.split('总')[1]||data.summary.employee_count}</div></div>)}
+      {[[t('settle.emp_count'),data.summary.employee_count,'var(--cy)'],[`${t('settle.hours')} ${data.summary.total_hours}h`,'','var(--pp)'],[t('settle.brutto'),'€'+fmtE(data.summary.total_gross),'var(--og)'],[t('settle.net'),'€'+fmtE(data.summary.total_net),'var(--gn)']].map(([l,v,c],i)=><div key={i} className="sc"><div className="sl">{l}</div><div className="sv" style={{color:c}}>{v||data.summary.employee_count}</div></div>)}
     </div>}
     {loading ? <Loading/> : data && <div className="tw"><table>
-      <thead><tr><th>员工</th><th>仓库</th><th>业务线</th><th>来源</th><th>工时</th><th>Brutto</th><th>SSI</th><th>Tax</th><th>Net</th><th>记录数</th></tr></thead>
+      <thead><tr><th>{t('settle.col_emp')}</th><th>{t('settle.col_wh')}</th><th>{t('settle.col_biz')}</th><th>{t('settle.col_src')}</th><th>{t('settle.col_hrs')}</th><th>Brutto</th><th>SSI</th><th>Tax</th><th>Net</th><th>{t('settle.col_count')}</th></tr></thead>
       <tbody>{data.rows.map((r,i)=><tr key={i}>
         <td className="fw6">{r.employee_name}</td>
         <td>{r.warehouse_code}</td>
@@ -771,24 +1268,25 @@ function Settlement({token}) {
 function Clock({token,user}) {
   const [now,setNow]=useState(new Date());
   const [logs,setLogs]=useState([]);
+  const {t}=useLang();
   useEffect(()=>{ const i=setInterval(()=>setNow(new Date()),1000); return ()=>clearInterval(i); },[]);
   useEffect(()=>{ api('/api/clock/today',{token}).then(setLogs).catch(()=>{}); },[]);
   const last=logs[logs.length-1];
   const isIn=last?.clock_type==='in';
-  const punch=async(t)=>{ await api('/api/clock',{method:'POST',body:{clock_type:t},token}); const r=await api('/api/clock/today',{token}); setLogs(r); };
+  const punch=async(tp)=>{ await api('/api/clock',{method:'POST',body:{clock_type:tp},token}); const r=await api('/api/clock/today',{token}); setLogs(r); };
   return <div style={{display:'flex',flexDirection:'column',alignItems:'center',padding:'40px 0'}}>
     <div style={{fontSize:64,fontWeight:800,color:'var(--ac2)',letterSpacing:-2}}>{now.toTimeString().slice(0,8)}</div>
     <div style={{color:'var(--tx3)',marginBottom:24}}>{now.toLocaleDateString('de-DE')} · {user.display_name}</div>
     <div onClick={()=>punch(isIn?'out':'in')} style={{width:160,height:160,borderRadius:'50%',border:`4px solid ${isIn?'var(--rd)':'var(--gn)'}`,background:isIn?'#f0526c10':'#2dd4a010',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',cursor:'pointer',transition:'all .3s',userSelect:'none'}}
       onMouseEnter={e=>{e.currentTarget.style.transform='scale(1.05)';}} onMouseLeave={e=>{e.currentTarget.style.transform='scale(1)';}}>
       <div style={{fontSize:36,marginBottom:4}}>{isIn?'👋':'👆'}</div>
-      <div style={{fontSize:14,fontWeight:700}}>{isIn?'下班打卡':'上班打卡'}</div>
+      <div style={{fontSize:14,fontWeight:700}}>{isIn?t('clock.clock_out'):t('clock.clock_in')}</div>
     </div>
-    <div style={{marginTop:20,fontSize:12,color:isIn?'var(--gn)':'var(--og)'}}>{isIn?`✓ 已上班打卡 ${last.clock_time}`:'○ 尚未打卡'}</div>
+    <div style={{marginTop:20,fontSize:12,color:isIn?'var(--gn)':'var(--og)'}}>{isIn?`${t('clock.clocked_in')} ${last.clock_time}`:t('clock.not_clocked')}</div>
     {logs.length>0 && <div style={{marginTop:16,width:'100%',maxWidth:400}}>
       {logs.map((l,i)=><div key={i} style={{display:'flex',gap:12,padding:'10px 14px',background:'var(--bg2)',border:'1px solid var(--bd)',borderRadius:10,marginBottom:6}}>
         <span style={{fontSize:20}}>{l.clock_type==='in'?'🟢':'🔴'}</span>
-        <div><div style={{fontWeight:600,fontSize:12}}>{l.clock_type==='in'?'上班打卡':'下班打卡'}</div><div className="tm" style={{fontSize:10}}>{l.clock_time}</div></div>
+        <div><div style={{fontWeight:600,fontSize:12}}>{l.clock_type==='in'?t('clock.clock_in'):t('clock.clock_out')}</div><div className="tm" style={{fontSize:10}}>{l.clock_time}</div></div>
       </div>)}
     </div>}
   </div>;
@@ -797,10 +1295,11 @@ function Clock({token,user}) {
 // ── AUDIT LOGS ──
 function AuditLogs({token}) {
   const [logs,setLogs]=useState([]); const [loading,setLoading]=useState(true);
+  const {t}=useLang();
   useEffect(()=>{ api('/api/logs',{token}).then(setLogs).finally(()=>setLoading(false)); },[]);
   return <div>
     {loading ? <Loading/> : <div className="tw"><div className="ts"><table>
-      <thead><tr><th>时间</th><th>用户</th><th>操作</th><th>对象</th><th>ID</th><th>详情</th></tr></thead>
+      <thead><tr><th>{t('log.col_time')}</th><th>{t('log.col_user')}</th><th>{t('log.col_action')}</th><th>{t('log.col_table')}</th><th>{t('log.col_id')}</th><th>{t('log.col_detail')}</th></tr></thead>
       <tbody>{logs.map((l,i)=><tr key={i}>
         <td className="mn tm">{l.created_at?.slice(5,19)}</td>
         <td className="fw6">{l.user_display}</td>
@@ -1698,6 +2197,7 @@ function KnowledgeBase({token,user}) {
   const [search,setSearch]=React.useState('');
   const [cat,setCat]=React.useState('');
   const [printing,setPrinting]=React.useState(false);
+  const {t}=useLang();
 
   const CATS=['职级职责','安全须知','法规法条','模板库','员工手册'];
   const CAT_ICONS={'职级职责':'🏅','安全须知':'🦺','法规法条':'⚖️','模板库':'📋','员工手册':'📖'};
@@ -1727,9 +2227,9 @@ function KnowledgeBase({token,user}) {
   return <div style={{display:'flex',gap:12,height:'calc(100vh - 120px)'}}>
     {/* LEFT PANEL */}
     <div style={{width:260,flexShrink:0,display:'flex',flexDirection:'column',gap:8}}>
-      <input className="si" placeholder="搜索文档..." value={search} onChange={e=>setSearch(e.target.value)} style={{fontSize:12}}/>
+      <input className="si" placeholder={t('kb.search')} value={search} onChange={e=>setSearch(e.target.value)} style={{fontSize:12}}/>
       <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
-        <button className={`fb ${!cat?'on':''}`} onClick={()=>setCat('')} style={{fontSize:10}}>全部</button>
+        <button className={`fb ${!cat?'on':''}`} onClick={()=>setCat('')} style={{fontSize:10}}>{t('kb.all_cats')}</button>
         {CATS.map(c=><button key={c} className={`fb ${cat===c?'on':''}`} onClick={()=>setCat(c)} style={{fontSize:10}}>{CAT_ICONS[c]} {c}</button>)}
       </div>
       <div style={{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:4}}>
@@ -1780,8 +2280,8 @@ function KnowledgeBase({token,user}) {
             </div>
           </div>
           <div style={{display:'flex',gap:6}} className="no-print">
-            {selDoc.printable && <button className="b bgn" style={{fontSize:10}} onClick={printDoc}>⎙ 打印表单</button>}
-            <button className="b bgh" style={{fontSize:10}} onClick={printDoc}>⎙ 打印页面</button>
+            {selDoc.printable && <button className="b bgn" style={{fontSize:10}} onClick={printDoc}>{t('kb.print')}</button>}
+            <button className="b bgh" style={{fontSize:10}} onClick={printDoc}>{t('kb.print')}</button>
             <button className="b bgh" style={{fontSize:10}} onClick={()=>setSelId(null)}>✕</button>
           </div>
         </div>
@@ -1797,16 +2297,17 @@ function KnowledgeBase({token,user}) {
 // ── GRADE SALARIES ──
 function GradeSalaries({token}) {
   const [grades,setGrades]=useState([]); const [kpi,setKpi]=useState([]); const [loading,setLoading]=useState(true);
+  const {t}=useLang();
   useEffect(()=>{
     Promise.all([api('/api/grades',{token}),api('/api/kpi-levels',{token})]).then(([g,k])=>{setGrades(g);setKpi(k);}).finally(()=>setLoading(false));
   },[]);
   if(loading) return <Loading/>;
   return <div>
     <div className="cd">
-      <div className="ct-t">🏅 P1-P9 职级薪资体系</div>
+      <div className="ct-t">🏅 {t('grade.title')}</div>
       <div style={{fontSize:10,color:'var(--tx3)',marginBottom:10}}>基准工资 €2,400 × 倍率 + 管理津贴 + 超时工资 = 月实际成本</div>
       <div className="tw"><table>
-        <thead><tr><th>职级</th><th>岗位</th><th>基础工资</th><th>倍率</th><th>月Brutto</th><th>管理津贴</th><th>超时h</th><th>月实际成本</th><th>时薪等价</th></tr></thead>
+        <thead><tr><th>{t('grade.col_grade')}</th><th>{t('grade.col_desc')}</th><th>{t('grade.col_base')}</th><th>{t('grade.col_mult')}</th><th>{t('grade.col_gross')}</th><th>{t('grade.col_mgmt')}</th><th>{t('grade.col_ot')}</th><th>{t('grade.col_cost')}</th><th>{t('grade.col_hourly')}</th></tr></thead>
         <tbody>{grades.map(g=><tr key={g.grade}>
           <td style={{color:'var(--pp)',fontWeight:800,fontSize:13}}>{g.grade}</td>
           <td>{g.description}</td>
@@ -1840,6 +2341,7 @@ function GradeSalaries({token}) {
 function WarehouseRates({token,user}) {
   const [whs,setWhs]=useState([]); const [sel,setSel]=useState(null); const [loading,setLoading]=useState(true);
   const [editing,setEditing]=useState(false); const [form,setForm]=useState({});
+  const {t}=useLang();
   useEffect(()=>{ api('/api/warehouses',{token}).then(setWhs).finally(()=>setLoading(false)); },[]);
   const selWh=whs.find(w=>w.code===sel);
   const loadRates=(code)=>{ setSel(code); api(`/api/warehouses/${code}/rates`,{token}).then(w=>{setForm(w);}); };
@@ -1859,11 +2361,11 @@ function WarehouseRates({token,user}) {
       </div>)}
     </div>
     <div style={{flex:1}}>
-      {!selWh?<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:200,color:'var(--tx3)'}}>← 选择仓库</div>:<>
+      {!selWh?<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:200,color:'var(--tx3)'}}>{t('wh.select')}</div>:<>
         <div className="cd">
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
             <div className="ct-t">{selWh.name} · {selWh.region}</div>
-            {canEdit&&<button className="b bga" onClick={()=>setEditing(!editing)}>{editing?'取消':'✏ 编辑价格'}</button>}
+            {canEdit&&<button className="b bga" onClick={()=>setEditing(!editing)}>{editing?t('c.cancel'):t('wh.edit')}</button>}
           </div>
           <div className="section-grid" style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12,marginBottom:14}}>
             <div style={{background:'var(--bg3)',borderRadius:8,border:'1px solid var(--bd)',padding:12}}>
@@ -1903,7 +2405,7 @@ function WarehouseRates({token,user}) {
               <div style={{fontSize:10,color:'var(--tx3)'}}>{selWh.address}</div>
             </div>
           </div>
-          {editing&&<div style={{display:'flex',gap:8}}><button className="b bga" onClick={saveRates}>保存价格</button><button className="b bgh" onClick={()=>setEditing(false)}>取消</button></div>}
+          {editing&&<div style={{display:'flex',gap:8}}><button className="b bga" onClick={saveRates}>{t('wh.f_save')}</button><button className="b bgh" onClick={()=>setEditing(false)}>{t('c.cancel')}</button></div>}
         </div>
         <div className="cd" style={{marginTop:12}}>
           <div className="ct-t">📊 10仓库薪资对比（P2时薪）</div>
@@ -1924,23 +2426,24 @@ function WarehouseRates({token,user}) {
 function CostCalculator({token}) {
   const [form,setForm]=useState({brutto_rate:14.0,weekly_hours:40,emp_type:'正常雇用'});
   const [result,setResult]=useState(null); const [loading,setLoading]=useState(false);
+  const {t}=useLang();
   const calc=async()=>{ setLoading(true); try{ const r=await api('/api/cost-calc',{method:'POST',body:form,token}); setResult(r); }catch(e){alert(e.message);} finally{setLoading(false);} };
   useEffect(()=>{ calc(); },[form.brutto_rate,form.weekly_hours,form.emp_type]);
   return <div className="g2">
     <div className="cd">
-      <div className="ct-t">🧮 岗位成本测算</div>
+      <div className="ct-t">🧮 {t('cost.title')}</div>
       <div style={{fontSize:10,color:'var(--tx3)',marginBottom:14}}>计算公司真实用人成本 = Brutto + 雇主社保 + 假期准备金 + 管理成本</div>
       <div className="fr3">
         <div className="fg"><label className="fl">Brutto时薪 (€/h)</label>
           <input className="fi" type="number" step="0.10" value={form.brutto_rate} onChange={e=>setForm({...form,brutto_rate:+e.target.value})}/>
           <span style={{fontSize:9,color:form.brutto_rate<13?'var(--rd)':'var(--tx3)'}}>最低工资 €13.00/h</span>
         </div>
-        <div className="fg"><label className="fl">周工时</label>
+        <div className="fg"><label className="fl">{t('cost.f_weekly')}</label>
           <select className="fsl" value={form.weekly_hours} onChange={e=>setForm({...form,weekly_hours:+e.target.value})}>
             {[10,15,20,25,30,35,40].map(h=><option key={h} value={h}>{h}h/周</option>)}
           </select>
         </div>
-        <div className="fg"><label className="fl">雇佣类型</label>
+        <div className="fg"><label className="fl">{t('cost.f_type')}</label>
           <select className="fsl" value={form.emp_type} onChange={e=>setForm({...form,emp_type:e.target.value})}>
             <option>正常雇用</option><option>Minijob</option>
           </select>
@@ -1991,38 +2494,41 @@ function CostCalculator({token}) {
 
 // ── MAIN APP ──
 const NAV = [
-  {k:'dashboard',i:'📊',label:'仪表盘',roles:['admin','hr','wh','fin','mgr','sup']},
-  {k:'employees',i:'👥',label:'员工花名册',roles:['admin','hr','wh','fin','mgr','sup']},
-  {k:'timesheets',i:'⏱️',label:'工时记录',roles:['admin','hr','wh','fin','mgr','sup']},
-  {k:'zeitkonto',i:'⏳',label:'Zeitkonto',roles:['admin','hr','mgr']},
-  {k:'settlement',i:'💰',label:'月度结算',roles:['admin','hr','fin','sup','mgr']},
-  {k:'containers',i:'📦',label:'卸柜记录',roles:['admin','hr','wh','mgr']},
+  {k:'dashboard',i:'📊',labelKey:'nav.dashboard',roles:['admin','hr','wh','fin','mgr','sup']},
+  {k:'employees',i:'👥',labelKey:'nav.employees',roles:['admin','hr','wh','fin','mgr','sup']},
+  {k:'timesheets',i:'⏱️',labelKey:'nav.timesheets',roles:['admin','hr','wh','fin','mgr','sup']},
+  {k:'zeitkonto',i:'⏳',labelKey:'nav.zeitkonto',roles:['admin','hr','mgr']},
+  {k:'settlement',i:'💰',labelKey:'nav.settlement',roles:['admin','hr','fin','sup','mgr']},
+  {k:'containers',i:'📦',labelKey:'nav.containers',roles:['admin','hr','wh','mgr']},
   {sep:true},
-  {k:'werkvertrag',i:'📋',label:'Werkvertrag项目',roles:['admin','hr','mgr']},
-  {k:'abmahnung',i:'⚠️',label:'Abmahnung',roles:['admin','hr','mgr']},
+  {k:'werkvertrag',i:'📋',labelKey:'nav.werkvertrag',roles:['admin','hr','mgr']},
+  {k:'abmahnung',i:'⚠️',labelKey:'nav.abmahnung',roles:['admin','hr','mgr']},
   {sep:true},
-  {k:'clock',i:'⏰',label:'打卡',roles:['admin','hr','wh','mgr','worker','sup']},
-  {k:'grades',i:'🏅',label:'职级薪资体系',roles:['admin','hr','mgr']},
-  {k:'warehouse_rates',i:'🏭',label:'仓库价格配置',roles:['admin','hr','mgr','wh']},
-  {k:'cost_calc',i:'🧮',label:'岗位成本测算',roles:['admin','hr','mgr','fin']},
-  {k:'docs',i:'📚',label:'企业文档库',roles:['admin','hr','wh','fin','mgr','sup','worker']},
-  {k:'logs',i:'📝',label:'审计日志',roles:['admin','hr']},
+  {k:'clock',i:'⏰',labelKey:'nav.clock',roles:['admin','hr','wh','mgr','worker','sup']},
+  {k:'grades',i:'🏅',labelKey:'nav.grades',roles:['admin','hr','mgr']},
+  {k:'warehouse_rates',i:'🏭',labelKey:'nav.warehouse_rates',roles:['admin','hr','mgr','wh']},
+  {k:'cost_calc',i:'🧮',labelKey:'nav.cost_calc',roles:['admin','hr','mgr','fin']},
+  {k:'docs',i:'📚',labelKey:'nav.docs',roles:['admin','hr','wh','fin','mgr','sup','worker']},
+  {k:'logs',i:'📝',labelKey:'nav.logs',roles:['admin','hr']},
 ];
 
 function App() {
+  const [lang,setLang]=useState(()=>localStorage.getItem('hr6_lang')||'zh');
+  const t = (key) => (I18N[lang]||I18N.zh)[key] || (I18N.zh)[key] || key;
   const [token,setToken]=useState(()=>localStorage.getItem('hr6_token')||null);
   const [user,setUser]=useState(()=>{try{return JSON.parse(localStorage.getItem('hr6_user'))||null;}catch{return null;}});
   const [page,setPage]=useState('dashboard');
   const [toast,setToast]=useState(null);
   const [mobNav,setMN]=useState(false);
-  // ── Backend readiness check ──────────────────────────────────────
-  // Poll /health until the backend signals it is ready (HTTP 200).
-  // While it returns 503 (DB still initialising) we show a splash screen
-  // instead of letting users hit confusing errors.  Any other response
-  // (network failure, unexpected status) is treated as "ready" so that
-  // a misconfigured health endpoint never locks users out permanently.
   const [srvReady,setSrvReady]=useState(false);
   const [srvStatus,setSrvStatus]=useState('');
+
+  useEffect(()=>{
+    document.documentElement.dir = RTL_LANGS.has(lang) ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+    localStorage.setItem('hr6_lang', lang);
+  },[lang]);
+
   useEffect(()=>{
     let cancelled=false;
     const check=async()=>{
@@ -2033,10 +2539,6 @@ function App() {
         else if(r.status===503){
           const j=await r.json().catch(()=>({}));
           setSrvStatus(j.status||'initializing');
-          // Server just restarted: in-memory token store is empty.
-          // Proactively clear stale browser credentials so the user sees
-          // the login page directly once the server is ready, instead of
-          // briefly rendering the main app and then bouncing back via 401.
           localStorage.removeItem('hr6_token');
           localStorage.removeItem('hr6_user');
           setToken(null);
@@ -2049,25 +2551,25 @@ function App() {
     return ()=>{ cancelled=true; };
   },[]);
 
-  if(!srvReady) return <div style={{position:'fixed',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'var(--bg)',gap:16}}>
-    <div style={{width:32,height:32,border:'3px solid var(--bd)',borderTopColor:'var(--ac)',borderRadius:'50%',animation:'spin 1s linear infinite'}}/>
-    <div style={{fontSize:12,color:'var(--tx3)'}}>系统正在启动…</div>
-    {srvStatus&&<div style={{fontSize:10,color:'var(--tx3)',opacity:.6}}>{srvStatus}</div>}
-  </div>;
-
-  const onLogin = (t,u) => { setToken(t); setUser(u); localStorage.setItem('hr6_token',t); localStorage.setItem('hr6_user',JSON.stringify(u)); setPage(u.role==='worker'?'clock':'dashboard'); };
+  const onLogin = (tk,u) => { setToken(tk); setUser(u); localStorage.setItem('hr6_token',tk); localStorage.setItem('hr6_user',JSON.stringify(u)); setPage(u.role==='worker'?'clock':'dashboard'); };
   const onLogout = () => { api('/api/auth/logout',{method:'POST',token}).catch(()=>{}); setToken(null); setUser(null); localStorage.removeItem('hr6_token'); localStorage.removeItem('hr6_user'); };
+  const toast_ = (m,tp='ok') => { setToast({m,t:tp}); setTimeout(()=>setToast(null),2500); };
 
-  const toast_ = (m,t='ok') => { setToast({m,t}); setTimeout(()=>setToast(null),2500); };
-
-  if(!token||!user) return <Login onLogin={onLogin}/>;
-
-  const navItems = NAV.filter(n=>!n.k||(!n.roles||(n.roles.includes(user.role))));
+  const navItems = token&&user ? NAV.filter(n=>!n.k||(!n.roles||(n.roles.includes(user.role)))) : [];
   const go = (k) => { setPage(k); setMN(false); };
-  const pageLabel = NAV.find(n=>n.k===page)?.label||page;
-
+  const pageLabel = NAV.find(n=>n.k===page)?.labelKey ? t(NAV.find(n=>n.k===page).labelKey) : page;
   const colors = {admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8'};
-  const roleColor = colors[user.role]||'#6a7498';
+  const roleColor = user ? (colors[user.role]||'#6a7498') : '#6a7498';
+
+  if(!srvReady) return <LangCtx.Provider value={{t,lang,setLang}}>
+    <div style={{position:'fixed',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'var(--bg)',gap:16}}>
+      <div style={{width:32,height:32,border:'3px solid var(--bd)',borderTopColor:'var(--ac)',borderRadius:'50%',animation:'spin 1s linear infinite'}}/>
+      <div style={{fontSize:12,color:'var(--tx3)'}}>{t('c.starting')}</div>
+      {srvStatus&&<div style={{fontSize:10,color:'var(--tx3)',opacity:.6}}>{srvStatus}</div>}
+    </div>
+  </LangCtx.Provider>;
+
+  if(!token||!user) return <LangCtx.Provider value={{t,lang,setLang}}><Login onLogin={onLogin}/></LangCtx.Provider>;
 
   const sidebar = <>
     <div className="sb-hd">
@@ -2075,53 +2577,56 @@ function App() {
       <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V6 · LIVE</div></div>
     </div>
     <div className="nav">
-      {navItems.map((n,i)=>n.sep?<div key={i} className="nsep"/>:<button key={n.k} className={`ni ${page===n.k?'on':''}`} onClick={()=>go(n.k)}><span className="ni-i">{n.i}</span><span>{n.label}</span></button>)}
+      {navItems.map((n,i)=>n.sep?<div key={i} className="nsep"/>:<button key={n.k} className={`ni ${page===n.k?'on':''}`} onClick={()=>go(n.k)}><span className="ni-i">{n.i}</span><span>{t(n.labelKey)}</span></button>)}
     </div>
     <div className="sb-ft">
       <div className="sb-btn" style={{cursor:'default',marginBottom:6}}>
         <div className="ua" style={{background:roleColor}}>{user.display_name?.[0]||'?'}</div>
         <div><div style={{fontSize:10,fontWeight:600,color:'var(--tx)'}}>{user.display_name}</div><div style={{fontSize:8,color:'var(--tx3)'}}>{user.role}</div></div>
       </div>
-      <button className="sb-btn dg" onClick={onLogout}>🚪 退出登录</button>
+      <div style={{padding:'4px 8px 8px'}}><LangSwitcher/></div>
+      <button className="sb-btn dg" onClick={onLogout}>🚪 {t('c.logout')}</button>
     </div>
   </>;
 
-  return <div className="app">
-    <div className={`sidebar ${mobNav?'open':''}`}>{sidebar}</div>
-    <div className={`mob-overlay ${mobNav?'show':''}`} onClick={()=>setMN(false)}/>
-    <div className="main">
-      <div className="mob-hdr">
-        <button className="mob-menu-btn" onClick={()=>setMN(true)}>☰</button>
-        <h1 style={{fontSize:14,fontWeight:700}}>{pageLabel}</h1>
-      </div>
-      <div className="hdr">
-        <h1>{pageLabel}</h1>
-        <div className="hdr-r">
-          <div className="uc">
-            <div className="ua" style={{background:roleColor}}>{user.display_name?.[0]}</div>
-            <div><div className="un">{user.display_name}</div><div className="ur">{user.role}</div></div>
+  return <LangCtx.Provider value={{t,lang,setLang}}>
+    <div className="app">
+      <div className={`sidebar ${mobNav?'open':''}`}>{sidebar}</div>
+      <div className={`mob-overlay ${mobNav?'show':''}`} onClick={()=>setMN(false)}/>
+      <div className="main">
+        <div className="mob-hdr">
+          <button className="mob-menu-btn" onClick={()=>setMN(true)}>☰</button>
+          <h1 style={{fontSize:14,fontWeight:700}}>{pageLabel}</h1>
+        </div>
+        <div className="hdr">
+          <h1>{pageLabel}</h1>
+          <div className="hdr-r">
+            <div className="uc">
+              <div className="ua" style={{background:roleColor}}>{user.display_name?.[0]}</div>
+              <div><div className="un">{user.display_name}</div><div className="ur">{user.role}</div></div>
+            </div>
           </div>
         </div>
+        <div className="ct">
+          {page==='dashboard' && <Dashboard token={token}/>}
+          {page==='employees' && <Employees token={token} user={user}/>}
+          {page==='timesheets' && <Timesheets token={token} user={user}/>}
+          {page==='zeitkonto' && <Zeitkonto token={token} user={user}/>}
+          {page==='settlement' && <Settlement token={token}/>}
+          {page==='containers' && <Containers token={token} user={user}/>}
+          {page==='werkvertrag' && <Werkvertrag token={token} user={user}/>}
+          {page==='abmahnung' && <Abmahnung token={token} user={user}/>}
+          {page==='clock' && <Clock token={token} user={user}/>}
+          {page==='logs' && <AuditLogs token={token}/>}
+          {page==='docs' && <KnowledgeBase token={token} user={user}/>}
+          {page==='grades' && <GradeSalaries token={token}/>}
+          {page==='warehouse_rates' && <WarehouseRates token={token} user={user}/>}
+          {page==='cost_calc' && <CostCalculator token={token}/>}
+        </div>
       </div>
-      <div className="ct">
-        {page==='dashboard' && <Dashboard token={token}/>}
-        {page==='employees' && <Employees token={token} user={user}/>}
-        {page==='timesheets' && <Timesheets token={token} user={user}/>}
-        {page==='zeitkonto' && <Zeitkonto token={token} user={user}/>}
-        {page==='settlement' && <Settlement token={token}/>}
-        {page==='containers' && <Containers token={token} user={user}/>}
-        {page==='werkvertrag' && <Werkvertrag token={token} user={user}/>}
-        {page==='abmahnung' && <Abmahnung token={token} user={user}/>}
-        {page==='clock' && <Clock token={token} user={user}/>}
-        {page==='logs' && <AuditLogs token={token}/>}
-        {page==='docs' && <KnowledgeBase token={token} user={user}/>}
-        {page==='grades' && <GradeSalaries token={token}/>}
-        {page==='warehouse_rates' && <WarehouseRates token={token} user={user}/>}
-        {page==='cost_calc' && <CostCalculator token={token}/>}
-      </div>
+      {toast && <div className={`toast ${toast.t==='err'?'ter':toast.t==='warn'?'tow':'tok'}`}>{toast.m}</div>}
     </div>
-    {toast && <div className={`toast ${toast.t==='err'?'ter':toast.t==='warn'?'tow':'tok'}`}>{toast.m}</div>}
-  </div>;
+  </LangCtx.Provider>;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);

@@ -10,14 +10,14 @@ function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Sym
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 var _React = React,
   useState = _React.useState,
   useEffect = _React.useEffect,
@@ -30,13 +30,1217 @@ var BASE = window.location.origin;
 var HEALTH_ENDPOINT = '/health';
 var HEALTH_POLL_INTERVAL_MS = 3000;
 var _sessionExpired = false;
+
+// ── I18N ──
+var I18N = {
+  zh: {
+    'login.title': '渊博+579 HR',
+    'login.admin': '👔 管理员登录',
+    'login.worker': '👷 工人PIN',
+    'login.username': '用户名',
+    'login.password': '密码',
+    'login.btn': '登 录',
+    'login.pin_label': '工人PIN（4位）',
+    'login.pin_btn': '打卡入口',
+    'login.err_empty': '请填写用户名和密码',
+    'login.err_pin': '请输入4位PIN',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
+    'login.pin_hint': '测试PIN: 1001(张三) 1002(李四) 1003(王五)',
+    'c.loading': '加载中...',
+    'c.load_fail': '加载失败',
+    'c.save': '保存',
+    'c.cancel': '取消',
+    'c.edit': '编辑',
+    'c.add': '新增',
+    'c.submit': '提交',
+    'c.all': '全部',
+    'c.search': '搜索',
+    'c.close': '关闭',
+    'c.confirm': '确认',
+    'c.logout': '退出登录',
+    'c.no_data': '暂无数据',
+    'c.notes': '备注',
+    'c.date': '日期',
+    'c.status': '状态',
+    'c.action': '操作',
+    'c.name': '姓名',
+    'c.phone': '电话',
+    'c.starting': '系统正在启动…',
+    'nav.dashboard': '仪表盘',
+    'nav.employees': '员工花名册',
+    'nav.timesheets': '工时记录',
+    'nav.zeitkonto': 'Zeitkonto',
+    'nav.settlement': '月度结算',
+    'nav.containers': '卸柜记录',
+    'nav.werkvertrag': 'Werkvertrag项目',
+    'nav.abmahnung': 'Abmahnung',
+    'nav.clock': '打卡',
+    'nav.grades': '职级薪资体系',
+    'nav.warehouse_rates': '仓库价格配置',
+    'nav.cost_calc': '岗位成本测算',
+    'nav.docs': '企业文档库',
+    'nav.logs': '审计日志',
+    'dash.employees': '在职员工',
+    'dash.pending_ts': '待审批工时',
+    'dash.total_hours': '本期总工时',
+    'dash.abmahnung': '有效Abmahnung',
+    'dash.zk_alerts': 'Zeitkonto预警',
+    'dash.wv_active': 'WV项目进行中',
+    'dash.chart': '📊 近7日工时分布',
+    'dash.no_data': '暂无工时数据',
+    'emp.new': '+ 新增员工',
+    'emp.search': '搜索姓名/ID/电话...',
+    'emp.status_active': '在职',
+    'emp.status_left': '离职',
+    'emp.col_id': 'ID',
+    'emp.col_name': '姓名',
+    'emp.col_biz': '业务线',
+    'emp.col_wh': '仓库',
+    'emp.col_pos': '职位',
+    'emp.col_grade': '级别',
+    'emp.col_src': '来源',
+    'emp.col_rate': '时薪',
+    'emp.col_status': '状态',
+    'emp.col_join': '入职',
+    'emp.add_title': '新增员工',
+    'emp.edit_title': '编辑员工',
+    'emp.f_name': '姓名 *',
+    'emp.f_phone': '电话',
+    'emp.f_biz': '业务线',
+    'emp.f_wh': '仓库',
+    'emp.f_pos': '职位',
+    'emp.f_grade': '职级',
+    'emp.f_src': '来源',
+    'emp.f_rate': '时薪 (€/h)',
+    'emp.f_settle': '结算方式',
+    'emp.f_contract_hrs': '合同工时/日',
+    'emp.f_nationality': '国籍',
+    'emp.f_join': '入职日期',
+    'emp.f_tax': '报税方式',
+    'emp.f_pin': 'PIN (4位)',
+    'emp.f_notes': '备注',
+    'emp.src_own': '自有',
+    'emp.src_sup': '供应商',
+    'ts.add': '+ 录入工时',
+    'ts.batch': '✓ 批量审批',
+    'ts.add_title': '录入工时',
+    'ts.col_id': 'ID',
+    'ts.col_emp': '员工',
+    'ts.col_grade': '级别',
+    'ts.col_wh': '仓库',
+    'ts.col_date': '日期',
+    'ts.col_shift': '班次',
+    'ts.col_hrs': '工时',
+    'ts.col_base': '基础薪',
+    'ts.col_shift_b': '班次+',
+    'ts.col_eff': '实际率',
+    'ts.col_brutto': 'Brutto',
+    'ts.col_perf': '绩效',
+    'ts.col_net': 'Net',
+    'ts.col_status': '状态',
+    'ts.col_action': '操作',
+    'ts.f_emp': '员工 *',
+    'ts.f_date': '工作日期',
+    'ts.f_start': '开始时间',
+    'ts.f_end': '结束时间',
+    'ts.f_wh': '仓库（留空=员工默认仓库）',
+    'ts.f_shift': '班次',
+    'ts.f_notes': '备注',
+    'ts.auto_calc': '工时、Brutto、SSI、Net 由系统根据员工时薪自动计算',
+    'ts.wh_approve': '✓仓库',
+    'ts.fin_approve': '✓财务',
+    'zk.add': '+ 手动录入',
+    'zk.add_title': '手动录入 Zeitkonto',
+    'zk.col_emp': '员工',
+    'zk.col_wh': '仓库',
+    'zk.col_grade': '级别',
+    'zk.col_status': '合规状态',
+    'zk.arrange_rest': '安排休息',
+    'zk.f_emp': '员工',
+    'zk.f_date': '日期',
+    'zk.f_type': '类型',
+    'zk.f_hrs': '工时（h）',
+    'zk.f_reason': '原因说明',
+    'settle.emp_count': '员工数',
+    'settle.hours': '总工时',
+    'settle.brutto': '总Brutto',
+    'settle.net': '总Net',
+    'settle.col_emp': '员工',
+    'settle.col_wh': '仓库',
+    'settle.col_biz': '业务线',
+    'settle.col_src': '来源',
+    'settle.col_hrs': '工时',
+    'settle.col_count': '记录数',
+    'ct.add': '+ 新增卸柜记录',
+    'ct.add_title': '新增卸柜记录',
+    'ct.col_no': '柜号',
+    'ct.col_type': '类型',
+    'ct.col_wh': '仓库',
+    'ct.col_date': '日期',
+    'ct.col_start': '开始',
+    'ct.col_end': '结束',
+    'ct.col_hrs': '工时',
+    'ct.col_workers': '人数',
+    'ct.col_video': '视频',
+    'ct.col_status': '状态',
+    'ct.complete': '完成',
+    'ct.f_no': '柜号 *',
+    'ct.f_type': '柜型',
+    'ct.f_date': '作业日期',
+    'ct.f_seal': '铅封号',
+    'ct.f_start': '开始时间',
+    'ct.f_revenue': '客户结算(€)',
+    'ct.f_workers': '参与工人',
+    'ct.f_notes': '备注',
+    'clock.clock_in': '上班打卡',
+    'clock.clock_out': '下班打卡',
+    'clock.clocked_in': '✓ 已上班打卡',
+    'clock.not_clocked': '○ 尚未打卡',
+    'log.col_time': '时间',
+    'log.col_user': '用户',
+    'log.col_action': '操作',
+    'log.col_table': '对象',
+    'log.col_id': 'ID',
+    'log.col_detail': '详情',
+    'kb.search': '搜索文档...',
+    'kb.all_cats': '全部',
+    'kb.print': '⎙ 打印',
+    'grade.title': '职级薪资体系',
+    'grade.col_grade': '职级',
+    'grade.col_base': '基础薪',
+    'grade.col_mult': '倍数',
+    'grade.col_gross': '月Brutto',
+    'grade.col_mgmt': '管理津贴',
+    'grade.col_ot': '超时h',
+    'grade.col_cost': '真实成本',
+    'grade.col_hourly': '等效时薪',
+    'grade.col_desc': '描述',
+    'wh.select': '← 选择仓库',
+    'wh.edit': '编辑价格',
+    'wh.f_save': '保存',
+    'cost.title': '岗位成本测算',
+    'cost.calc': '测算',
+    'cost.f_type': '雇佣类型',
+    'cost.f_grade': '职级',
+    'cost.f_wh': '仓库',
+    'cost.f_weekly': '周工时',
+    'cost.f_months': '月数'
+  },
+  en: {
+    'login.title': 'Yuanbo+579 HR',
+    'login.admin': '👔 Admin Login',
+    'login.worker': '👷 Worker PIN',
+    'login.username': 'Username',
+    'login.password': 'Password',
+    'login.btn': 'Sign In',
+    'login.pin_label': 'Worker PIN (4 digits)',
+    'login.pin_btn': 'Clock In',
+    'login.err_empty': 'Please enter username and password',
+    'login.err_pin': 'Please enter 4-digit PIN',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
+    'login.pin_hint': 'Test PIN: 1001(Zhang San) 1002(Li Si) 1003(Wang Wu)',
+    'c.loading': 'Loading...',
+    'c.load_fail': 'Load failed',
+    'c.save': 'Save',
+    'c.cancel': 'Cancel',
+    'c.edit': 'Edit',
+    'c.add': 'Add',
+    'c.submit': 'Submit',
+    'c.all': 'All',
+    'c.search': 'Search',
+    'c.close': 'Close',
+    'c.confirm': 'Confirm',
+    'c.logout': 'Logout',
+    'c.no_data': 'No data',
+    'c.notes': 'Notes',
+    'c.date': 'Date',
+    'c.status': 'Status',
+    'c.action': 'Action',
+    'c.name': 'Name',
+    'c.phone': 'Phone',
+    'c.starting': 'System starting…',
+    'nav.dashboard': 'Dashboard',
+    'nav.employees': 'Employees',
+    'nav.timesheets': 'Timesheets',
+    'nav.zeitkonto': 'Zeitkonto',
+    'nav.settlement': 'Monthly Settlement',
+    'nav.containers': 'Container Records',
+    'nav.werkvertrag': 'Werkvertrag Projects',
+    'nav.abmahnung': 'Abmahnung',
+    'nav.clock': 'Clock In/Out',
+    'nav.grades': 'Grade & Pay Structure',
+    'nav.warehouse_rates': 'Warehouse Rates',
+    'nav.cost_calc': 'Cost Calculator',
+    'nav.docs': 'Company Docs',
+    'nav.logs': 'Audit Logs',
+    'dash.employees': 'Active Staff',
+    'dash.pending_ts': 'Pending Approval',
+    'dash.total_hours': 'Total Hours (Period)',
+    'dash.abmahnung': 'Active Abmahnungen',
+    'dash.zk_alerts': 'Zeitkonto Alerts',
+    'dash.wv_active': 'Active WV Projects',
+    'dash.chart': '📊 Last 7 Days Hours',
+    'dash.no_data': 'No timesheet data',
+    'emp.new': '+ New Employee',
+    'emp.search': 'Search name/ID/phone...',
+    'emp.status_active': 'Active',
+    'emp.status_left': 'Left',
+    'emp.col_id': 'ID',
+    'emp.col_name': 'Name',
+    'emp.col_biz': 'Biz Line',
+    'emp.col_wh': 'Warehouse',
+    'emp.col_pos': 'Position',
+    'emp.col_grade': 'Grade',
+    'emp.col_src': 'Source',
+    'emp.col_rate': 'Rate',
+    'emp.col_status': 'Status',
+    'emp.col_join': 'Join Date',
+    'emp.add_title': 'New Employee',
+    'emp.edit_title': 'Edit Employee',
+    'emp.f_name': 'Name *',
+    'emp.f_phone': 'Phone',
+    'emp.f_biz': 'Business Line',
+    'emp.f_wh': 'Warehouse',
+    'emp.f_pos': 'Position',
+    'emp.f_grade': 'Grade',
+    'emp.f_src': 'Source',
+    'emp.f_rate': 'Hourly Rate (€/h)',
+    'emp.f_settle': 'Settlement Type',
+    'emp.f_contract_hrs': 'Contract Hours/Day',
+    'emp.f_nationality': 'Nationality',
+    'emp.f_join': 'Join Date',
+    'emp.f_tax': 'Tax Method',
+    'emp.f_pin': 'PIN (4 digits)',
+    'emp.f_notes': 'Notes',
+    'emp.src_own': 'Own',
+    'emp.src_sup': 'Supplier',
+    'ts.add': '+ Log Hours',
+    'ts.batch': '✓ Batch Approve',
+    'ts.add_title': 'Log Hours',
+    'ts.col_id': 'ID',
+    'ts.col_emp': 'Employee',
+    'ts.col_grade': 'Grade',
+    'ts.col_wh': 'Warehouse',
+    'ts.col_date': 'Date',
+    'ts.col_shift': 'Shift',
+    'ts.col_hrs': 'Hours',
+    'ts.col_base': 'Base Rate',
+    'ts.col_shift_b': 'Shift+',
+    'ts.col_eff': 'Eff. Rate',
+    'ts.col_brutto': 'Brutto',
+    'ts.col_perf': 'Perf.',
+    'ts.col_net': 'Net',
+    'ts.col_status': 'Status',
+    'ts.col_action': 'Action',
+    'ts.f_emp': 'Employee *',
+    'ts.f_date': 'Work Date',
+    'ts.f_start': 'Start Time',
+    'ts.f_end': 'End Time',
+    'ts.f_wh': 'Warehouse (leave blank = employee default)',
+    'ts.f_shift': 'Shift',
+    'ts.f_notes': 'Notes',
+    'ts.auto_calc': 'Hours, Brutto, SSI, Net calculated automatically from employee rate',
+    'ts.wh_approve': '✓WH',
+    'ts.fin_approve': '✓Fin',
+    'zk.add': '+ Manual Entry',
+    'zk.add_title': 'Manual Zeitkonto Entry',
+    'zk.col_emp': 'Employee',
+    'zk.col_wh': 'Warehouse',
+    'zk.col_grade': 'Grade',
+    'zk.col_status': 'Compliance',
+    'zk.arrange_rest': 'Schedule Rest',
+    'zk.f_emp': 'Employee',
+    'zk.f_date': 'Date',
+    'zk.f_type': 'Type',
+    'zk.f_hrs': 'Hours (h)',
+    'zk.f_reason': 'Reason',
+    'settle.emp_count': 'Employees',
+    'settle.hours': 'Total Hours',
+    'settle.brutto': 'Total Brutto',
+    'settle.net': 'Total Net',
+    'settle.col_emp': 'Employee',
+    'settle.col_wh': 'Warehouse',
+    'settle.col_biz': 'Biz Line',
+    'settle.col_src': 'Source',
+    'settle.col_hrs': 'Hours',
+    'settle.col_count': 'Records',
+    'ct.add': '+ New Container',
+    'ct.add_title': 'New Container Record',
+    'ct.col_no': 'Container No.',
+    'ct.col_type': 'Type',
+    'ct.col_wh': 'Warehouse',
+    'ct.col_date': 'Date',
+    'ct.col_start': 'Start',
+    'ct.col_end': 'End',
+    'ct.col_hrs': 'Hours',
+    'ct.col_workers': 'Workers',
+    'ct.col_video': 'Video',
+    'ct.col_status': 'Status',
+    'ct.complete': 'Complete',
+    'ct.f_no': 'Container No. *',
+    'ct.f_type': 'Type',
+    'ct.f_date': 'Work Date',
+    'ct.f_seal': 'Seal No.',
+    'ct.f_start': 'Start Time',
+    'ct.f_revenue': 'Client Revenue (€)',
+    'ct.f_workers': 'Workers',
+    'ct.f_notes': 'Notes',
+    'clock.clock_in': 'Clock In',
+    'clock.clock_out': 'Clock Out',
+    'clock.clocked_in': '✓ Clocked In',
+    'clock.not_clocked': '○ Not Clocked In',
+    'log.col_time': 'Time',
+    'log.col_user': 'User',
+    'log.col_action': 'Action',
+    'log.col_table': 'Object',
+    'log.col_id': 'ID',
+    'log.col_detail': 'Detail',
+    'kb.search': 'Search documents...',
+    'kb.all_cats': 'All',
+    'kb.print': '⎙ Print',
+    'grade.title': 'Grade & Pay Structure',
+    'grade.col_grade': 'Grade',
+    'grade.col_base': 'Base',
+    'grade.col_mult': 'Mult.',
+    'grade.col_gross': 'Gross/Month',
+    'grade.col_mgmt': 'Mgmt Allow.',
+    'grade.col_ot': 'OT h',
+    'grade.col_cost': 'True Cost',
+    'grade.col_hourly': 'Hourly Eq.',
+    'grade.col_desc': 'Description',
+    'wh.select': '← Select Warehouse',
+    'wh.edit': 'Edit Rates',
+    'wh.f_save': 'Save',
+    'cost.title': 'Position Cost Calculator',
+    'cost.calc': 'Calculate',
+    'cost.f_type': 'Employment Type',
+    'cost.f_grade': 'Grade',
+    'cost.f_wh': 'Warehouse',
+    'cost.f_weekly': 'Weekly Hours',
+    'cost.f_months': 'Months'
+  },
+  de: {
+    'login.title': 'Yuanbo+579 HR',
+    'login.admin': '👔 Admin-Login',
+    'login.worker': '👷 Arbeiter-PIN',
+    'login.username': 'Benutzername',
+    'login.password': 'Passwort',
+    'login.btn': 'Anmelden',
+    'login.pin_label': 'Arbeiter-PIN (4 Ziffern)',
+    'login.pin_btn': 'Stempeluhr',
+    'login.err_empty': 'Bitte Benutzername und Passwort eingeben',
+    'login.err_pin': 'Bitte 4-stellige PIN eingeben',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
+    'login.pin_hint': 'Test-PIN: 1001(Zhang San) 1002(Li Si) 1003(Wang Wu)',
+    'c.loading': 'Laden...',
+    'c.load_fail': 'Ladefehler',
+    'c.save': 'Speichern',
+    'c.cancel': 'Abbrechen',
+    'c.edit': 'Bearbeiten',
+    'c.add': 'Hinzufügen',
+    'c.submit': 'Absenden',
+    'c.all': 'Alle',
+    'c.search': 'Suchen',
+    'c.close': 'Schließen',
+    'c.confirm': 'Bestätigen',
+    'c.logout': 'Abmelden',
+    'c.no_data': 'Keine Daten',
+    'c.notes': 'Notizen',
+    'c.date': 'Datum',
+    'c.status': 'Status',
+    'c.action': 'Aktion',
+    'c.name': 'Name',
+    'c.phone': 'Telefon',
+    'c.starting': 'System startet…',
+    'nav.dashboard': 'Dashboard',
+    'nav.employees': 'Mitarbeiter',
+    'nav.timesheets': 'Arbeitszeiterfassung',
+    'nav.zeitkonto': 'Zeitkonto',
+    'nav.settlement': 'Monatsabrechnung',
+    'nav.containers': 'Container-Protokoll',
+    'nav.werkvertrag': 'Werkvertrag-Projekte',
+    'nav.abmahnung': 'Abmahnung',
+    'nav.clock': 'Stempeluhr',
+    'nav.grades': 'Lohn- & Gehaltsstufen',
+    'nav.warehouse_rates': 'Lagertarife',
+    'nav.cost_calc': 'Kostenkalkulation',
+    'nav.docs': 'Unternehmensdoku',
+    'nav.logs': 'Audit-Protokoll',
+    'dash.employees': 'Aktive Mitarbeiter',
+    'dash.pending_ts': 'Ausstehende Genehmigungen',
+    'dash.total_hours': 'Gesamtstunden (Periode)',
+    'dash.abmahnung': 'Aktive Abmahnungen',
+    'dash.zk_alerts': 'Zeitkonto-Warnungen',
+    'dash.wv_active': 'Aktive WV-Projekte',
+    'dash.chart': '📊 Arbeitsstunden letzte 7 Tage',
+    'dash.no_data': 'Keine Zeitdaten vorhanden',
+    'emp.new': '+ Neuer Mitarbeiter',
+    'emp.search': 'Name/ID/Telefon suchen...',
+    'emp.status_active': 'Beschäftigt',
+    'emp.status_left': 'Ausgeschieden',
+    'emp.col_id': 'ID',
+    'emp.col_name': 'Name',
+    'emp.col_biz': 'Geschäftsbereich',
+    'emp.col_wh': 'Lager',
+    'emp.col_pos': 'Position',
+    'emp.col_grade': 'Stufe',
+    'emp.col_src': 'Quelle',
+    'emp.col_rate': 'Stundenlohn',
+    'emp.col_status': 'Status',
+    'emp.col_join': 'Eintrittsdatum',
+    'emp.add_title': 'Neuer Mitarbeiter',
+    'emp.edit_title': 'Mitarbeiter bearbeiten',
+    'emp.f_name': 'Name *',
+    'emp.f_phone': 'Telefon',
+    'emp.f_biz': 'Geschäftsbereich',
+    'emp.f_wh': 'Lager',
+    'emp.f_pos': 'Position',
+    'emp.f_grade': 'Stufe',
+    'emp.f_src': 'Quelle',
+    'emp.f_rate': 'Stundenlohn (€/h)',
+    'emp.f_settle': 'Abrechnungsart',
+    'emp.f_contract_hrs': 'Vertragliche Stunden/Tag',
+    'emp.f_nationality': 'Nationalität',
+    'emp.f_join': 'Eintrittsdatum',
+    'emp.f_tax': 'Steuermethode',
+    'emp.f_pin': 'PIN (4 Ziffern)',
+    'emp.f_notes': 'Notizen',
+    'emp.src_own': 'Eigen',
+    'emp.src_sup': 'Lieferant',
+    'ts.add': '+ Stunden erfassen',
+    'ts.batch': '✓ Sammelgenehmigung',
+    'ts.add_title': 'Stunden erfassen',
+    'ts.col_id': 'ID',
+    'ts.col_emp': 'Mitarbeiter',
+    'ts.col_grade': 'Stufe',
+    'ts.col_wh': 'Lager',
+    'ts.col_date': 'Datum',
+    'ts.col_shift': 'Schicht',
+    'ts.col_hrs': 'Stunden',
+    'ts.col_base': 'Grundlohn',
+    'ts.col_shift_b': 'Schicht+',
+    'ts.col_eff': 'Eff. Satz',
+    'ts.col_brutto': 'Brutto',
+    'ts.col_perf': 'Leistung',
+    'ts.col_net': 'Netto',
+    'ts.col_status': 'Status',
+    'ts.col_action': 'Aktion',
+    'ts.f_emp': 'Mitarbeiter *',
+    'ts.f_date': 'Arbeitsdatum',
+    'ts.f_start': 'Startzeit',
+    'ts.f_end': 'Endzeit',
+    'ts.f_wh': 'Lager (leer = Standard)',
+    'ts.f_shift': 'Schicht',
+    'ts.f_notes': 'Notizen',
+    'ts.auto_calc': 'Stunden, Brutto, SSI und Netto werden automatisch berechnet',
+    'ts.wh_approve': '✓Lager',
+    'ts.fin_approve': '✓Fin',
+    'zk.add': '+ Manueller Eintrag',
+    'zk.add_title': 'Zeitkonto manuell erfassen',
+    'zk.col_emp': 'Mitarbeiter',
+    'zk.col_wh': 'Lager',
+    'zk.col_grade': 'Stufe',
+    'zk.col_status': 'Compliance',
+    'zk.arrange_rest': 'Ausgleich planen',
+    'zk.f_emp': 'Mitarbeiter',
+    'zk.f_date': 'Datum',
+    'zk.f_type': 'Typ',
+    'zk.f_hrs': 'Stunden (h)',
+    'zk.f_reason': 'Begründung',
+    'settle.emp_count': 'Mitarbeiter',
+    'settle.hours': 'Gesamtstunden',
+    'settle.brutto': 'Brutto gesamt',
+    'settle.net': 'Netto gesamt',
+    'settle.col_emp': 'Mitarbeiter',
+    'settle.col_wh': 'Lager',
+    'settle.col_biz': 'Bereich',
+    'settle.col_src': 'Quelle',
+    'settle.col_hrs': 'Stunden',
+    'settle.col_count': 'Einträge',
+    'ct.add': '+ Neues Container-Protokoll',
+    'ct.add_title': 'Container-Protokoll erfassen',
+    'ct.col_no': 'Container-Nr.',
+    'ct.col_type': 'Typ',
+    'ct.col_wh': 'Lager',
+    'ct.col_date': 'Datum',
+    'ct.col_start': 'Start',
+    'ct.col_end': 'Ende',
+    'ct.col_hrs': 'Stunden',
+    'ct.col_workers': 'Arbeiter',
+    'ct.col_video': 'Video',
+    'ct.col_status': 'Status',
+    'ct.complete': 'Abschließen',
+    'ct.f_no': 'Container-Nr. *',
+    'ct.f_type': 'Typ',
+    'ct.f_date': 'Datum',
+    'ct.f_seal': 'Plomben-Nr.',
+    'ct.f_start': 'Startzeit',
+    'ct.f_revenue': 'Kundenabrechnung (€)',
+    'ct.f_workers': 'Arbeiter',
+    'ct.f_notes': 'Notizen',
+    'clock.clock_in': 'Einstempeln',
+    'clock.clock_out': 'Ausstempeln',
+    'clock.clocked_in': '✓ Eingestempelt',
+    'clock.not_clocked': '○ Noch nicht gestempelt',
+    'log.col_time': 'Zeit',
+    'log.col_user': 'Benutzer',
+    'log.col_action': 'Aktion',
+    'log.col_table': 'Objekt',
+    'log.col_id': 'ID',
+    'log.col_detail': 'Details',
+    'kb.search': 'Dokumente suchen...',
+    'kb.all_cats': 'Alle',
+    'kb.print': '⎙ Drucken',
+    'grade.title': 'Lohn- & Gehaltsstufen',
+    'grade.col_grade': 'Stufe',
+    'grade.col_base': 'Grundlohn',
+    'grade.col_mult': 'Faktor',
+    'grade.col_gross': 'Brutto/Monat',
+    'grade.col_mgmt': 'Führungszuschlag',
+    'grade.col_ot': 'ÜSt h',
+    'grade.col_cost': 'Echte Kosten',
+    'grade.col_hourly': 'Effekt. Std.',
+    'grade.col_desc': 'Beschreibung',
+    'wh.select': '← Lager auswählen',
+    'wh.edit': 'Tarife bearbeiten',
+    'wh.f_save': 'Speichern',
+    'cost.title': 'Stellenkostenkalkulation',
+    'cost.calc': 'Berechnen',
+    'cost.f_type': 'Beschäftigungsart',
+    'cost.f_grade': 'Stufe',
+    'cost.f_wh': 'Lager',
+    'cost.f_weekly': 'Wochenstunden',
+    'cost.f_months': 'Monate'
+  },
+  ar: {
+    'login.title': 'Yuanbo+579 HR',
+    'login.admin': '👔 دخول المسؤول',
+    'login.worker': '👷 رمز العامل',
+    'login.username': 'اسم المستخدم',
+    'login.password': 'كلمة المرور',
+    'login.btn': 'تسجيل الدخول',
+    'login.pin_label': 'رمز العامل (4 أرقام)',
+    'login.pin_btn': 'تسجيل الحضور',
+    'login.err_empty': 'يرجى إدخال اسم المستخدم وكلمة المرور',
+    'login.err_pin': 'يرجى إدخال رمز مكون من 4 أرقام',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123',
+    'login.pin_hint': 'رموز الاختبار: 1001 1002 1003',
+    'c.loading': 'جار التحميل...',
+    'c.load_fail': 'فشل التحميل',
+    'c.save': 'حفظ',
+    'c.cancel': 'إلغاء',
+    'c.edit': 'تعديل',
+    'c.add': 'إضافة',
+    'c.submit': 'إرسال',
+    'c.all': 'الكل',
+    'c.search': 'بحث',
+    'c.close': 'إغلاق',
+    'c.confirm': 'تأكيد',
+    'c.logout': 'تسجيل الخروج',
+    'c.no_data': 'لا توجد بيانات',
+    'c.notes': 'ملاحظات',
+    'c.date': 'التاريخ',
+    'c.status': 'الحالة',
+    'c.action': 'إجراء',
+    'c.name': 'الاسم',
+    'c.phone': 'الهاتف',
+    'c.starting': 'يبدأ النظام…',
+    'nav.dashboard': 'لوحة التحكم',
+    'nav.employees': 'الموظفون',
+    'nav.timesheets': 'سجلات الوقت',
+    'nav.zeitkonto': 'Zeitkonto',
+    'nav.settlement': 'التسوية الشهرية',
+    'nav.containers': 'سجلات الحاويات',
+    'nav.werkvertrag': 'مشاريع Werkvertrag',
+    'nav.abmahnung': 'Abmahnung',
+    'nav.clock': 'الحضور والانصراف',
+    'nav.grades': 'هيكل الرواتب',
+    'nav.warehouse_rates': 'تعريفات المستودع',
+    'nav.cost_calc': 'حاسبة التكاليف',
+    'nav.docs': 'وثائق الشركة',
+    'nav.logs': 'سجل التدقيق',
+    'dash.employees': 'الموظفون النشطون',
+    'dash.pending_ts': 'في انتظار الموافقة',
+    'dash.total_hours': 'إجمالي الساعات',
+    'dash.abmahnung': 'Abmahnung النشطة',
+    'dash.zk_alerts': 'تنبيهات Zeitkonto',
+    'dash.wv_active': 'مشاريع WV النشطة',
+    'dash.chart': '📊 ساعات آخر 7 أيام',
+    'dash.no_data': 'لا توجد بيانات',
+    'emp.new': '+ موظف جديد',
+    'emp.search': 'بحث عن اسم/ID/هاتف...',
+    'emp.status_active': 'نشط',
+    'emp.status_left': 'منتهي',
+    'emp.col_id': 'ID',
+    'emp.col_name': 'الاسم',
+    'emp.col_biz': 'خط العمل',
+    'emp.col_wh': 'المستودع',
+    'emp.col_pos': 'المنصب',
+    'emp.col_grade': 'الدرجة',
+    'emp.col_src': 'المصدر',
+    'emp.col_rate': 'الأجر',
+    'emp.col_status': 'الحالة',
+    'emp.col_join': 'تاريخ التعيين',
+    'emp.add_title': 'موظف جديد',
+    'emp.edit_title': 'تعديل الموظف',
+    'emp.f_name': 'الاسم *',
+    'emp.f_phone': 'الهاتف',
+    'emp.f_biz': 'خط العمل',
+    'emp.f_wh': 'المستودع',
+    'emp.f_pos': 'المنصب',
+    'emp.f_grade': 'الدرجة',
+    'emp.f_src': 'المصدر',
+    'emp.f_rate': 'الأجر بالساعة (€/h)',
+    'emp.f_settle': 'نوع التسوية',
+    'emp.f_contract_hrs': 'ساعات العقد/يوم',
+    'emp.f_nationality': 'الجنسية',
+    'emp.f_join': 'تاريخ التعيين',
+    'emp.f_tax': 'طريقة الضريبة',
+    'emp.f_pin': 'رمز PIN (4 أرقام)',
+    'emp.f_notes': 'ملاحظات',
+    'emp.src_own': 'مباشر',
+    'emp.src_sup': 'مورد',
+    'ts.add': '+ تسجيل الساعات',
+    'ts.batch': '✓ الموافقة الجماعية',
+    'ts.add_title': 'تسجيل ساعات العمل',
+    'ts.col_id': 'ID',
+    'ts.col_emp': 'الموظف',
+    'ts.col_grade': 'الدرجة',
+    'ts.col_wh': 'المستودع',
+    'ts.col_date': 'التاريخ',
+    'ts.col_shift': 'الوردية',
+    'ts.col_hrs': 'الساعات',
+    'ts.col_base': 'الأساسي',
+    'ts.col_shift_b': 'إضافة الوردية',
+    'ts.col_eff': 'الفعلي',
+    'ts.col_brutto': 'Brutto',
+    'ts.col_perf': 'الأداء',
+    'ts.col_net': 'Netto',
+    'ts.col_status': 'الحالة',
+    'ts.col_action': 'إجراء',
+    'ts.f_emp': 'الموظف *',
+    'ts.f_date': 'تاريخ العمل',
+    'ts.f_start': 'وقت البداية',
+    'ts.f_end': 'وقت النهاية',
+    'ts.f_wh': 'المستودع',
+    'ts.f_shift': 'الوردية',
+    'ts.f_notes': 'ملاحظات',
+    'ts.auto_calc': 'يتم الحساب تلقائياً',
+    'ts.wh_approve': '✓مستودع',
+    'ts.fin_approve': '✓مالية',
+    'zk.add': '+ إدخال يدوي',
+    'zk.add_title': 'إدخال Zeitkonto يدوياً',
+    'zk.col_emp': 'الموظف',
+    'zk.col_wh': 'المستودع',
+    'zk.col_grade': 'الدرجة',
+    'zk.col_status': 'الامتثال',
+    'zk.arrange_rest': 'جدولة الراحة',
+    'zk.f_emp': 'الموظف',
+    'zk.f_date': 'التاريخ',
+    'zk.f_type': 'النوع',
+    'zk.f_hrs': 'الساعات (h)',
+    'zk.f_reason': 'السبب',
+    'settle.emp_count': 'الموظفون',
+    'settle.hours': 'إجمالي الساعات',
+    'settle.brutto': 'إجمالي Brutto',
+    'settle.net': 'إجمالي Netto',
+    'settle.col_emp': 'الموظف',
+    'settle.col_wh': 'المستودع',
+    'settle.col_biz': 'الخط',
+    'settle.col_src': 'المصدر',
+    'settle.col_hrs': 'الساعات',
+    'settle.col_count': 'السجلات',
+    'ct.add': '+ حاوية جديدة',
+    'ct.add_title': 'تسجيل حاوية جديدة',
+    'ct.col_no': 'رقم الحاوية',
+    'ct.col_type': 'النوع',
+    'ct.col_wh': 'المستودع',
+    'ct.col_date': 'التاريخ',
+    'ct.col_start': 'البداية',
+    'ct.col_end': 'النهاية',
+    'ct.col_hrs': 'الساعات',
+    'ct.col_workers': 'العمال',
+    'ct.col_video': 'فيديو',
+    'ct.col_status': 'الحالة',
+    'ct.complete': 'إنهاء',
+    'ct.f_no': 'رقم الحاوية *',
+    'ct.f_type': 'النوع',
+    'ct.f_date': 'تاريخ العمل',
+    'ct.f_seal': 'رقم الختم',
+    'ct.f_start': 'وقت البداية',
+    'ct.f_revenue': 'إيرادات العميل (€)',
+    'ct.f_workers': 'العمال',
+    'ct.f_notes': 'ملاحظات',
+    'clock.clock_in': 'تسجيل الحضور',
+    'clock.clock_out': 'تسجيل الانصراف',
+    'clock.clocked_in': '✓ تم تسجيل الحضور',
+    'clock.not_clocked': '○ لم تسجل حضوراً بعد',
+    'log.col_time': 'الوقت',
+    'log.col_user': 'المستخدم',
+    'log.col_action': 'الإجراء',
+    'log.col_table': 'الجدول',
+    'log.col_id': 'ID',
+    'log.col_detail': 'التفاصيل',
+    'kb.search': 'بحث في الوثائق...',
+    'kb.all_cats': 'الكل',
+    'kb.print': '⎙ طباعة',
+    'grade.title': 'هيكل الرواتب',
+    'grade.col_grade': 'الدرجة',
+    'grade.col_base': 'الأساسي',
+    'grade.col_mult': 'المضاعف',
+    'grade.col_gross': 'Brutto/شهر',
+    'grade.col_mgmt': 'بدل الإدارة',
+    'grade.col_ot': 'إضافي h',
+    'grade.col_cost': 'التكلفة الحقيقية',
+    'grade.col_hourly': 'مكافئ الساعة',
+    'grade.col_desc': 'الوصف',
+    'wh.select': '← اختر المستودع',
+    'wh.edit': 'تعديل التعريفات',
+    'wh.f_save': 'حفظ',
+    'cost.title': 'حاسبة تكاليف المنصب',
+    'cost.calc': 'احسب',
+    'cost.f_type': 'نوع التوظيف',
+    'cost.f_grade': 'الدرجة',
+    'cost.f_wh': 'المستودع',
+    'cost.f_weekly': 'ساعات أسبوعية',
+    'cost.f_months': 'أشهر'
+  },
+  hu: {
+    'login.title': 'Yuanbo+579 HR',
+    'login.admin': '👔 Admin bejelentkezés',
+    'login.worker': '👷 Munkás PIN',
+    'login.username': 'Felhasználónév',
+    'login.password': 'Jelszó',
+    'login.btn': 'Bejelentkezés',
+    'login.pin_label': 'Munkás PIN (4 jegyű)',
+    'login.pin_btn': 'Jelenléti rögzítés',
+    'login.err_empty': 'Kérem adja meg a felhasználónevet és jelszót',
+    'login.err_pin': 'Kérem adja meg a 4 jegyű PIN-t',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123',
+    'login.pin_hint': 'Teszt PIN: 1001 1002 1003',
+    'c.loading': 'Töltés...',
+    'c.load_fail': 'Betöltési hiba',
+    'c.save': 'Mentés',
+    'c.cancel': 'Mégse',
+    'c.edit': 'Szerkesztés',
+    'c.add': 'Hozzáadás',
+    'c.submit': 'Küldés',
+    'c.all': 'Összes',
+    'c.search': 'Keresés',
+    'c.close': 'Bezárás',
+    'c.confirm': 'Megerősítés',
+    'c.logout': 'Kijelentkezés',
+    'c.no_data': 'Nincs adat',
+    'c.notes': 'Megjegyzések',
+    'c.date': 'Dátum',
+    'c.status': 'Állapot',
+    'c.action': 'Művelet',
+    'c.name': 'Név',
+    'c.phone': 'Telefon',
+    'c.starting': 'Rendszer indul…',
+    'nav.dashboard': 'Irányítópult',
+    'nav.employees': 'Alkalmazottak',
+    'nav.timesheets': 'Munkaidő-nyilvántartás',
+    'nav.zeitkonto': 'Zeitkonto',
+    'nav.settlement': 'Havi elszámolás',
+    'nav.containers': 'Konténer-nyilvántartás',
+    'nav.werkvertrag': 'Werkvertrag projektek',
+    'nav.abmahnung': 'Abmahnung',
+    'nav.clock': 'Jelenléti',
+    'nav.grades': 'Bérsáv struktúra',
+    'nav.warehouse_rates': 'Raktári díjak',
+    'nav.cost_calc': 'Költségkalkulátor',
+    'nav.docs': 'Vállalati dokumentumok',
+    'nav.logs': 'Audit napló',
+    'dash.employees': 'Aktív alkalmazottak',
+    'dash.pending_ts': 'Jóváhagyásra vár',
+    'dash.total_hours': 'Összes óra (időszak)',
+    'dash.abmahnung': 'Aktív Abmahnungen',
+    'dash.zk_alerts': 'Zeitkonto figyelmeztetések',
+    'dash.wv_active': 'Aktív WV projektek',
+    'dash.chart': '📊 Utolsó 7 nap munkaideje',
+    'dash.no_data': 'Nincs munkaidő adat',
+    'emp.new': '+ Új alkalmazott',
+    'emp.search': 'Név/ID/Telefon keresése...',
+    'emp.status_active': 'Aktív',
+    'emp.status_left': 'Kilépett',
+    'emp.col_id': 'ID',
+    'emp.col_name': 'Név',
+    'emp.col_biz': 'Üzleti vonal',
+    'emp.col_wh': 'Raktár',
+    'emp.col_pos': 'Pozíció',
+    'emp.col_grade': 'Fokozat',
+    'emp.col_src': 'Forrás',
+    'emp.col_rate': 'Órabér',
+    'emp.col_status': 'Állapot',
+    'emp.col_join': 'Belépés dátuma',
+    'emp.add_title': 'Új alkalmazott',
+    'emp.edit_title': 'Alkalmazott szerkesztése',
+    'emp.f_name': 'Név *',
+    'emp.f_phone': 'Telefon',
+    'emp.f_biz': 'Üzleti vonal',
+    'emp.f_wh': 'Raktár',
+    'emp.f_pos': 'Pozíció',
+    'emp.f_grade': 'Fokozat',
+    'emp.f_src': 'Forrás',
+    'emp.f_rate': 'Órabér (€/h)',
+    'emp.f_settle': 'Elszámolás típusa',
+    'emp.f_contract_hrs': 'Szerz. óra/nap',
+    'emp.f_nationality': 'Állampolgárság',
+    'emp.f_join': 'Belépés dátuma',
+    'emp.f_tax': 'Adózás módja',
+    'emp.f_pin': 'PIN (4 jegyű)',
+    'emp.f_notes': 'Megjegyzések',
+    'emp.src_own': 'Saját',
+    'emp.src_sup': 'Szállító',
+    'ts.add': '+ Munkaidő rögzítése',
+    'ts.batch': '✓ Tömeges jóváhagyás',
+    'ts.add_title': 'Munkaidő rögzítése',
+    'ts.col_id': 'ID',
+    'ts.col_emp': 'Alkalmazott',
+    'ts.col_grade': 'Fokozat',
+    'ts.col_wh': 'Raktár',
+    'ts.col_date': 'Dátum',
+    'ts.col_shift': 'Műszak',
+    'ts.col_hrs': 'Órák',
+    'ts.col_base': 'Alapbér',
+    'ts.col_shift_b': 'Műszak+',
+    'ts.col_eff': 'Eff. díj',
+    'ts.col_brutto': 'Bruttó',
+    'ts.col_perf': 'Teljesítmény',
+    'ts.col_net': 'Nettó',
+    'ts.col_status': 'Állapot',
+    'ts.col_action': 'Művelet',
+    'ts.f_emp': 'Alkalmazott *',
+    'ts.f_date': 'Munkadátum',
+    'ts.f_start': 'Kezdési idő',
+    'ts.f_end': 'Befejezési idő',
+    'ts.f_wh': 'Raktár (üres = alapért.)',
+    'ts.f_shift': 'Műszak',
+    'ts.f_notes': 'Megjegyzések',
+    'ts.auto_calc': 'Az órákat, bruttót, SSI-t és nettót a rendszer automatikusan számítja',
+    'ts.wh_approve': '✓Raktár',
+    'ts.fin_approve': '✓Pénz',
+    'zk.add': '+ Manuális rögzítés',
+    'zk.add_title': 'Zeitkonto manuális rögzítése',
+    'zk.col_emp': 'Alkalmazott',
+    'zk.col_wh': 'Raktár',
+    'zk.col_grade': 'Fokozat',
+    'zk.col_status': 'Megfelelőség',
+    'zk.arrange_rest': 'Pihenő tervezése',
+    'zk.f_emp': 'Alkalmazott',
+    'zk.f_date': 'Dátum',
+    'zk.f_type': 'Típus',
+    'zk.f_hrs': 'Óra (h)',
+    'zk.f_reason': 'Ok',
+    'settle.emp_count': 'Alkalmazottak',
+    'settle.hours': 'Összes óra',
+    'settle.brutto': 'Összes bruttó',
+    'settle.net': 'Összes nettó',
+    'settle.col_emp': 'Alkalmazott',
+    'settle.col_wh': 'Raktár',
+    'settle.col_biz': 'Üzleti vonal',
+    'settle.col_src': 'Forrás',
+    'settle.col_hrs': 'Órák',
+    'settle.col_count': 'Rekordok',
+    'ct.add': '+ Új konténer',
+    'ct.add_title': 'Konténer-nyilvántartás rögzítése',
+    'ct.col_no': 'Konténer sz.',
+    'ct.col_type': 'Típus',
+    'ct.col_wh': 'Raktár',
+    'ct.col_date': 'Dátum',
+    'ct.col_start': 'Kezdés',
+    'ct.col_end': 'Befejezés',
+    'ct.col_hrs': 'Órák',
+    'ct.col_workers': 'Munkások',
+    'ct.col_video': 'Videó',
+    'ct.col_status': 'Állapot',
+    'ct.complete': 'Befejezés',
+    'ct.f_no': 'Konténer sz. *',
+    'ct.f_type': 'Típus',
+    'ct.f_date': 'Munkadátum',
+    'ct.f_seal': 'Plomba sz.',
+    'ct.f_start': 'Kezdési idő',
+    'ct.f_revenue': 'Ügyfél bevétel (€)',
+    'ct.f_workers': 'Munkások',
+    'ct.f_notes': 'Megjegyzések',
+    'clock.clock_in': 'Érkezés rögzítése',
+    'clock.clock_out': 'Távozás rögzítése',
+    'clock.clocked_in': '✓ Rögzítve (érkezés)',
+    'clock.not_clocked': '○ Még nem rögzített',
+    'log.col_time': 'Idő',
+    'log.col_user': 'Felhasználó',
+    'log.col_action': 'Művelet',
+    'log.col_table': 'Objektum',
+    'log.col_id': 'ID',
+    'log.col_detail': 'Részletek',
+    'kb.search': 'Dokumentumok keresése...',
+    'kb.all_cats': 'Összes',
+    'kb.print': '⎙ Nyomtatás',
+    'grade.title': 'Bérsáv struktúra',
+    'grade.col_grade': 'Fokozat',
+    'grade.col_base': 'Alap',
+    'grade.col_mult': 'Szorzó',
+    'grade.col_gross': 'Bruttó/hó',
+    'grade.col_mgmt': 'Vezet. pótlék',
+    'grade.col_ot': 'Túlóra h',
+    'grade.col_cost': 'Valódi költség',
+    'grade.col_hourly': 'Eff. órabér',
+    'grade.col_desc': 'Leírás',
+    'wh.select': '← Raktár kiválasztása',
+    'wh.edit': 'Díjak szerkesztése',
+    'wh.f_save': 'Mentés',
+    'cost.title': 'Pozíció-költségkalkulátor',
+    'cost.calc': 'Számítás',
+    'cost.f_type': 'Foglalkoztatás típusa',
+    'cost.f_grade': 'Fokozat',
+    'cost.f_wh': 'Raktár',
+    'cost.f_weekly': 'Heti órák',
+    'cost.f_months': 'Hónapok'
+  },
+  vi: {
+    'login.title': 'Yuanbo+579 HR',
+    'login.admin': '👔 Đăng nhập Quản lý',
+    'login.worker': '👷 PIN Công nhân',
+    'login.username': 'Tên đăng nhập',
+    'login.password': 'Mật khẩu',
+    'login.btn': 'Đăng nhập',
+    'login.pin_label': 'PIN công nhân (4 chữ số)',
+    'login.pin_btn': 'Chấm công',
+    'login.err_empty': 'Vui lòng nhập tên đăng nhập và mật khẩu',
+    'login.err_pin': 'Vui lòng nhập PIN 4 chữ số',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123',
+    'login.pin_hint': 'PIN thử nghiệm: 1001 1002 1003',
+    'c.loading': 'Đang tải...',
+    'c.load_fail': 'Tải thất bại',
+    'c.save': 'Lưu',
+    'c.cancel': 'Hủy',
+    'c.edit': 'Chỉnh sửa',
+    'c.add': 'Thêm mới',
+    'c.submit': 'Gửi',
+    'c.all': 'Tất cả',
+    'c.search': 'Tìm kiếm',
+    'c.close': 'Đóng',
+    'c.confirm': 'Xác nhận',
+    'c.logout': 'Đăng xuất',
+    'c.no_data': 'Không có dữ liệu',
+    'c.notes': 'Ghi chú',
+    'c.date': 'Ngày',
+    'c.status': 'Trạng thái',
+    'c.action': 'Thao tác',
+    'c.name': 'Họ tên',
+    'c.phone': 'Điện thoại',
+    'c.starting': 'Hệ thống đang khởi động…',
+    'nav.dashboard': 'Bảng điều khiển',
+    'nav.employees': 'Nhân viên',
+    'nav.timesheets': 'Chấm công',
+    'nav.zeitkonto': 'Zeitkonto',
+    'nav.settlement': 'Quyết toán tháng',
+    'nav.containers': 'Nhật ký container',
+    'nav.werkvertrag': 'Dự án Werkvertrag',
+    'nav.abmahnung': 'Abmahnung',
+    'nav.clock': 'Chấm công',
+    'nav.grades': 'Cơ cấu lương',
+    'nav.warehouse_rates': 'Giá kho',
+    'nav.cost_calc': 'Tính chi phí',
+    'nav.docs': 'Tài liệu công ty',
+    'nav.logs': 'Nhật ký kiểm toán',
+    'dash.employees': 'Nhân viên đang làm',
+    'dash.pending_ts': 'Chờ duyệt',
+    'dash.total_hours': 'Tổng giờ làm',
+    'dash.abmahnung': 'Abmahnung hiệu lực',
+    'dash.zk_alerts': 'Cảnh báo Zeitkonto',
+    'dash.wv_active': 'Dự án WV đang chạy',
+    'dash.chart': '📊 Giờ làm 7 ngày gần nhất',
+    'dash.no_data': 'Chưa có dữ liệu chấm công',
+    'emp.new': '+ Thêm nhân viên',
+    'emp.search': 'Tìm tên/ID/SĐT...',
+    'emp.status_active': 'Đang làm',
+    'emp.status_left': 'Đã nghỉ',
+    'emp.col_id': 'ID',
+    'emp.col_name': 'Họ tên',
+    'emp.col_biz': 'Dòng KD',
+    'emp.col_wh': 'Kho',
+    'emp.col_pos': 'Vị trí',
+    'emp.col_grade': 'Cấp',
+    'emp.col_src': 'Nguồn',
+    'emp.col_rate': 'Lương/h',
+    'emp.col_status': 'Trạng thái',
+    'emp.col_join': 'Ngày vào',
+    'emp.add_title': 'Thêm nhân viên',
+    'emp.edit_title': 'Sửa nhân viên',
+    'emp.f_name': 'Họ tên *',
+    'emp.f_phone': 'Điện thoại',
+    'emp.f_biz': 'Dòng kinh doanh',
+    'emp.f_wh': 'Kho',
+    'emp.f_pos': 'Vị trí',
+    'emp.f_grade': 'Cấp bậc',
+    'emp.f_src': 'Nguồn',
+    'emp.f_rate': 'Lương/giờ (€/h)',
+    'emp.f_settle': 'Cách tính lương',
+    'emp.f_contract_hrs': 'Giờ HĐ/ngày',
+    'emp.f_nationality': 'Quốc tịch',
+    'emp.f_join': 'Ngày vào',
+    'emp.f_tax': 'Cách khai thuế',
+    'emp.f_pin': 'PIN (4 số)',
+    'emp.f_notes': 'Ghi chú',
+    'emp.src_own': 'Trực tiếp',
+    'emp.src_sup': 'Nhà cung cấp',
+    'ts.add': '+ Nhập giờ làm',
+    'ts.batch': '✓ Duyệt hàng loạt',
+    'ts.add_title': 'Nhập giờ làm',
+    'ts.col_id': 'ID',
+    'ts.col_emp': 'Nhân viên',
+    'ts.col_grade': 'Cấp',
+    'ts.col_wh': 'Kho',
+    'ts.col_date': 'Ngày',
+    'ts.col_shift': 'Ca',
+    'ts.col_hrs': 'Giờ',
+    'ts.col_base': 'Lương CB',
+    'ts.col_shift_b': 'Phụ ca',
+    'ts.col_eff': 'Tỷ lệ TT',
+    'ts.col_brutto': 'Brutto',
+    'ts.col_perf': 'KPI',
+    'ts.col_net': 'Netto',
+    'ts.col_status': 'TT',
+    'ts.col_action': 'Thao tác',
+    'ts.f_emp': 'Nhân viên *',
+    'ts.f_date': 'Ngày làm',
+    'ts.f_start': 'Giờ bắt đầu',
+    'ts.f_end': 'Giờ kết thúc',
+    'ts.f_wh': 'Kho (để trống = mặc định)',
+    'ts.f_shift': 'Ca làm',
+    'ts.f_notes': 'Ghi chú',
+    'ts.auto_calc': 'Giờ, Brutto, SSI, Netto được tính tự động',
+    'ts.wh_approve': '✓Kho',
+    'ts.fin_approve': '✓TC',
+    'zk.add': '+ Nhập thủ công',
+    'zk.add_title': 'Nhập Zeitkonto thủ công',
+    'zk.col_emp': 'Nhân viên',
+    'zk.col_wh': 'Kho',
+    'zk.col_grade': 'Cấp',
+    'zk.col_status': 'Tuân thủ',
+    'zk.arrange_rest': 'Sắp xếp nghỉ',
+    'zk.f_emp': 'Nhân viên',
+    'zk.f_date': 'Ngày',
+    'zk.f_type': 'Loại',
+    'zk.f_hrs': 'Giờ (h)',
+    'zk.f_reason': 'Lý do',
+    'settle.emp_count': 'Nhân viên',
+    'settle.hours': 'Tổng giờ',
+    'settle.brutto': 'Tổng Brutto',
+    'settle.net': 'Tổng Netto',
+    'settle.col_emp': 'Nhân viên',
+    'settle.col_wh': 'Kho',
+    'settle.col_biz': 'Dòng KD',
+    'settle.col_src': 'Nguồn',
+    'settle.col_hrs': 'Giờ',
+    'settle.col_count': 'Bản ghi',
+    'ct.add': '+ Thêm container',
+    'ct.add_title': 'Nhật ký container mới',
+    'ct.col_no': 'Số container',
+    'ct.col_type': 'Loại',
+    'ct.col_wh': 'Kho',
+    'ct.col_date': 'Ngày',
+    'ct.col_start': 'Bắt đầu',
+    'ct.col_end': 'Kết thúc',
+    'ct.col_hrs': 'Giờ',
+    'ct.col_workers': 'Công nhân',
+    'ct.col_video': 'Video',
+    'ct.col_status': 'TT',
+    'ct.complete': 'Hoàn thành',
+    'ct.f_no': 'Số container *',
+    'ct.f_type': 'Loại',
+    'ct.f_date': 'Ngày làm',
+    'ct.f_seal': 'Số niêm phong',
+    'ct.f_start': 'Giờ bắt đầu',
+    'ct.f_revenue': 'Doanh thu KH (€)',
+    'ct.f_workers': 'Công nhân',
+    'ct.f_notes': 'Ghi chú',
+    'clock.clock_in': 'Chấm công vào',
+    'clock.clock_out': 'Chấm công ra',
+    'clock.clocked_in': '✓ Đã chấm công vào',
+    'clock.not_clocked': '○ Chưa chấm công',
+    'log.col_time': 'Thời gian',
+    'log.col_user': 'Người dùng',
+    'log.col_action': 'Hành động',
+    'log.col_table': 'Bảng',
+    'log.col_id': 'ID',
+    'log.col_detail': 'Chi tiết',
+    'kb.search': 'Tìm kiếm tài liệu...',
+    'kb.all_cats': 'Tất cả',
+    'kb.print': '⎙ In',
+    'grade.title': 'Cơ cấu lương theo cấp',
+    'grade.col_grade': 'Cấp',
+    'grade.col_base': 'Lương cơ bản',
+    'grade.col_mult': 'Hệ số',
+    'grade.col_gross': 'Brutto/tháng',
+    'grade.col_mgmt': 'PQ quản lý',
+    'grade.col_ot': 'Tăng ca h',
+    'grade.col_cost': 'Chi phí thực',
+    'grade.col_hourly': 'Chi phí/giờ',
+    'grade.col_desc': 'Mô tả',
+    'wh.select': '← Chọn kho',
+    'wh.edit': 'Sửa giá',
+    'wh.f_save': 'Lưu',
+    'cost.title': 'Tính chi phí vị trí',
+    'cost.calc': 'Tính toán',
+    'cost.f_type': 'Loại hợp đồng',
+    'cost.f_grade': 'Cấp',
+    'cost.f_wh': 'Kho',
+    'cost.f_weekly': 'Giờ/tuần',
+    'cost.f_months': 'Số tháng'
+  }
+};
+var RTL_LANGS = new Set(['ar']);
+var LangCtx = React.createContext({
+  t: function t(key) {
+    return key;
+  },
+  lang: 'zh',
+  setLang: function setLang() {}
+});
+function useLang() {
+  return React.useContext(LangCtx);
+}
+function LangSwitcher() {
+  var _useLang = useLang(),
+    lang = _useLang.lang,
+    setLang = _useLang.setLang;
+  var OPTS = [['zh', '中文'], ['en', 'English'], ['de', 'Deutsch'], ['ar', 'العربية'], ['hu', 'Magyar'], ['vi', 'Tiếng Việt']];
+  return /*#__PURE__*/React.createElement("select", {
+    className: "fsl",
+    value: lang,
+    onChange: function onChange(e) {
+      return setLang(e.target.value);
+    },
+    style: {
+      fontSize: 10,
+      padding: '3px 6px',
+      borderRadius: 6,
+      border: '1px solid var(--bd)',
+      background: 'var(--bg3)',
+      color: 'var(--tx)',
+      cursor: 'pointer',
+      fontFamily: 'inherit'
+    }
+  }, OPTS.map(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+      k = _ref2[0],
+      l = _ref2[1];
+    return /*#__PURE__*/React.createElement("option", {
+      key: k,
+      value: k
+    }, l);
+  }));
+}
 function api(_x) {
   return _api.apply(this, arguments);
 } // ── COLORS ──
 function _api() {
   _api = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17(path) {
-    var _ref70,
-      _ref70$method,
+    var _ref76,
+      _ref76$method,
       method,
       body,
       token,
@@ -47,7 +1251,7 @@ function _api() {
     return _regenerator().w(function (_context17) {
       while (1) switch (_context17.n) {
         case 0:
-          _ref70 = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : {}, _ref70$method = _ref70.method, method = _ref70$method === void 0 ? 'GET' : _ref70$method, body = _ref70.body, token = _ref70.token;
+          _ref76 = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : {}, _ref76$method = _ref76.method, method = _ref76$method === void 0 ? 'GET' : _ref76$method, body = _ref76.body, token = _ref76.token;
           h = {
             'Content-Type': 'application/json'
           };
@@ -110,8 +1314,8 @@ var SC = {
   'B': '#f5a623',
   'C': '#f0526c'
 };
-function Bg(_ref) {
-  var t = _ref.t;
+function Bg(_ref3) {
+  var t = _ref3.t;
   var c = SC[t] || '#6a7498';
   return /*#__PURE__*/React.createElement("span", {
     className: "bg",
@@ -133,12 +1337,12 @@ function fmtE(n) {
 }
 
 // ── SHARED COMPONENTS ──
-function Modal(_ref2) {
-  var title = _ref2.title,
-    onClose = _ref2.onClose,
-    children = _ref2.children,
-    footer = _ref2.footer,
-    wide = _ref2.wide;
+function Modal(_ref4) {
+  var title = _ref4.title,
+    onClose = _ref4.onClose,
+    children = _ref4.children,
+    footer = _ref4.footer,
+    wide = _ref4.wide;
   return /*#__PURE__*/React.createElement("div", {
     className: "mo",
     onClick: function onClick(e) {
@@ -166,17 +1370,19 @@ function Spinner() {
   }, "\u27F3");
 }
 function Loading() {
+  var _useLang2 = useLang(),
+    t = _useLang2.t;
   return /*#__PURE__*/React.createElement("div", {
     className: "loading"
-  }, /*#__PURE__*/React.createElement(Spinner, null), " \u52A0\u8F7D\u4E2D...");
+  }, /*#__PURE__*/React.createElement(Spinner, null), " ", t('c.loading'));
 }
 
 // ── AUTH CONTEXT ──
 var AuthCtx = React.createContext({});
 
 // ── LOGIN ──
-function Login(_ref3) {
-  var onLogin = _ref3.onLogin;
+function Login(_ref5) {
+  var onLogin = _ref5.onLogin;
   var _useState = useState('admin'),
     _useState2 = _slicedToArray(_useState, 2),
     mode = _useState2[0],
@@ -201,8 +1407,12 @@ function Login(_ref3) {
     _useState10 = _slicedToArray(_useState1, 2),
     loading = _useState10[0],
     setLoading = _useState10[1];
+  var _useLang3 = useLang(),
+    t = _useLang3.t,
+    lang = _useLang3.lang,
+    setLang = _useLang3.setLang;
   var doLogin = /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+    var _ref6 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
       var r, _t;
       return _regenerator().w(function (_context) {
         while (1) switch (_context.p = _context.n) {
@@ -211,7 +1421,7 @@ function Login(_ref3) {
               _context.n = 1;
               break;
             }
-            setErr('请填写用户名和密码');
+            setErr(t('login.err_empty'));
             return _context.a(2);
           case 1:
             setLoading(true);
@@ -244,11 +1454,11 @@ function Login(_ref3) {
       }, _callee, null, [[2, 4, 5, 6]]);
     }));
     return function doLogin() {
-      return _ref4.apply(this, arguments);
+      return _ref6.apply(this, arguments);
     };
   }();
   var doPin = /*#__PURE__*/function () {
-    var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+    var _ref7 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
       var r, _t2;
       return _regenerator().w(function (_context2) {
         while (1) switch (_context2.p = _context2.n) {
@@ -257,7 +1467,7 @@ function Login(_ref3) {
               _context2.n = 1;
               break;
             }
-            setErr('请输入4位PIN');
+            setErr(t('login.err_pin'));
             return _context2.a(2);
           case 1:
             setLoading(true);
@@ -289,7 +1499,7 @@ function Login(_ref3) {
       }, _callee2, null, [[2, 4, 5, 6]]);
     }));
     return function doPin() {
-      return _ref5.apply(this, arguments);
+      return _ref7.apply(this, arguments);
     };
   }();
   return /*#__PURE__*/React.createElement("div", {
@@ -331,6 +1541,12 @@ function Login(_ref3) {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
+      position: 'absolute',
+      top: 16,
+      right: 16
+    }
+  }, /*#__PURE__*/React.createElement(LangSwitcher, null)), /*#__PURE__*/React.createElement("div", {
+    style: {
       display: 'flex',
       alignItems: 'center',
       gap: 12,
@@ -348,7 +1564,7 @@ function Login(_ref3) {
       fontSize: 18,
       fontWeight: 700
     }
-  }, "\u6E0A\u535A+579 HR"), /*#__PURE__*/React.createElement("div", {
+  }, t('login.title')), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: 'var(--tx3)',
@@ -368,7 +1584,7 @@ function Login(_ref3) {
     onClick: function onClick() {
       return setMode('admin');
     }
-  }, "\uD83D\uDC54 \u7BA1\u7406\u5458\u767B\u5F55"), /*#__PURE__*/React.createElement("button", {
+  }, t('login.admin')), /*#__PURE__*/React.createElement("button", {
     className: "tbn ".concat(mode === 'worker' ? 'on' : ''),
     style: {
       flex: 1
@@ -376,13 +1592,13 @@ function Login(_ref3) {
     onClick: function onClick() {
       return setMode('worker');
     }
-  }, "\uD83D\uDC77 \u5DE5\u4EBAPIN")), mode === 'admin' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, t('login.worker'))), mode === 'admin' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 12
     }
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u7528\u6237\u540D"), /*#__PURE__*/React.createElement("input", {
+  }, t('login.username')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: u,
     onChange: function onChange(e) {
@@ -399,7 +1615,7 @@ function Login(_ref3) {
     }
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5BC6\u7801"), /*#__PURE__*/React.createElement("input", {
+  }, t('login.password')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "password",
     value: p,
@@ -417,20 +1633,20 @@ function Login(_ref3) {
     },
     onClick: doLogin,
     disabled: loading
-  }, loading ? /*#__PURE__*/React.createElement(Spinner, null) : '登 录'), /*#__PURE__*/React.createElement("div", {
+  }, loading ? /*#__PURE__*/React.createElement(Spinner, null) : t('login.btn')), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 10,
       fontSize: 9,
       color: 'var(--tx3)',
       textAlign: 'center'
     }
-  }, "admin/admin123 \xB7 hr/hr123 \xB7 finance/fin123 \xB7 wh_una/una123 \xB7 sup001/sup123")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, t('login.hint'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 16
     }
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5DE5\u4EBAPIN\uFF084\u4F4D\uFF09"), /*#__PURE__*/React.createElement("input", {
+  }, t('login.pin_label')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "tel",
     maxLength: 4,
@@ -455,14 +1671,14 @@ function Login(_ref3) {
     },
     onClick: doPin,
     disabled: loading
-  }, loading ? /*#__PURE__*/React.createElement(Spinner, null) : '打卡入口'), /*#__PURE__*/React.createElement("div", {
+  }, loading ? /*#__PURE__*/React.createElement(Spinner, null) : t('login.pin_btn')), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 10,
       fontSize: 9,
       color: 'var(--tx3)',
       textAlign: 'center'
     }
-  }, "\u6D4B\u8BD5PIN: 1001(\u5F20\u4E09) 1002(\u674E\u56DB) 1003(\u738B\u4E94)")), err && /*#__PURE__*/React.createElement("div", {
+  }, t('login.pin_hint'))), err && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 8,
       fontSize: 11,
@@ -473,8 +1689,8 @@ function Login(_ref3) {
 }
 
 // ── DASHBOARD ──
-function Dashboard(_ref6) {
-  var token = _ref6.token;
+function Dashboard(_ref8) {
+  var token = _ref8.token;
   var _useState11 = useState(null),
     _useState12 = _slicedToArray(_useState11, 2),
     data = _useState12[0],
@@ -483,6 +1699,8 @@ function Dashboard(_ref6) {
     _useState14 = _slicedToArray(_useState13, 2),
     loading = _useState14[0],
     setLoading = _useState14[1];
+  var _useLang4 = useLang(),
+    t = _useLang4.t;
   useEffect(function () {
     api('/api/analytics/dashboard', {
       token: token
@@ -493,18 +1711,18 @@ function Dashboard(_ref6) {
   if (loading) return /*#__PURE__*/React.createElement(Loading, null);
   if (!data) return /*#__PURE__*/React.createElement("div", {
     className: "tm"
-  }, "\u52A0\u8F7D\u5931\u8D25");
+  }, t('c.load_fail'));
   var mx = Math.max.apply(Math, _toConsumableArray((data.daily_hours || []).map(function (d) {
     return d.total_hours;
   })).concat([1]));
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "sr"
-  }, [[data.employee_count, '在职员工', 'var(--cy)', '👥'], [data.ts_pending, '待审批工时', 'var(--og)', '⏳'], [data.ts_total_hours + 'h', '本期总工时', 'var(--pp)', '⏱️'], [data.abmahnung_active, '有效Abmahnung', 'var(--rd)', '⚠️'], [data.zeitkonto_alerts, 'Zeitkonto预警', 'var(--og)', '📊'], [data.wv_active_projects, 'WV项目进行中', 'var(--gn)', '📋']].map(function (_ref7, idx) {
-    var _ref8 = _slicedToArray(_ref7, 4),
-      v = _ref8[0],
-      l = _ref8[1],
-      c = _ref8[2],
-      i = _ref8[3];
+  }, [[data.employee_count, t('dash.employees'), 'var(--cy)', '👥'], [data.ts_pending, t('dash.pending_ts'), 'var(--og)', '⏳'], [data.ts_total_hours + 'h', t('dash.total_hours'), 'var(--pp)', '⏱️'], [data.abmahnung_active, t('dash.abmahnung'), 'var(--rd)', '⚠️'], [data.zeitkonto_alerts, t('dash.zk_alerts'), 'var(--og)', '📊'], [data.wv_active_projects, t('dash.wv_active'), 'var(--gn)', '📋']].map(function (_ref9, idx) {
+    var _ref0 = _slicedToArray(_ref9, 4),
+      v = _ref0[0],
+      l = _ref0[1],
+      c = _ref0[2],
+      i = _ref0[3];
     return /*#__PURE__*/React.createElement("div", {
       key: idx,
       className: "sc"
@@ -524,7 +1742,7 @@ function Dashboard(_ref6) {
     className: "cd"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ct-t"
-  }, "\uD83D\uDCCA \u8FD17\u65E5\u5DE5\u65F6\u5206\u5E03"), /*#__PURE__*/React.createElement("div", {
+  }, t('dash.chart')), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       alignItems: 'flex-end',
@@ -567,13 +1785,13 @@ function Dashboard(_ref6) {
       fontSize: 11,
       padding: '20px 0'
     }
-  }, "\u6682\u65E0\u5DE5\u65F6\u6570\u636E"))));
+  }, t('dash.no_data')))));
 }
 
 // ── EMPLOYEES ──
-function Employees(_ref9) {
-  var token = _ref9.token,
-    user = _ref9.user;
+function Employees(_ref1) {
+  var token = _ref1.token,
+    user = _ref1.user;
   var _useState15 = useState([]),
     _useState16 = _slicedToArray(_useState15, 2),
     emps = _useState16[0],
@@ -598,6 +1816,8 @@ function Employees(_ref9) {
     _useState26 = _slicedToArray(_useState25, 2),
     form = _useState26[0],
     setForm = _useState26[1];
+  var _useLang5 = useLang(),
+    t = _useLang5.t;
   var load = useCallback(function () {
     setLoading(true);
     api("/api/employees?search=".concat(search, "&status=").concat(fSt), {
@@ -629,7 +1849,7 @@ function Employees(_ref9) {
     setEM(e.id);
   };
   var save = /*#__PURE__*/function () {
-    var _ref0 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+    var _ref10 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
       var _t3;
       return _regenerator().w(function (_context3) {
         while (1) switch (_context3.p = _context3.n) {
@@ -670,26 +1890,29 @@ function Employees(_ref9) {
       }, _callee3, null, [[0, 4]]);
     }));
     return function save() {
-      return _ref0.apply(this, arguments);
+      return _ref10.apply(this, arguments);
     };
   }();
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "ab"
   }, /*#__PURE__*/React.createElement("input", {
     className: "si",
-    placeholder: "\u641C\u7D22\u59D3\u540D/ID/\u7535\u8BDD...",
+    placeholder: t('emp.search'),
     value: search,
     onChange: function onChange(e) {
       return setSearch(e.target.value);
     }
-  }), ['', '在职', '离职'].map(function (s) {
+  }), [['', 'c.all'], ['在职', 'emp.status_active'], ['离职', 'emp.status_left']].map(function (_ref11) {
+    var _ref12 = _slicedToArray(_ref11, 2),
+      s = _ref12[0],
+      tk = _ref12[1];
     return /*#__PURE__*/React.createElement("button", {
       key: s,
       className: "fb ".concat(fSt === s ? 'on' : ''),
       onClick: function onClick() {
         return setFSt(s);
       }
-    }, s || '全部');
+    }, t(tk));
   }), /*#__PURE__*/React.createElement("div", {
     className: "ml",
     style: {
@@ -699,11 +1922,11 @@ function Employees(_ref9) {
   }, canEdit && /*#__PURE__*/React.createElement("button", {
     className: "b bga",
     onClick: openNew
-  }, "+ \u65B0\u589E\u5458\u5DE5"))), loading ? /*#__PURE__*/React.createElement(Loading, null) : /*#__PURE__*/React.createElement("div", {
+  }, t('emp.new')))), loading ? /*#__PURE__*/React.createElement(Loading, null) : /*#__PURE__*/React.createElement("div", {
     className: "tw"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ts"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "ID"), /*#__PURE__*/React.createElement("th", null, "\u59D3\u540D"), /*#__PURE__*/React.createElement("th", null, "\u4E1A\u52A1\u7EBF"), /*#__PURE__*/React.createElement("th", null, "\u4ED3\u5E93"), /*#__PURE__*/React.createElement("th", null, "\u804C\u4F4D"), /*#__PURE__*/React.createElement("th", null, "\u7EA7\u522B"), /*#__PURE__*/React.createElement("th", null, "\u6765\u6E90"), /*#__PURE__*/React.createElement("th", null, "\u65F6\u85AA"), /*#__PURE__*/React.createElement("th", null, "\u72B6\u6001"), /*#__PURE__*/React.createElement("th", null, "\u5165\u804C"), canEdit && /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, emps.map(function (e) {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, t('emp.col_id')), /*#__PURE__*/React.createElement("th", null, t('emp.col_name')), /*#__PURE__*/React.createElement("th", null, t('emp.col_biz')), /*#__PURE__*/React.createElement("th", null, t('emp.col_wh')), /*#__PURE__*/React.createElement("th", null, t('emp.col_pos')), /*#__PURE__*/React.createElement("th", null, t('emp.col_grade')), /*#__PURE__*/React.createElement("th", null, t('emp.col_src')), /*#__PURE__*/React.createElement("th", null, t('emp.col_rate')), /*#__PURE__*/React.createElement("th", null, t('emp.col_status')), /*#__PURE__*/React.createElement("th", null, t('emp.col_join')), canEdit && /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, emps.map(function (e) {
     return /*#__PURE__*/React.createElement("tr", {
       key: e.id
     }, /*#__PURE__*/React.createElement("td", {
@@ -730,9 +1953,9 @@ function Employees(_ref9) {
       onClick: function onClick() {
         return openEdit(e);
       }
-    }, "\u7F16\u8F91")));
+    }, t('c.edit'))));
   }))))), editM && /*#__PURE__*/React.createElement(Modal, {
-    title: editM === 'new' ? '新增员工' : '编辑员工',
+    title: editM === 'new' ? t('emp.add_title') : t('emp.edit_title'),
     onClose: function onClose() {
       return setEM(null);
     },
@@ -741,17 +1964,17 @@ function Employees(_ref9) {
       onClick: function onClick() {
         return setEM(null);
       }
-    }, "\u53D6\u6D88"), /*#__PURE__*/React.createElement("button", {
+    }, t('c.cancel')), /*#__PURE__*/React.createElement("button", {
       className: "b bga",
       onClick: save
-    }, "\u4FDD\u5B58"))
+    }, t('c.save')))
   }, /*#__PURE__*/React.createElement("div", {
     className: "fr"
   }, /*#__PURE__*/React.createElement("div", {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u59D3\u540D *"), /*#__PURE__*/React.createElement("input", {
+  }, t('emp.f_name')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.name || '',
     onChange: function onChange(e) {
@@ -763,7 +1986,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u7535\u8BDD"), /*#__PURE__*/React.createElement("input", {
+  }, t('emp.f_phone')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.phone || '',
     onChange: function onChange(e) {
@@ -775,7 +1998,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u4E1A\u52A1\u7EBF"), /*#__PURE__*/React.createElement("select", {
+  }, t('emp.f_biz')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.biz_line || '渊博',
     onChange: function onChange(e) {
@@ -787,7 +2010,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u4ED3\u5E93"), /*#__PURE__*/React.createElement("select", {
+  }, t('emp.f_wh')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.warehouse_code || '',
     onChange: function onChange(e) {
@@ -805,7 +2028,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u804C\u4F4D"), /*#__PURE__*/React.createElement("input", {
+  }, t('emp.f_pos')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.position || '',
     onChange: function onChange(e) {
@@ -817,7 +2040,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u804C\u7EA7"), /*#__PURE__*/React.createElement("select", {
+  }, t('emp.f_grade')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.grade || 'P1',
     onChange: function onChange(e) {
@@ -833,7 +2056,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u6765\u6E90"), /*#__PURE__*/React.createElement("select", {
+  }, t('emp.f_src')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.source || '自有',
     onChange: function onChange(e) {
@@ -841,11 +2064,15 @@ function Employees(_ref9) {
         source: e.target.value
       }));
     }
-  }, /*#__PURE__*/React.createElement("option", null, "\u81EA\u6709"), /*#__PURE__*/React.createElement("option", null, "\u4F9B\u5E94\u5546"))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "\u81EA\u6709"
+  }, t('emp.src_own')), /*#__PURE__*/React.createElement("option", {
+    value: "\u4F9B\u5E94\u5546"
+  }, t('emp.src_sup')))), /*#__PURE__*/React.createElement("div", {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u65F6\u85AA (\u20AC/h)"), /*#__PURE__*/React.createElement("input", {
+  }, t('emp.f_rate')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "number",
     step: "0.5",
@@ -859,7 +2086,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u7ED3\u7B97\u65B9\u5F0F"), /*#__PURE__*/React.createElement("select", {
+  }, t('emp.f_settle')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.settlement_type || '按小时',
     onChange: function onChange(e) {
@@ -871,7 +2098,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5408\u540C\u5DE5\u65F6/\u65E5"), /*#__PURE__*/React.createElement("input", {
+  }, t('emp.f_contract_hrs')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "number",
     value: form.contract_hours || 8,
@@ -884,7 +2111,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u56FD\u7C4D"), /*#__PURE__*/React.createElement("input", {
+  }, t('emp.f_nationality')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.nationality || '',
     onChange: function onChange(e) {
@@ -896,7 +2123,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5165\u804C\u65E5\u671F"), /*#__PURE__*/React.createElement("input", {
+  }, t('emp.f_join')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "date",
     value: form.join_date || '',
@@ -909,7 +2136,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u62A5\u7A0E\u65B9\u5F0F"), /*#__PURE__*/React.createElement("select", {
+  }, t('emp.f_tax')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.tax_mode || '我方报税',
     onChange: function onChange(e) {
@@ -921,7 +2148,7 @@ function Employees(_ref9) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "PIN (4\u4F4D)"), /*#__PURE__*/React.createElement("input", {
+  }, t('emp.f_pin')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     maxLength: 4,
     value: form.pin || '',
@@ -934,7 +2161,7 @@ function Employees(_ref9) {
     className: "fg ful"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5907\u6CE8"), /*#__PURE__*/React.createElement("textarea", {
+  }, t('emp.f_notes')), /*#__PURE__*/React.createElement("textarea", {
     className: "fta",
     value: form.notes || '',
     onChange: function onChange(e) {
@@ -946,9 +2173,9 @@ function Employees(_ref9) {
 }
 
 // ── TIMESHEETS ──
-function Timesheets(_ref1) {
-  var token = _ref1.token,
-    user = _ref1.user;
+function Timesheets(_ref13) {
+  var token = _ref13.token,
+    user = _ref13.user;
   var _useState27 = useState([]),
     _useState28 = _slicedToArray(_useState27, 2),
     ts = _useState28[0],
@@ -977,6 +2204,8 @@ function Timesheets(_ref1) {
     _useState38 = _slicedToArray(_useState37, 2),
     emps = _useState38[0],
     setEmps = _useState38[1];
+  var _useLang6 = useLang(),
+    t = _useLang6.t;
   var load = function load() {
     setLoading(true);
     api("/api/timesheets?status=".concat(fSt), {
@@ -994,7 +2223,7 @@ function Timesheets(_ref1) {
   var canApproveWH = ['admin', 'wh', 'mgr'].includes(user.role);
   var canApproveFin = ['admin', 'fin'].includes(user.role);
   var approve = /*#__PURE__*/function () {
-    var _ref10 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(id) {
+    var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(id) {
       var _t4;
       return _regenerator().w(function (_context4) {
         while (1) switch (_context4.p = _context4.n) {
@@ -1019,11 +2248,11 @@ function Timesheets(_ref1) {
       }, _callee4, null, [[0, 2]]);
     }));
     return function approve(_x2) {
-      return _ref10.apply(this, arguments);
+      return _ref14.apply(this, arguments);
     };
   }();
   var addTS = /*#__PURE__*/function () {
-    var _ref11 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+    var _ref15 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
       var _t5;
       return _regenerator().w(function (_context5) {
         while (1) switch (_context5.p = _context5.n) {
@@ -1050,11 +2279,11 @@ function Timesheets(_ref1) {
       }, _callee5, null, [[0, 2]]);
     }));
     return function addTS() {
-      return _ref11.apply(this, arguments);
+      return _ref15.apply(this, arguments);
     };
   }();
   var batchApprove = /*#__PURE__*/function () {
-    var _ref12 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(ids) {
+    var _ref16 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(ids) {
       return _regenerator().w(function (_context6) {
         while (1) switch (_context6.n) {
           case 0:
@@ -1074,22 +2303,25 @@ function Timesheets(_ref1) {
       }, _callee6);
     }));
     return function batchApprove(_x3) {
-      return _ref12.apply(this, arguments);
+      return _ref16.apply(this, arguments);
     };
   }();
-  var pending = ts.filter(function (t) {
-    return t.status === '待仓库审批' || t.status === '待财务确认';
+  var pending = ts.filter(function (row) {
+    return row.status === '待仓库审批' || row.status === '待财务确认';
   });
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "ab"
-  }, ['', '待仓库审批', '待财务确认', '已入账', '驳回'].map(function (s) {
+  }, [['', 'c.all'], ['待仓库审批', '待仓库审批'], ['待财务确认', '待财务确认'], ['已入账', '已入账'], ['驳回', '驳回']].map(function (_ref17) {
+    var _ref18 = _slicedToArray(_ref17, 2),
+      s = _ref18[0],
+      tk = _ref18[1];
     return /*#__PURE__*/React.createElement("button", {
       key: s,
       className: "fb ".concat(fSt === s ? 'on' : ''),
       onClick: function onClick() {
         return setFSt(s);
       }
-    }, s || '全部');
+    }, s === '' ? t('c.all') : s);
   }), /*#__PURE__*/React.createElement("div", {
     className: "ml",
     style: {
@@ -1099,86 +2331,86 @@ function Timesheets(_ref1) {
   }, pending.length > 0 && canApproveWH && /*#__PURE__*/React.createElement("button", {
     className: "b bgn",
     onClick: function onClick() {
-      return batchApprove(pending.map(function (t) {
-        return t.id;
+      return batchApprove(pending.map(function (row) {
+        return row.id;
       }));
     }
-  }, "\u2713 \u6279\u91CF\u5BA1\u6279 (", pending.length, ")"), /*#__PURE__*/React.createElement("button", {
+  }, t('ts.batch'), " (", pending.length, ")"), /*#__PURE__*/React.createElement("button", {
     className: "b bga",
     onClick: function onClick() {
       return setAddM(true);
     }
-  }, "+ \u5F55\u5165\u5DE5\u65F6"))), loading ? /*#__PURE__*/React.createElement(Loading, null) : /*#__PURE__*/React.createElement("div", {
+  }, t('ts.add')))), loading ? /*#__PURE__*/React.createElement(Loading, null) : /*#__PURE__*/React.createElement("div", {
     className: "tw"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ts"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "ID"), /*#__PURE__*/React.createElement("th", null, "\u5458\u5DE5"), /*#__PURE__*/React.createElement("th", null, "\u7EA7\u522B"), /*#__PURE__*/React.createElement("th", null, "\u4ED3\u5E93"), /*#__PURE__*/React.createElement("th", null, "\u65E5\u671F"), /*#__PURE__*/React.createElement("th", null, "\u73ED\u6B21"), /*#__PURE__*/React.createElement("th", null, "\u5DE5\u65F6"), /*#__PURE__*/React.createElement("th", null, "\u57FA\u7840\u85AA"), /*#__PURE__*/React.createElement("th", null, "\u73ED\u6B21+"), /*#__PURE__*/React.createElement("th", null, "\u5B9E\u9645\u7387"), /*#__PURE__*/React.createElement("th", null, "Brutto"), /*#__PURE__*/React.createElement("th", null, "\u7EE9\u6548"), /*#__PURE__*/React.createElement("th", null, "Net"), /*#__PURE__*/React.createElement("th", null, "\u72B6\u6001"), /*#__PURE__*/React.createElement("th", null, "\u64CD\u4F5C"))), /*#__PURE__*/React.createElement("tbody", null, ts.map(function (t) {
-    var _t$id;
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, t('ts.col_id')), /*#__PURE__*/React.createElement("th", null, t('ts.col_emp')), /*#__PURE__*/React.createElement("th", null, t('ts.col_grade')), /*#__PURE__*/React.createElement("th", null, t('ts.col_wh')), /*#__PURE__*/React.createElement("th", null, t('ts.col_date')), /*#__PURE__*/React.createElement("th", null, t('ts.col_shift')), /*#__PURE__*/React.createElement("th", null, t('ts.col_hrs')), /*#__PURE__*/React.createElement("th", null, t('ts.col_base')), /*#__PURE__*/React.createElement("th", null, t('ts.col_shift_b')), /*#__PURE__*/React.createElement("th", null, t('ts.col_eff')), /*#__PURE__*/React.createElement("th", null, t('ts.col_brutto')), /*#__PURE__*/React.createElement("th", null, t('ts.col_perf')), /*#__PURE__*/React.createElement("th", null, t('ts.col_net')), /*#__PURE__*/React.createElement("th", null, t('ts.col_status')), /*#__PURE__*/React.createElement("th", null, t('ts.col_action')))), /*#__PURE__*/React.createElement("tbody", null, ts.map(function (row) {
+    var _row$id;
     return /*#__PURE__*/React.createElement("tr", {
-      key: t.id
+      key: row.id
     }, /*#__PURE__*/React.createElement("td", {
       className: "mn tm"
-    }, (_t$id = t.id) === null || _t$id === void 0 ? void 0 : _t$id.slice(-10)), /*#__PURE__*/React.createElement("td", {
+    }, (_row$id = row.id) === null || _row$id === void 0 ? void 0 : _row$id.slice(-10)), /*#__PURE__*/React.createElement("td", {
       className: "fw6"
-    }, t.employee_name), /*#__PURE__*/React.createElement("td", {
+    }, row.employee_name), /*#__PURE__*/React.createElement("td", {
       style: {
         color: 'var(--pp)',
         fontWeight: 600
       }
-    }, t.grade || '—'), /*#__PURE__*/React.createElement("td", null, t.warehouse_code), /*#__PURE__*/React.createElement("td", null, t.work_date), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", {
+    }, row.grade || '—'), /*#__PURE__*/React.createElement("td", null, row.warehouse_code), /*#__PURE__*/React.createElement("td", null, row.work_date), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", {
       style: {
-        color: t.shift === '夜班' ? 'var(--pp)' : t.shift === '周末' ? 'var(--og)' : t.shift === '节假日' ? 'var(--rd)' : 'var(--tx3)',
+        color: row.shift === '夜班' ? 'var(--pp)' : row.shift === '周末' ? 'var(--og)' : row.shift === '节假日' ? 'var(--rd)' : 'var(--tx3)',
         fontSize: 10
       }
-    }, t.shift || '白班')), /*#__PURE__*/React.createElement("td", {
+    }, row.shift || '白班')), /*#__PURE__*/React.createElement("td", {
       className: "mn fw6"
-    }, t.hours, "h"), /*#__PURE__*/React.createElement("td", {
+    }, row.hours, "h"), /*#__PURE__*/React.createElement("td", {
       className: "mn tm"
-    }, "\u20AC", fmt(t.base_rate)), /*#__PURE__*/React.createElement("td", {
+    }, "\u20AC", fmt(row.base_rate)), /*#__PURE__*/React.createElement("td", {
       className: "mn",
       style: {
-        color: t.shift_bonus > 0 ? 'var(--og)' : 'var(--tx3)'
+        color: row.shift_bonus > 0 ? 'var(--og)' : 'var(--tx3)'
       }
-    }, "+\u20AC", fmt(t.shift_bonus)), /*#__PURE__*/React.createElement("td", {
+    }, "+\u20AC", fmt(row.shift_bonus)), /*#__PURE__*/React.createElement("td", {
       className: "mn fw6",
       style: {
         color: 'var(--ac2)'
       }
-    }, "\u20AC", fmt(t.effective_rate)), /*#__PURE__*/React.createElement("td", {
+    }, "\u20AC", fmt(row.effective_rate)), /*#__PURE__*/React.createElement("td", {
       className: "mn"
-    }, "\u20AC", fmt(t.gross_pay)), /*#__PURE__*/React.createElement("td", {
+    }, "\u20AC", fmt(row.gross_pay)), /*#__PURE__*/React.createElement("td", {
       className: "mn",
       style: {
-        color: t.perf_bonus > 0 ? 'var(--gn)' : 'var(--tx3)'
+        color: row.perf_bonus > 0 ? 'var(--gn)' : 'var(--tx3)'
       }
-    }, "+\u20AC", fmt(t.perf_bonus)), /*#__PURE__*/React.createElement("td", {
+    }, "+\u20AC", fmt(row.perf_bonus)), /*#__PURE__*/React.createElement("td", {
       className: "mn gn"
-    }, "\u20AC", fmt(t.net_pay)), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(Bg, {
-      t: t.status
-    })), /*#__PURE__*/React.createElement("td", null, t.status === '待仓库审批' && canApproveWH ? /*#__PURE__*/React.createElement("button", {
+    }, "\u20AC", fmt(row.net_pay)), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(Bg, {
+      t: row.status
+    })), /*#__PURE__*/React.createElement("td", null, row.status === '待仓库审批' && canApproveWH ? /*#__PURE__*/React.createElement("button", {
       className: "b bgn",
       style: {
         fontSize: 9
       },
       onClick: function onClick() {
-        return approve(t.id);
+        return approve(row.id);
       }
-    }, "\u2713\u4ED3\u5E93") : t.status === '待财务确认' && canApproveFin ? /*#__PURE__*/React.createElement("button", {
+    }, t('ts.wh_approve')) : row.status === '待财务确认' && canApproveFin ? /*#__PURE__*/React.createElement("button", {
       className: "b bga",
       style: {
         fontSize: 9
       },
       onClick: function onClick() {
-        return approve(t.id);
+        return approve(row.id);
       }
-    }, "\u2713\u8D22\u52A1") : /*#__PURE__*/React.createElement("span", {
+    }, t('ts.fin_approve')) : /*#__PURE__*/React.createElement("span", {
       className: "tm",
       style: {
         fontSize: 9
       }
     }, "\u2014")));
   }))))), addM && /*#__PURE__*/React.createElement(Modal, {
-    title: "\u5F55\u5165\u5DE5\u65F6",
+    title: t('ts.add_title'),
     onClose: function onClose() {
       return setAddM(false);
     },
@@ -1187,17 +2419,17 @@ function Timesheets(_ref1) {
       onClick: function onClick() {
         return setAddM(false);
       }
-    }, "\u53D6\u6D88"), /*#__PURE__*/React.createElement("button", {
+    }, t('c.cancel')), /*#__PURE__*/React.createElement("button", {
       className: "b bga",
       onClick: addTS
-    }, "\u63D0\u4EA4"))
+    }, t('c.submit')))
   }, /*#__PURE__*/React.createElement("div", {
     className: "fr"
   }, /*#__PURE__*/React.createElement("div", {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5458\u5DE5 *"), /*#__PURE__*/React.createElement("select", {
+  }, t('ts.f_emp')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.employee_id || '',
     onChange: function onChange(e) {
@@ -1216,7 +2448,7 @@ function Timesheets(_ref1) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5DE5\u4F5C\u65E5\u671F"), /*#__PURE__*/React.createElement("input", {
+  }, t('ts.f_date')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "date",
     value: form.work_date,
@@ -1229,7 +2461,7 @@ function Timesheets(_ref1) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5F00\u59CB\u65F6\u95F4"), /*#__PURE__*/React.createElement("input", {
+  }, t('ts.f_start')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "time",
     value: form.start_time,
@@ -1242,7 +2474,7 @@ function Timesheets(_ref1) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u7ED3\u675F\u65F6\u95F4"), /*#__PURE__*/React.createElement("input", {
+  }, t('ts.f_end')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "time",
     value: form.end_time,
@@ -1255,7 +2487,7 @@ function Timesheets(_ref1) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u4ED3\u5E93\uFF08\u7559\u7A7A=\u5458\u5DE5\u9ED8\u8BA4\u4ED3\u5E93\uFF09"), /*#__PURE__*/React.createElement("input", {
+  }, t('ts.f_wh')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.warehouse_code || '',
     onChange: function onChange(e) {
@@ -1267,7 +2499,7 @@ function Timesheets(_ref1) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u73ED\u6B21"), /*#__PURE__*/React.createElement("select", {
+  }, t('ts.f_shift')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.shift || '白班',
     onChange: function onChange(e) {
@@ -1279,7 +2511,7 @@ function Timesheets(_ref1) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5907\u6CE8"), /*#__PURE__*/React.createElement("input", {
+  }, t('ts.f_notes')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.notes || '',
     onChange: function onChange(e) {
@@ -1289,13 +2521,13 @@ function Timesheets(_ref1) {
     }
   }))), /*#__PURE__*/React.createElement("div", {
     className: "alert alert-ac"
-  }, "\u5DE5\u65F6\u3001Brutto\u3001SSI\u3001Net \u7531\u7CFB\u7EDF\u6839\u636E\u5458\u5DE5\u65F6\u85AA\u81EA\u52A8\u8BA1\u7B97")));
+  }, t('ts.auto_calc'))));
 }
 
 // ── ZEITKONTO ──
-function Zeitkonto(_ref13) {
-  var token = _ref13.token,
-    user = _ref13.user;
+function Zeitkonto(_ref19) {
+  var token = _ref19.token,
+    user = _ref19.user;
   var _useState39 = useState([]),
     _useState40 = _slicedToArray(_useState39, 2),
     zk = _useState40[0],
@@ -1347,7 +2579,7 @@ function Zeitkonto(_ref13) {
     }).then(setLogs);
   };
   var addLog = /*#__PURE__*/function () {
-    var _ref14 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+    var _ref20 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
       var _t6;
       return _regenerator().w(function (_context7) {
         while (1) switch (_context7.p = _context7.n) {
@@ -1376,11 +2608,11 @@ function Zeitkonto(_ref13) {
       }, _callee7, null, [[0, 2]]);
     }));
     return function addLog() {
-      return _ref14.apply(this, arguments);
+      return _ref20.apply(this, arguments);
     };
   }();
   var doFreizeitausgleich = /*#__PURE__*/function () {
-    var _ref15 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(id, hrs) {
+    var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(id, hrs) {
       var h;
       return _regenerator().w(function (_context8) {
         while (1) switch (_context8.n) {
@@ -1408,10 +2640,12 @@ function Zeitkonto(_ref13) {
       }, _callee8);
     }));
     return function doFreizeitausgleich(_x4, _x5) {
-      return _ref15.apply(this, arguments);
+      return _ref21.apply(this, arguments);
     };
   }();
   var canEdit = ['admin', 'hr', 'mgr'].includes(user.role);
+  var _useLang7 = useLang(),
+    t = _useLang7.t;
   var getStatus = function getStatus(z) {
     if (z.plus_hours > 200 || z.daily_max > 10) return {
       c: 'var(--rd)',
@@ -1459,11 +2693,11 @@ function Zeitkonto(_ref13) {
     onClick: function onClick() {
       return setAddM(true);
     }
-  }, "+ \u624B\u52A8\u5F55\u5165")), loading ? /*#__PURE__*/React.createElement(Loading, null) : /*#__PURE__*/React.createElement("div", {
+  }, t('zk.add'))), loading ? /*#__PURE__*/React.createElement(Loading, null) : /*#__PURE__*/React.createElement("div", {
     className: "tw"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ts"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u5458\u5DE5"), /*#__PURE__*/React.createElement("th", null, "\u4ED3\u5E93"), /*#__PURE__*/React.createElement("th", null, "\u7EA7\u522B"), /*#__PURE__*/React.createElement("th", null, "Plusstunden"), /*#__PURE__*/React.createElement("th", null, "Minusstunden"), /*#__PURE__*/React.createElement("th", null, "\u65E5\u6700\u9AD8\u5DE5\u65F6"), /*#__PURE__*/React.createElement("th", null, "\u5408\u89C4\u72B6\u6001"), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, zk.map(function (z) {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, t('zk.col_emp')), /*#__PURE__*/React.createElement("th", null, t('zk.col_wh')), /*#__PURE__*/React.createElement("th", null, t('zk.col_grade')), /*#__PURE__*/React.createElement("th", null, "Plusstunden"), /*#__PURE__*/React.createElement("th", null, "Minusstunden"), /*#__PURE__*/React.createElement("th", null, "\u65E5\u6700\u9AD8\u5DE5\u65F6"), /*#__PURE__*/React.createElement("th", null, t('zk.col_status')), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, zk.map(function (z) {
     var s = getStatus(z);
     return /*#__PURE__*/React.createElement("tr", {
       key: z.employee_id,
@@ -1514,7 +2748,7 @@ function Zeitkonto(_ref13) {
         e.stopPropagation();
         doFreizeitausgleich(z.employee_id, z.plus_hours);
       }
-    }, "\u5B89\u6392\u4F11\u606F")));
+    }, t('zk.arrange_rest'))));
   }))))), sel && selRow && /*#__PURE__*/React.createElement("div", {
     className: "cd",
     style: {
@@ -1527,11 +2761,11 @@ function Zeitkonto(_ref13) {
     style: {
       marginBottom: 12
     }
-  }, [['Plusstunden', '+' + selRow.plus_hours + 'h', 'var(--gn)'], ['Minusstunden', '-' + selRow.minus_hours + 'h', 'var(--pp)'], ['日最高', selRow.daily_max + 'h', selRow.daily_max > 10 ? 'var(--rd)' : 'var(--tx)'], ['超10h天数', (selRow.over10_days || 0) + '天', selRow.over10_days > 0 ? 'var(--rd)' : 'var(--tx3)']].map(function (_ref16) {
-    var _ref17 = _slicedToArray(_ref16, 3),
-      l = _ref17[0],
-      v = _ref17[1],
-      c = _ref17[2];
+  }, [['Plusstunden', '+' + selRow.plus_hours + 'h', 'var(--gn)'], ['Minusstunden', '-' + selRow.minus_hours + 'h', 'var(--pp)'], ['日最高', selRow.daily_max + 'h', selRow.daily_max > 10 ? 'var(--rd)' : 'var(--tx)'], ['超10h天数', (selRow.over10_days || 0) + '天', selRow.over10_days > 0 ? 'var(--rd)' : 'var(--tx3)']].map(function (_ref22) {
+    var _ref23 = _slicedToArray(_ref22, 3),
+      l = _ref23[0],
+      v = _ref23[1],
+      c = _ref23[2];
     return /*#__PURE__*/React.createElement("div", {
       key: l,
       style: {
@@ -1577,7 +2811,7 @@ function Zeitkonto(_ref13) {
       padding: 16
     }
   }, "\u6682\u65E0\u624B\u52A8\u8BB0\u5F55")))))), addM && /*#__PURE__*/React.createElement(Modal, {
-    title: "\u624B\u52A8\u5F55\u5165 Zeitkonto",
+    title: t('zk.add_title'),
     onClose: function onClose() {
       return setAddM(false);
     },
@@ -1586,17 +2820,17 @@ function Zeitkonto(_ref13) {
       onClick: function onClick() {
         return setAddM(false);
       }
-    }, "\u53D6\u6D88"), /*#__PURE__*/React.createElement("button", {
+    }, t('c.cancel')), /*#__PURE__*/React.createElement("button", {
       className: "b bga",
       onClick: addLog
-    }, "\u4FDD\u5B58"))
+    }, t('c.save')))
   }, /*#__PURE__*/React.createElement("div", {
     className: "fr"
   }, /*#__PURE__*/React.createElement("div", {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5458\u5DE5"), /*#__PURE__*/React.createElement("select", {
+  }, t('zk.f_emp')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.employee_id,
     onChange: function onChange(e) {
@@ -1615,7 +2849,7 @@ function Zeitkonto(_ref13) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u65E5\u671F"), /*#__PURE__*/React.createElement("input", {
+  }, t('zk.f_date')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "date",
     value: form.log_date,
@@ -1628,7 +2862,7 @@ function Zeitkonto(_ref13) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u7C7B\u578B"), /*#__PURE__*/React.createElement("select", {
+  }, t('zk.f_type')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.entry_type,
     onChange: function onChange(e) {
@@ -1644,7 +2878,7 @@ function Zeitkonto(_ref13) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5DE5\u65F6\uFF08h\uFF09"), /*#__PURE__*/React.createElement("input", {
+  }, t('zk.f_hrs')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "number",
     step: "0.5",
@@ -1658,7 +2892,7 @@ function Zeitkonto(_ref13) {
     className: "fg ful"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u539F\u56E0\u8BF4\u660E"), /*#__PURE__*/React.createElement("input", {
+  }, t('zk.f_reason')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.reason,
     onChange: function onChange(e) {
@@ -1670,9 +2904,9 @@ function Zeitkonto(_ref13) {
 }
 
 // ── ABMAHNUNG ──
-function Abmahnung(_ref18) {
-  var token = _ref18.token,
-    user = _ref18.user;
+function Abmahnung(_ref24) {
+  var token = _ref24.token,
+    user = _ref24.user;
   var _useState51 = useState([]),
     _useState52 = _slicedToArray(_useState51, 2),
     abms = _useState52[0],
@@ -1722,7 +2956,7 @@ function Abmahnung(_ref18) {
     }).then(setEmps);
   }, []);
   var save = /*#__PURE__*/function () {
-    var _ref19 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+    var _ref25 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
       var _t7;
       return _regenerator().w(function (_context9) {
         while (1) switch (_context9.p = _context9.n) {
@@ -1756,11 +2990,11 @@ function Abmahnung(_ref18) {
       }, _callee9, null, [[1, 3]]);
     }));
     return function save() {
-      return _ref19.apply(this, arguments);
+      return _ref25.apply(this, arguments);
     };
   }();
   var revoke = /*#__PURE__*/function () {
-    var _ref20 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(id) {
+    var _ref26 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(id) {
       var reason;
       return _regenerator().w(function (_context0) {
         while (1) switch (_context0.n) {
@@ -1788,7 +3022,7 @@ function Abmahnung(_ref18) {
       }, _callee0);
     }));
     return function revoke(_x6) {
-      return _ref20.apply(this, arguments);
+      return _ref26.apply(this, arguments);
     };
   }();
 
@@ -1797,15 +3031,15 @@ function Abmahnung(_ref18) {
   abms.forEach(function (a) {
     if (a.status === '有效') empCounts[a.employee_id] = (empCounts[a.employee_id] || 0) + 1;
   });
-  var kandidaten = Object.entries(empCounts).filter(function (_ref21) {
-    var _ref22 = _slicedToArray(_ref21, 2),
-      c = _ref22[1];
+  var kandidaten = Object.entries(empCounts).filter(function (_ref27) {
+    var _ref28 = _slicedToArray(_ref27, 2),
+      c = _ref28[1];
     return c >= 2;
-  }).map(function (_ref23) {
+  }).map(function (_ref29) {
     var _abms$find;
-    var _ref24 = _slicedToArray(_ref23, 2),
-      id = _ref24[0],
-      c = _ref24[1];
+    var _ref30 = _slicedToArray(_ref29, 2),
+      id = _ref30[0],
+      c = _ref30[1];
     return {
       id: id,
       name: ((_abms$find = abms.find(function (a) {
@@ -2106,10 +3340,10 @@ var WV_COMP_ITEMS = [{
   lbl: '员工数据仅存EU合规服务器',
   crit: false
 }];
-function Werkvertrag(_ref25) {
+function Werkvertrag(_ref31) {
   var _selP$cost_data;
-  var token = _ref25.token,
-    user = _ref25.user;
+  var token = _ref31.token,
+    user = _ref31.user;
   var _useState63 = useState([]),
     _useState64 = _slicedToArray(_useState63, 2),
     projs = _useState64[0],
@@ -2158,7 +3392,7 @@ function Werkvertrag(_ref25) {
   });
   var canEdit = ['admin', 'hr', 'mgr'].includes(user.role);
   var createProj = /*#__PURE__*/function () {
-    var _ref26 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
+    var _ref32 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
       var r, _t8;
       return _regenerator().w(function (_context1) {
         while (1) switch (_context1.p = _context1.n) {
@@ -2195,11 +3429,11 @@ function Werkvertrag(_ref25) {
       }, _callee1, null, [[1, 3]]);
     }));
     return function createProj() {
-      return _ref26.apply(this, arguments);
+      return _ref32.apply(this, arguments);
     };
   }();
   var updateProj = /*#__PURE__*/function () {
-    var _ref27 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(upd) {
+    var _ref33 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(upd) {
       var _t9;
       return _regenerator().w(function (_context10) {
         while (1) switch (_context10.p = _context10.n) {
@@ -2231,7 +3465,7 @@ function Werkvertrag(_ref25) {
       }, _callee10, null, [[1, 3]]);
     }));
     return function updateProj(_x7) {
-      return _ref27.apply(this, arguments);
+      return _ref33.apply(this, arguments);
     };
   }();
   var calcCost = function calcCost() {
@@ -2388,10 +3622,10 @@ function Werkvertrag(_ref25) {
     className: "ct-t"
   }, "\u2460 \u9879\u76EE\u7ACB\u9879 \xB7 Projekter\xF6ffnung"), /*#__PURE__*/React.createElement("div", {
     className: "fr"
-  }, [['项目名称', 'name'], ['客户/仓库', 'client'], ['地址', 'address'], ['服务类型', 'service_type'], ['大区', 'region'], ['项目负责人', 'project_manager']].map(function (_ref28) {
-    var _ref29 = _slicedToArray(_ref28, 2),
-      l = _ref29[0],
-      k = _ref29[1];
+  }, [['项目名称', 'name'], ['客户/仓库', 'client'], ['地址', 'address'], ['服务类型', 'service_type'], ['大区', 'region'], ['项目负责人', 'project_manager']].map(function (_ref34) {
+    var _ref35 = _slicedToArray(_ref34, 2),
+      l = _ref35[0],
+      k = _ref35[1];
     return /*#__PURE__*/React.createElement("div", {
       key: k,
       className: "fg"
@@ -2605,11 +3839,11 @@ function Werkvertrag(_ref25) {
       }
     }, "+ \u4EBA\u5458\u7EC4"), /*#__PURE__*/React.createElement("div", {
       className: "fr3"
-    }, [['SV %', c.soc, 'soc'], ['假期 %', c.hol, 'hol'], ['管理 %', c.mgmt, 'mgmt'], ['设备 €', c.equip, 'equip'], ['差旅 €', c.travel, 'travel'], ['Overhead %', c.overhead, 'overhead'], ['利润率 %', c.margin, 'margin']].map(function (_ref30) {
-      var _ref31 = _slicedToArray(_ref30, 3),
-        l = _ref31[0],
-        v = _ref31[1],
-        k = _ref31[2];
+    }, [['SV %', c.soc, 'soc'], ['假期 %', c.hol, 'hol'], ['管理 %', c.mgmt, 'mgmt'], ['设备 €', c.equip, 'equip'], ['差旅 €', c.travel, 'travel'], ['Overhead %', c.overhead, 'overhead'], ['利润率 %', c.margin, 'margin']].map(function (_ref36) {
+      var _ref37 = _slicedToArray(_ref36, 3),
+        l = _ref37[0],
+        v = _ref37[1],
+        k = _ref37[2];
       return /*#__PURE__*/React.createElement("div", {
         key: k,
         className: "fg"
@@ -2634,11 +3868,11 @@ function Werkvertrag(_ref25) {
         color: '#fff',
         marginTop: 4
       }
-    }, [['Bruttoarbeitslohn', 'var(--tx2)', fmtE(cv.lb)], ["SV (".concat(c.soc || 21, "%)"), 'var(--tx2)', fmtE(cv.soc)], ["\u5047\u671F (".concat(c.hol || 8, "%)"), 'var(--tx2)', fmtE(cv.hol)], ["\u7BA1\u7406 (".concat(c.mgmt || 18, "%)"), 'var(--tx2)', fmtE(cv.mgmt)], ['设备+差旅', 'var(--tx2)', fmtE((+c.equip || 0) + (+c.travel || 0))], ["Overhead (".concat(c.overhead || 5, "%)"), 'var(--tx2)', fmtE(cv.tot - cv.lb - cv.soc - cv.hol - cv.mgmt)], ['总成本', '#fff', fmtE(cv.tot)]].map(function (_ref32) {
-      var _ref33 = _slicedToArray(_ref32, 3),
-        l = _ref33[0],
-        tc = _ref33[1],
-        v = _ref33[2];
+    }, [['Bruttoarbeitslohn', 'var(--tx2)', fmtE(cv.lb)], ["SV (".concat(c.soc || 21, "%)"), 'var(--tx2)', fmtE(cv.soc)], ["\u5047\u671F (".concat(c.hol || 8, "%)"), 'var(--tx2)', fmtE(cv.hol)], ["\u7BA1\u7406 (".concat(c.mgmt || 18, "%)"), 'var(--tx2)', fmtE(cv.mgmt)], ['设备+差旅', 'var(--tx2)', fmtE((+c.equip || 0) + (+c.travel || 0))], ["Overhead (".concat(c.overhead || 5, "%)"), 'var(--tx2)', fmtE(cv.tot - cv.lb - cv.soc - cv.hol - cv.mgmt)], ['总成本', '#fff', fmtE(cv.tot)]].map(function (_ref38) {
+      var _ref39 = _slicedToArray(_ref38, 3),
+        l = _ref39[0],
+        tc = _ref39[1],
+        v = _ref39[2];
       return /*#__PURE__*/React.createElement("div", {
         key: l,
         style: {
@@ -2733,11 +3967,11 @@ function Werkvertrag(_ref25) {
         borderTop: '2px solid #1B2B4B',
         paddingTop: 12
       }
-    }, [['Nettobetrag', '#111', fmtE(cv.price)], ['zzgl. 19% MwSt.', '#666', fmtE(cv.price * 0.19)], ['Gesamt inkl. MwSt.', '#1B2B4B', fmtE(cv.price * 1.19)]].map(function (_ref34) {
-      var _ref35 = _slicedToArray(_ref34, 3),
-        l = _ref35[0],
-        c2 = _ref35[1],
-        v = _ref35[2];
+    }, [['Nettobetrag', '#111', fmtE(cv.price)], ['zzgl. 19% MwSt.', '#666', fmtE(cv.price * 0.19)], ['Gesamt inkl. MwSt.', '#1B2B4B', fmtE(cv.price * 1.19)]].map(function (_ref40) {
+      var _ref41 = _slicedToArray(_ref40, 3),
+        l = _ref41[0],
+        c2 = _ref41[1],
+        v = _ref41[2];
       return /*#__PURE__*/React.createElement("div", {
         key: l,
         style: {
@@ -2897,10 +4131,10 @@ function Werkvertrag(_ref25) {
     className: "cd"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ct-t"
-  }, "\u2467 \u9879\u76EE\u64A4\u79BB \xB7 Projektabschluss"), [['client_signed_off', '客户 Leistungsabnahme 签字（§640 BGB）'], ['staff_returned', '人员重新分配/离场'], ['equip_returned', 'PPE和器具回收'], ['final_billed', '最终结算账单已发送']].map(function (_ref36) {
-    var _ref37 = _slicedToArray(_ref36, 2),
-      k = _ref37[0],
-      lbl = _ref37[1];
+  }, "\u2467 \u9879\u76EE\u64A4\u79BB \xB7 Projektabschluss"), [['client_signed_off', '客户 Leistungsabnahme 签字（§640 BGB）'], ['staff_returned', '人员重新分配/离场'], ['equip_returned', 'PPE和器具回收'], ['final_billed', '最终结算账单已发送']].map(function (_ref42) {
+    var _ref43 = _slicedToArray(_ref42, 2),
+      k = _ref43[0],
+      lbl = _ref43[1];
     return /*#__PURE__*/React.createElement("div", {
       key: k,
       style: {
@@ -3054,9 +4288,9 @@ function Werkvertrag(_ref25) {
 }
 
 // ── CONTAINERS ──
-function Containers(_ref38) {
-  var token = _ref38.token,
-    user = _ref38.user;
+function Containers(_ref44) {
+  var token = _ref44.token,
+    user = _ref44.user;
   var _useState75 = useState([]),
     _useState76 = _slicedToArray(_useState75, 2),
     cts = _useState76[0],
@@ -3087,6 +4321,8 @@ function Containers(_ref38) {
     _useState84 = _slicedToArray(_useState83, 2),
     form = _useState84[0],
     setForm = _useState84[1];
+  var _useLang8 = useLang(),
+    t = _useLang8.t;
   var load = function load() {
     setLoading(true);
     api('/api/containers', {
@@ -3102,7 +4338,7 @@ function Containers(_ref38) {
     }).then(setEmps);
   }, []);
   var addCt = /*#__PURE__*/function () {
-    var _ref39 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
+    var _ref45 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
       return _regenerator().w(function (_context11) {
         while (1) switch (_context11.n) {
           case 0:
@@ -3128,11 +4364,11 @@ function Containers(_ref38) {
       }, _callee11);
     }));
     return function addCt() {
-      return _ref39.apply(this, arguments);
+      return _ref45.apply(this, arguments);
     };
   }();
   var complete = /*#__PURE__*/function () {
-    var _ref40 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(id) {
+    var _ref46 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(id) {
       var et;
       return _regenerator().w(function (_context12) {
         while (1) switch (_context12.n) {
@@ -3161,7 +4397,7 @@ function Containers(_ref38) {
       }, _callee12);
     }));
     return function complete(_x8) {
-      return _ref40.apply(this, arguments);
+      return _ref46.apply(this, arguments);
     };
   }();
   var TYPES = ['20GP', '40GP', '40HQ', '45HC'];
@@ -3176,11 +4412,11 @@ function Containers(_ref38) {
     onClick: function onClick() {
       return setAddM(true);
     }
-  }, "+ \u65B0\u589E\u5378\u67DC\u8BB0\u5F55")), loading ? /*#__PURE__*/React.createElement(Loading, null) : /*#__PURE__*/React.createElement("div", {
+  }, t('ct.add'))), loading ? /*#__PURE__*/React.createElement(Loading, null) : /*#__PURE__*/React.createElement("div", {
     className: "tw"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ts"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u67DC\u53F7"), /*#__PURE__*/React.createElement("th", null, "\u7C7B\u578B"), /*#__PURE__*/React.createElement("th", null, "\u4ED3\u5E93"), /*#__PURE__*/React.createElement("th", null, "\u65E5\u671F"), /*#__PURE__*/React.createElement("th", null, "\u5F00\u59CB"), /*#__PURE__*/React.createElement("th", null, "\u7ED3\u675F"), /*#__PURE__*/React.createElement("th", null, "\u5DE5\u65F6"), /*#__PURE__*/React.createElement("th", null, "\u4EBA\u6570"), /*#__PURE__*/React.createElement("th", null, "\u89C6\u9891"), /*#__PURE__*/React.createElement("th", null, "\u72B6\u6001"), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, cts.map(function (c) {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, t('ct.col_no')), /*#__PURE__*/React.createElement("th", null, t('ct.col_type')), /*#__PURE__*/React.createElement("th", null, t('ct.col_wh')), /*#__PURE__*/React.createElement("th", null, t('ct.col_date')), /*#__PURE__*/React.createElement("th", null, t('ct.col_start')), /*#__PURE__*/React.createElement("th", null, t('ct.col_end')), /*#__PURE__*/React.createElement("th", null, t('ct.col_hrs')), /*#__PURE__*/React.createElement("th", null, t('ct.col_workers')), /*#__PURE__*/React.createElement("th", null, t('ct.col_video')), /*#__PURE__*/React.createElement("th", null, t('ct.col_status')), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, cts.map(function (c) {
     return /*#__PURE__*/React.createElement("tr", {
       key: c.id
     }, /*#__PURE__*/React.createElement("td", {
@@ -3205,9 +4441,9 @@ function Containers(_ref38) {
       onClick: function onClick() {
         return complete(c.id);
       }
-    }, "\u5B8C\u6210")));
+    }, t('ct.complete'))));
   }))))), addM && /*#__PURE__*/React.createElement(Modal, {
-    title: "\u65B0\u589E\u5378\u67DC\u8BB0\u5F55",
+    title: t('ct.add_title'),
     onClose: function onClose() {
       return setAddM(false);
     },
@@ -3216,10 +4452,10 @@ function Containers(_ref38) {
       onClick: function onClick() {
         return setAddM(false);
       }
-    }, "\u53D6\u6D88"), /*#__PURE__*/React.createElement("button", {
+    }, t('c.cancel')), /*#__PURE__*/React.createElement("button", {
       className: "b bga",
       onClick: addCt
-    }, "\u63D0\u4EA4"))
+    }, t('c.submit')))
   }, /*#__PURE__*/React.createElement("div", {
     className: "alert alert-og"
   }, "\u26A0 \u5F00\u67DC\u524D\u5FC5\u987B\u5F55\u5236\u89C6\u9891\uFF08HGB \xA7438\uFF09\uFF0C\u8BB0\u5F55\u94C5\u5C01\u53F7\u3001\u8D27\u7269\u521D\u59CB\u72B6\u6001\uFF08\u4E00\u955C\u5230\u5E95\uFF0C\u7981\u6B62\u4E2D\u65AD\uFF09"), /*#__PURE__*/React.createElement("div", {
@@ -3228,7 +4464,7 @@ function Containers(_ref38) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u67DC\u53F7 *"), /*#__PURE__*/React.createElement("input", {
+  }, t('ct.f_no')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.container_no,
     onChange: function onChange(e) {
@@ -3241,7 +4477,7 @@ function Containers(_ref38) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u67DC\u578B"), /*#__PURE__*/React.createElement("select", {
+  }, t('ct.f_type')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.container_type,
     onChange: function onChange(e) {
@@ -3249,15 +4485,15 @@ function Containers(_ref38) {
         container_type: e.target.value
       }));
     }
-  }, TYPES.map(function (t) {
+  }, TYPES.map(function (tp) {
     return /*#__PURE__*/React.createElement("option", {
-      key: t
-    }, t);
+      key: tp
+    }, tp);
   }))), /*#__PURE__*/React.createElement("div", {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u4F5C\u4E1A\u65E5\u671F"), /*#__PURE__*/React.createElement("input", {
+  }, t('ct.f_date')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "date",
     value: form.work_date,
@@ -3270,7 +4506,7 @@ function Containers(_ref38) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u94C5\u5C01\u53F7"), /*#__PURE__*/React.createElement("input", {
+  }, t('ct.f_seal')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.seal_no,
     onChange: function onChange(e) {
@@ -3282,7 +4518,7 @@ function Containers(_ref38) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5F00\u59CB\u65F6\u95F4"), /*#__PURE__*/React.createElement("input", {
+  }, t('ct.f_start')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "time",
     value: form.start_time,
@@ -3295,7 +4531,7 @@ function Containers(_ref38) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5BA2\u6237\u7ED3\u7B97(\u20AC)"), /*#__PURE__*/React.createElement("input", {
+  }, t('ct.f_revenue')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     type: "number",
     value: form.client_revenue,
@@ -3308,7 +4544,7 @@ function Containers(_ref38) {
     className: "fg ful"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u53C2\u4E0E\u5DE5\u4EBA"), /*#__PURE__*/React.createElement("div", {
+  }, t('ct.f_workers')), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       flexWrap: 'wrap',
@@ -3341,7 +4577,7 @@ function Containers(_ref38) {
     className: "fg ful"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5907\u6CE8"), /*#__PURE__*/React.createElement("input", {
+  }, t('ct.f_notes')), /*#__PURE__*/React.createElement("input", {
     className: "fi",
     value: form.notes,
     onChange: function onChange(e) {
@@ -3353,8 +4589,8 @@ function Containers(_ref38) {
 }
 
 // ── SETTLEMENT ──
-function Settlement(_ref41) {
-  var token = _ref41.token;
+function Settlement(_ref47) {
+  var token = _ref47.token;
   var _useState85 = useState(null),
     _useState86 = _slicedToArray(_useState85, 2),
     data = _useState86[0],
@@ -3367,6 +4603,8 @@ function Settlement(_ref41) {
     _useState90 = _slicedToArray(_useState89, 2),
     month = _useState90[0],
     setMonth = _useState90[1];
+  var _useLang9 = useLang(),
+    t = _useLang9.t;
   var load = function load() {
     setLoading(true);
     api("/api/settlement/monthly?month=".concat(month), {
@@ -3389,11 +4627,11 @@ function Settlement(_ref41) {
     }
   })), data && /*#__PURE__*/React.createElement("div", {
     className: "sr"
-  }, [['员工数', data.summary.employee_count, 'var(--cy)'], ["\u603B\u5DE5\u65F6 ".concat(data.summary.total_hours, "h"), '', 'var(--pp)'], ['总Brutto', '€' + fmtE(data.summary.total_gross), 'var(--og)'], ['总Net', '€' + fmtE(data.summary.total_net), 'var(--gn)']].map(function (_ref42, i) {
-    var _ref43 = _slicedToArray(_ref42, 3),
-      l = _ref43[0],
-      v = _ref43[1],
-      c = _ref43[2];
+  }, [[t('settle.emp_count'), data.summary.employee_count, 'var(--cy)'], ["".concat(t('settle.hours'), " ").concat(data.summary.total_hours, "h"), '', 'var(--pp)'], [t('settle.brutto'), '€' + fmtE(data.summary.total_gross), 'var(--og)'], [t('settle.net'), '€' + fmtE(data.summary.total_net), 'var(--gn)']].map(function (_ref48, i) {
+    var _ref49 = _slicedToArray(_ref48, 3),
+      l = _ref49[0],
+      v = _ref49[1],
+      c = _ref49[2];
     return /*#__PURE__*/React.createElement("div", {
       key: i,
       className: "sc"
@@ -3404,10 +4642,10 @@ function Settlement(_ref41) {
       style: {
         color: c
       }
-    }, v || l.split('总')[1] || data.summary.employee_count));
+    }, v || data.summary.employee_count));
   })), loading ? /*#__PURE__*/React.createElement(Loading, null) : data && /*#__PURE__*/React.createElement("div", {
     className: "tw"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u5458\u5DE5"), /*#__PURE__*/React.createElement("th", null, "\u4ED3\u5E93"), /*#__PURE__*/React.createElement("th", null, "\u4E1A\u52A1\u7EBF"), /*#__PURE__*/React.createElement("th", null, "\u6765\u6E90"), /*#__PURE__*/React.createElement("th", null, "\u5DE5\u65F6"), /*#__PURE__*/React.createElement("th", null, "Brutto"), /*#__PURE__*/React.createElement("th", null, "SSI"), /*#__PURE__*/React.createElement("th", null, "Tax"), /*#__PURE__*/React.createElement("th", null, "Net"), /*#__PURE__*/React.createElement("th", null, "\u8BB0\u5F55\u6570"))), /*#__PURE__*/React.createElement("tbody", null, data.rows.map(function (r, i) {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, t('settle.col_emp')), /*#__PURE__*/React.createElement("th", null, t('settle.col_wh')), /*#__PURE__*/React.createElement("th", null, t('settle.col_biz')), /*#__PURE__*/React.createElement("th", null, t('settle.col_src')), /*#__PURE__*/React.createElement("th", null, t('settle.col_hrs')), /*#__PURE__*/React.createElement("th", null, "Brutto"), /*#__PURE__*/React.createElement("th", null, "SSI"), /*#__PURE__*/React.createElement("th", null, "Tax"), /*#__PURE__*/React.createElement("th", null, "Net"), /*#__PURE__*/React.createElement("th", null, t('settle.col_count')))), /*#__PURE__*/React.createElement("tbody", null, data.rows.map(function (r, i) {
     return /*#__PURE__*/React.createElement("tr", {
       key: i
     }, /*#__PURE__*/React.createElement("td", {
@@ -3433,9 +4671,9 @@ function Settlement(_ref41) {
 }
 
 // ── CLOCK ──
-function Clock(_ref44) {
-  var token = _ref44.token,
-    user = _ref44.user;
+function Clock(_ref50) {
+  var token = _ref50.token,
+    user = _ref50.user;
   var _useState91 = useState(new Date()),
     _useState92 = _slicedToArray(_useState91, 2),
     now = _useState92[0],
@@ -3444,6 +4682,8 @@ function Clock(_ref44) {
     _useState94 = _slicedToArray(_useState93, 2),
     logs = _useState94[0],
     setLogs = _useState94[1];
+  var _useLang0 = useLang(),
+    t = _useLang0.t;
   useEffect(function () {
     var i = setInterval(function () {
       return setNow(new Date());
@@ -3460,7 +4700,7 @@ function Clock(_ref44) {
   var last = logs[logs.length - 1];
   var isIn = (last === null || last === void 0 ? void 0 : last.clock_type) === 'in';
   var punch = /*#__PURE__*/function () {
-    var _ref45 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(t) {
+    var _ref51 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(tp) {
       var r;
       return _regenerator().w(function (_context13) {
         while (1) switch (_context13.n) {
@@ -3469,7 +4709,7 @@ function Clock(_ref44) {
             return api('/api/clock', {
               method: 'POST',
               body: {
-                clock_type: t
+                clock_type: tp
               },
               token: token
             });
@@ -3487,7 +4727,7 @@ function Clock(_ref44) {
       }, _callee13);
     }));
     return function punch(_x9) {
-      return _ref45.apply(this, arguments);
+      return _ref51.apply(this, arguments);
     };
   }();
   return /*#__PURE__*/React.createElement("div", {
@@ -3543,13 +4783,13 @@ function Clock(_ref44) {
       fontSize: 14,
       fontWeight: 700
     }
-  }, isIn ? '下班打卡' : '上班打卡')), /*#__PURE__*/React.createElement("div", {
+  }, isIn ? t('clock.clock_out') : t('clock.clock_in'))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 20,
       fontSize: 12,
       color: isIn ? 'var(--gn)' : 'var(--og)'
     }
-  }, isIn ? "\u2713 \u5DF2\u4E0A\u73ED\u6253\u5361 ".concat(last.clock_time) : '○ 尚未打卡'), logs.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, isIn ? "".concat(t('clock.clocked_in'), " ").concat(last.clock_time) : t('clock.not_clocked')), logs.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 16,
       width: '100%',
@@ -3576,7 +4816,7 @@ function Clock(_ref44) {
         fontWeight: 600,
         fontSize: 12
       }
-    }, l.clock_type === 'in' ? '上班打卡' : '下班打卡'), /*#__PURE__*/React.createElement("div", {
+    }, l.clock_type === 'in' ? t('clock.clock_in') : t('clock.clock_out')), /*#__PURE__*/React.createElement("div", {
       className: "tm",
       style: {
         fontSize: 10
@@ -3586,8 +4826,8 @@ function Clock(_ref44) {
 }
 
 // ── AUDIT LOGS ──
-function AuditLogs(_ref46) {
-  var token = _ref46.token;
+function AuditLogs(_ref52) {
+  var token = _ref52.token;
   var _useState95 = useState([]),
     _useState96 = _slicedToArray(_useState95, 2),
     logs = _useState96[0],
@@ -3596,6 +4836,8 @@ function AuditLogs(_ref46) {
     _useState98 = _slicedToArray(_useState97, 2),
     loading = _useState98[0],
     setLoading = _useState98[1];
+  var _useLang1 = useLang(),
+    t = _useLang1.t;
   useEffect(function () {
     api('/api/logs', {
       token: token
@@ -3607,7 +4849,7 @@ function AuditLogs(_ref46) {
     className: "tw"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ts"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u65F6\u95F4"), /*#__PURE__*/React.createElement("th", null, "\u7528\u6237"), /*#__PURE__*/React.createElement("th", null, "\u64CD\u4F5C"), /*#__PURE__*/React.createElement("th", null, "\u5BF9\u8C61"), /*#__PURE__*/React.createElement("th", null, "ID"), /*#__PURE__*/React.createElement("th", null, "\u8BE6\u60C5"))), /*#__PURE__*/React.createElement("tbody", null, logs.map(function (l, i) {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, t('log.col_time')), /*#__PURE__*/React.createElement("th", null, t('log.col_user')), /*#__PURE__*/React.createElement("th", null, t('log.col_action')), /*#__PURE__*/React.createElement("th", null, t('log.col_table')), /*#__PURE__*/React.createElement("th", null, t('log.col_id')), /*#__PURE__*/React.createElement("th", null, t('log.col_detail')))), /*#__PURE__*/React.createElement("tbody", null, logs.map(function (l, i) {
     var _l$created_at;
     return /*#__PURE__*/React.createElement("tr", {
       key: i
@@ -3893,9 +5135,9 @@ var DOCS_DB = {
 var DOCS_STYLE = "\n.doc-body h3{font-size:13px;font-weight:700;color:var(--ac2);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--bd)}\n.doc-body h4{font-size:12px;font-weight:600;color:var(--tx2);margin:12px 0 6px}\n.doc-body p{font-size:12px;color:var(--tx2);line-height:1.7;margin-bottom:8px}\n.doc-body ul,.doc-body ol{font-size:12px;color:var(--tx2);line-height:1.9;padding-left:18px;margin-bottom:10px}\n.doc-body table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px}\n.doc-body th{background:var(--bg3);padding:7px 10px;text-align:left;font-weight:600;color:var(--tx2);border-bottom:1px solid var(--bd);font-size:10px;text-transform:uppercase}\n.doc-body td{padding:7px 10px;border-bottom:1px solid var(--bd)33;color:var(--tx2)}\n.doc-body tr:hover td{background:var(--sf)}\n.alert-block{padding:10px 14px;border-radius:8px;font-size:11px;line-height:1.7;margin:12px 0}\n.alert-block.danger,.alert-block{background:#f0526c14;border:1px solid #f0526c44;color:#f0526c}\n.alert-block.info{background:#4f6ef714;border:1px solid #4f6ef744;color:var(--ac2)}\n.checklist{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;font-size:12px;color:var(--tx2);line-height:2.0;font-family:'Outfit',monospace}\n/* Print styles */\n@media print{\n  .sidebar,.hdr,.mob-hdr,.ab,.no-print{display:none!important}\n  .doc-body{color:#111!important}\n  .doc-body h3{color:#1B2B4B!important;border-color:#ccc!important}\n  .doc-body p,.doc-body li,.doc-body td{color:#333!important}\n  .doc-body th{background:#f0f0f0!important;color:#333!important;border-color:#ccc!important}\n  .doc-body td{border-color:#ccc!important}\n  .alert-block{background:#fff8f8!important;border-color:#f0526c!important;color:#c00!important}\n  .print-doc{color:#111;font-family:Arial,sans-serif;font-size:11px}\n  .print-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1B2B4B}\n  .print-logo{font-size:16px;font-weight:800;color:#1B2B4B}\n  .print-title{font-size:14px;font-weight:700;color:#1B2B4B}\n  .print-meta{font-size:10px;color:#555}\n  .print-table{width:100%;border-collapse:collapse}\n  .print-table th{background:#1B2B4B;color:#fff;padding:6px 8px;font-size:10px}\n  .print-table td{padding:5px 8px;border:0.5px solid #ccc;min-height:22px}\n  .print-footer{margin-top:12px;font-size:9px;color:#555;border-top:1px solid #ccc;padding-top:8px}\n}";
 
 // ─── DOCS COMPONENT ─────────────────────────────────────────────────
-function KnowledgeBase(_ref47) {
-  var token = _ref47.token,
-    user = _ref47.user;
+function KnowledgeBase(_ref53) {
+  var token = _ref53.token,
+    user = _ref53.user;
   var _React$useState = React.useState(null),
     _React$useState2 = _slicedToArray(_React$useState, 2),
     selId = _React$useState2[0],
@@ -3912,6 +5154,8 @@ function KnowledgeBase(_ref47) {
     _React$useState8 = _slicedToArray(_React$useState7, 2),
     printing = _React$useState8[0],
     setPrinting = _React$useState8[1];
+  var _useLang10 = useLang(),
+    t = _useLang10.t;
   var CATS = ['职级职责', '安全须知', '法规法条', '模板库', '员工手册'];
   var CAT_ICONS = {
     '职级职责': '🏅',
@@ -3956,7 +5200,7 @@ function KnowledgeBase(_ref47) {
     }
   }, /*#__PURE__*/React.createElement("input", {
     className: "si",
-    placeholder: "\u641C\u7D22\u6587\u6863...",
+    placeholder: t('kb.search'),
     value: search,
     onChange: function onChange(e) {
       return setSearch(e.target.value);
@@ -3978,7 +5222,7 @@ function KnowledgeBase(_ref47) {
     style: {
       fontSize: 10
     }
-  }, "\u5168\u90E8"), CATS.map(function (c) {
+  }, t('kb.all_cats')), CATS.map(function (c) {
     return /*#__PURE__*/React.createElement("button", {
       key: c,
       className: "fb ".concat(cat === c ? 'on' : ''),
@@ -4169,13 +5413,13 @@ function KnowledgeBase(_ref47) {
       fontSize: 10
     },
     onClick: printDoc
-  }, "\u2399 \u6253\u5370\u8868\u5355"), /*#__PURE__*/React.createElement("button", {
+  }, t('kb.print')), /*#__PURE__*/React.createElement("button", {
     className: "b bgh",
     style: {
       fontSize: 10
     },
     onClick: printDoc
-  }, "\u2399 \u6253\u5370\u9875\u9762"), /*#__PURE__*/React.createElement("button", {
+  }, t('kb.print')), /*#__PURE__*/React.createElement("button", {
     className: "b bgh",
     style: {
       fontSize: 10
@@ -4197,8 +5441,8 @@ function KnowledgeBase(_ref47) {
 }
 
 // ── GRADE SALARIES ──
-function GradeSalaries(_ref48) {
-  var token = _ref48.token;
+function GradeSalaries(_ref54) {
+  var token = _ref54.token;
   var _useState99 = useState([]),
     _useState100 = _slicedToArray(_useState99, 2),
     grades = _useState100[0],
@@ -4211,15 +5455,17 @@ function GradeSalaries(_ref48) {
     _useState104 = _slicedToArray(_useState103, 2),
     loading = _useState104[0],
     setLoading = _useState104[1];
+  var _useLang11 = useLang(),
+    t = _useLang11.t;
   useEffect(function () {
     Promise.all([api('/api/grades', {
       token: token
     }), api('/api/kpi-levels', {
       token: token
-    })]).then(function (_ref49) {
-      var _ref50 = _slicedToArray(_ref49, 2),
-        g = _ref50[0],
-        k = _ref50[1];
+    })]).then(function (_ref55) {
+      var _ref56 = _slicedToArray(_ref55, 2),
+        g = _ref56[0],
+        k = _ref56[1];
       setGrades(g);
       setKpi(k);
     }).finally(function () {
@@ -4231,7 +5477,7 @@ function GradeSalaries(_ref48) {
     className: "cd"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ct-t"
-  }, "\uD83C\uDFC5 P1-P9 \u804C\u7EA7\u85AA\u8D44\u4F53\u7CFB"), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83C\uDFC5 ", t('grade.title')), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: 'var(--tx3)',
@@ -4239,7 +5485,7 @@ function GradeSalaries(_ref48) {
     }
   }, "\u57FA\u51C6\u5DE5\u8D44 \u20AC2,400 \xD7 \u500D\u7387 + \u7BA1\u7406\u6D25\u8D34 + \u8D85\u65F6\u5DE5\u8D44 = \u6708\u5B9E\u9645\u6210\u672C"), /*#__PURE__*/React.createElement("div", {
     className: "tw"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u804C\u7EA7"), /*#__PURE__*/React.createElement("th", null, "\u5C97\u4F4D"), /*#__PURE__*/React.createElement("th", null, "\u57FA\u7840\u5DE5\u8D44"), /*#__PURE__*/React.createElement("th", null, "\u500D\u7387"), /*#__PURE__*/React.createElement("th", null, "\u6708Brutto"), /*#__PURE__*/React.createElement("th", null, "\u7BA1\u7406\u6D25\u8D34"), /*#__PURE__*/React.createElement("th", null, "\u8D85\u65F6h"), /*#__PURE__*/React.createElement("th", null, "\u6708\u5B9E\u9645\u6210\u672C"), /*#__PURE__*/React.createElement("th", null, "\u65F6\u85AA\u7B49\u4EF7"))), /*#__PURE__*/React.createElement("tbody", null, grades.map(function (g) {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, t('grade.col_grade')), /*#__PURE__*/React.createElement("th", null, t('grade.col_desc')), /*#__PURE__*/React.createElement("th", null, t('grade.col_base')), /*#__PURE__*/React.createElement("th", null, t('grade.col_mult')), /*#__PURE__*/React.createElement("th", null, t('grade.col_gross')), /*#__PURE__*/React.createElement("th", null, t('grade.col_mgmt')), /*#__PURE__*/React.createElement("th", null, t('grade.col_ot')), /*#__PURE__*/React.createElement("th", null, t('grade.col_cost')), /*#__PURE__*/React.createElement("th", null, t('grade.col_hourly')))), /*#__PURE__*/React.createElement("tbody", null, grades.map(function (g) {
     return /*#__PURE__*/React.createElement("tr", {
       key: g.grade
     }, /*#__PURE__*/React.createElement("td", {
@@ -4310,9 +5556,9 @@ function GradeSalaries(_ref48) {
 }
 
 // ── WAREHOUSE RATES ──
-function WarehouseRates(_ref51) {
-  var token = _ref51.token,
-    user = _ref51.user;
+function WarehouseRates(_ref57) {
+  var token = _ref57.token,
+    user = _ref57.user;
   var _useState105 = useState([]),
     _useState106 = _slicedToArray(_useState105, 2),
     whs = _useState106[0],
@@ -4333,6 +5579,8 @@ function WarehouseRates(_ref51) {
     _useState114 = _slicedToArray(_useState113, 2),
     form = _useState114[0],
     setForm = _useState114[1];
+  var _useLang12 = useLang(),
+    t = _useLang12.t;
   useEffect(function () {
     api('/api/warehouses', {
       token: token
@@ -4353,7 +5601,7 @@ function WarehouseRates(_ref51) {
   };
   var canEdit = ['admin', 'mgr'].includes(user.role);
   var saveRates = /*#__PURE__*/function () {
-    var _ref52 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
+    var _ref58 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
       return _regenerator().w(function (_context14) {
         while (1) switch (_context14.n) {
           case 0:
@@ -4374,7 +5622,7 @@ function WarehouseRates(_ref51) {
       }, _callee14);
     }));
     return function saveRates() {
-      return _ref52.apply(this, arguments);
+      return _ref58.apply(this, arguments);
     };
   }();
   var GRADES = ['P1', 'P2', 'P3', 'P4', 'P5'];
@@ -4432,7 +5680,7 @@ function WarehouseRates(_ref51) {
       height: 200,
       color: 'var(--tx3)'
     }
-  }, "\u2190 \u9009\u62E9\u4ED3\u5E93") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, t('wh.select')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "cd"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4448,7 +5696,7 @@ function WarehouseRates(_ref51) {
     onClick: function onClick() {
       return setEditing(!editing);
     }
-  }, editing ? '取消' : '✏ 编辑价格')), /*#__PURE__*/React.createElement("div", {
+  }, editing ? t('c.cancel') : t('wh.edit'))), /*#__PURE__*/React.createElement("div", {
     className: "section-grid",
     style: {
       display: 'grid',
@@ -4470,10 +5718,10 @@ function WarehouseRates(_ref51) {
       color: 'var(--ac2)',
       marginBottom: 8
     }
-  }, "\u65F6\u85AA\uFF08\u20AC/h\uFF09 by \u804C\u7EA7"), RATE_KEYS.map(function (_ref53) {
-    var _ref54 = _slicedToArray(_ref53, 2),
-      k = _ref54[0],
-      g = _ref54[1];
+  }, "\u65F6\u85AA\uFF08\u20AC/h\uFF09 by \u804C\u7EA7"), RATE_KEYS.map(function (_ref59) {
+    var _ref60 = _slicedToArray(_ref59, 2),
+      k = _ref60[0],
+      g = _ref60[1];
     return /*#__PURE__*/React.createElement("div", {
       key: k,
       style: {
@@ -4526,10 +5774,10 @@ function WarehouseRates(_ref51) {
       color: 'var(--og)',
       marginBottom: 8
     }
-  }, "\u73ED\u6B21\u9644\u52A0\uFF08\u20AC/h\uFF09"), [['night_bonus', '夜班'], ['weekend_bonus', '周末'], ['holiday_bonus', '节假日']].map(function (_ref55) {
-    var _ref56 = _slicedToArray(_ref55, 2),
-      k = _ref56[0],
-      l = _ref56[1];
+  }, "\u73ED\u6B21\u9644\u52A0\uFF08\u20AC/h\uFF09"), [['night_bonus', '夜班'], ['weekend_bonus', '周末'], ['holiday_bonus', '节假日']].map(function (_ref61) {
+    var _ref62 = _slicedToArray(_ref61, 2),
+      k = _ref62[0],
+      l = _ref62[1];
     return /*#__PURE__*/React.createElement("div", {
       key: k,
       style: {
@@ -4580,10 +5828,10 @@ function WarehouseRates(_ref51) {
       color: 'var(--cy)',
       marginBottom: 8
     }
-  }, "\u88C5\u5378\u67DC\u4EF7\u683C\uFF08\u20AC/\u67DC\uFF09"), [['load_20gp', '20GP 装'], ['unload_20gp', '20GP 卸'], ['load_40gp', '40GP 装'], ['unload_40gp', '40GP 卸'], ['price_45hc', '45HC 装/卸']].map(function (_ref57) {
-    var _ref58 = _slicedToArray(_ref57, 2),
-      k = _ref58[0],
-      l = _ref58[1];
+  }, "\u88C5\u5378\u67DC\u4EF7\u683C\uFF08\u20AC/\u67DC\uFF09"), [['load_20gp', '20GP 装'], ['unload_20gp', '20GP 卸'], ['load_40gp', '40GP 装'], ['unload_40gp', '40GP 卸'], ['price_45hc', '45HC 装/卸']].map(function (_ref63) {
+    var _ref64 = _slicedToArray(_ref63, 2),
+      k = _ref64[0],
+      l = _ref64[1];
     return /*#__PURE__*/React.createElement("div", {
       key: k,
       style: {
@@ -4639,10 +5887,10 @@ function WarehouseRates(_ref51) {
       color: 'var(--gn)',
       marginBottom: 6
     }
-  }, "\u7EE9\u6548\u53C2\u6570"), [['perf_coeff', '绩效系数'], ['kpi_bonus_rate', 'KPI奖金率']].map(function (_ref59) {
-    var _ref60 = _slicedToArray(_ref59, 2),
-      k = _ref60[0],
-      l = _ref60[1];
+  }, "\u7EE9\u6548\u53C2\u6570"), [['perf_coeff', '绩效系数'], ['kpi_bonus_rate', 'KPI奖金率']].map(function (_ref65) {
+    var _ref66 = _slicedToArray(_ref65, 2),
+      k = _ref66[0],
+      l = _ref66[1];
     return /*#__PURE__*/React.createElement("div", {
       key: k,
       style: {
@@ -4711,12 +5959,12 @@ function WarehouseRates(_ref51) {
   }, /*#__PURE__*/React.createElement("button", {
     className: "b bga",
     onClick: saveRates
-  }, "\u4FDD\u5B58\u4EF7\u683C"), /*#__PURE__*/React.createElement("button", {
+  }, t('wh.f_save')), /*#__PURE__*/React.createElement("button", {
     className: "b bgh",
     onClick: function onClick() {
       return setEditing(false);
     }
-  }, "\u53D6\u6D88"))), /*#__PURE__*/React.createElement("div", {
+  }, t('c.cancel')))), /*#__PURE__*/React.createElement("div", {
     className: "cd",
     style: {
       marginTop: 12
@@ -4768,8 +6016,8 @@ function WarehouseRates(_ref51) {
 }
 
 // ── COST CALCULATOR ──
-function CostCalculator(_ref61) {
-  var token = _ref61.token;
+function CostCalculator(_ref67) {
+  var token = _ref67.token;
   var _useState115 = useState({
       brutto_rate: 14.0,
       weekly_hours: 40,
@@ -4786,8 +6034,10 @@ function CostCalculator(_ref61) {
     _useState120 = _slicedToArray(_useState119, 2),
     loading = _useState120[0],
     setLoading = _useState120[1];
+  var _useLang13 = useLang(),
+    t = _useLang13.t;
   var calc = /*#__PURE__*/function () {
-    var _ref62 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
+    var _ref68 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
       var r, _t0;
       return _regenerator().w(function (_context15) {
         while (1) switch (_context15.p = _context15.n) {
@@ -4819,7 +6069,7 @@ function CostCalculator(_ref61) {
       }, _callee15, null, [[1, 3, 4, 5]]);
     }));
     return function calc() {
-      return _ref62.apply(this, arguments);
+      return _ref68.apply(this, arguments);
     };
   }();
   useEffect(function () {
@@ -4831,7 +6081,7 @@ function CostCalculator(_ref61) {
     className: "cd"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ct-t"
-  }, "\uD83E\uDDEE \u5C97\u4F4D\u6210\u672C\u6D4B\u7B97"), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83E\uDDEE ", t('cost.title')), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: 'var(--tx3)',
@@ -4862,7 +6112,7 @@ function CostCalculator(_ref61) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u5468\u5DE5\u65F6"), /*#__PURE__*/React.createElement("select", {
+  }, t('cost.f_weekly')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.weekly_hours,
     onChange: function onChange(e) {
@@ -4879,7 +6129,7 @@ function CostCalculator(_ref61) {
     className: "fg"
   }, /*#__PURE__*/React.createElement("label", {
     className: "fl"
-  }, "\u96C7\u4F63\u7C7B\u578B"), /*#__PURE__*/React.createElement("select", {
+  }, t('cost.f_type')), /*#__PURE__*/React.createElement("select", {
     className: "fsl",
     value: form.emp_type,
     onChange: function onChange(e) {
@@ -4895,11 +6145,11 @@ function CostCalculator(_ref61) {
       padding: 14,
       marginBottom: 12
     }
-  }, [['月Brutto', "\u20AC".concat((result.gross_monthly || 0).toFixed(2)), 'var(--tx)'], ["\u96C7\u4E3BSV (~20.65%)", "\u20AC".concat((result.employer_ssi || 0).toFixed(2)), 'var(--og)'], ["\u5047\u671F\u51C6\u5907\u91D1 (8.33%)", "\u20AC".concat((result.holiday_provision || 0).toFixed(2)), 'var(--og)'], ["\u7BA1\u7406\u6210\u672C (5%)", "\u20AC".concat((result.mgmt_cost || 0).toFixed(2)), 'var(--og)']].map(function (_ref63) {
-    var _ref64 = _slicedToArray(_ref63, 3),
-      l = _ref64[0],
-      v = _ref64[1],
-      c = _ref64[2];
+  }, [['月Brutto', "\u20AC".concat((result.gross_monthly || 0).toFixed(2)), 'var(--tx)'], ["\u96C7\u4E3BSV (~20.65%)", "\u20AC".concat((result.employer_ssi || 0).toFixed(2)), 'var(--og)'], ["\u5047\u671F\u51C6\u5907\u91D1 (8.33%)", "\u20AC".concat((result.holiday_provision || 0).toFixed(2)), 'var(--og)'], ["\u7BA1\u7406\u6210\u672C (5%)", "\u20AC".concat((result.mgmt_cost || 0).toFixed(2)), 'var(--og)']].map(function (_ref69) {
+    var _ref70 = _slicedToArray(_ref69, 3),
+      l = _ref70[0],
+      v = _ref70[1],
+      c = _ref70[2];
     return /*#__PURE__*/React.createElement("div", {
       key: l,
       style: {
@@ -4949,10 +6199,10 @@ function CostCalculator(_ref61) {
       color: 'var(--ac2)',
       marginBottom: 8
     }
-  }, "\u5458\u5DE5\u5B9E\u9645\u5230\u624B\uFF08\u53C2\u8003\uFF09"), [['月Brutto', "\u20AC".concat((result.gross_monthly || 0).toFixed(2))], ['员工SV扣款', "-\u20AC".concat((result.employee_ssi || 0).toFixed(2))], ['所得税预估', "-\u20AC".concat((result.income_tax || 0).toFixed(2))]].map(function (_ref65) {
-    var _ref66 = _slicedToArray(_ref65, 2),
-      l = _ref66[0],
-      v = _ref66[1];
+  }, "\u5458\u5DE5\u5B9E\u9645\u5230\u624B\uFF08\u53C2\u8003\uFF09"), [['月Brutto', "\u20AC".concat((result.gross_monthly || 0).toFixed(2))], ['员工SV扣款', "-\u20AC".concat((result.employee_ssi || 0).toFixed(2))], ['所得税预估', "-\u20AC".concat((result.income_tax || 0).toFixed(2))]].map(function (_ref71) {
+    var _ref72 = _slicedToArray(_ref71, 2),
+      l = _ref72[0],
+      v = _ref72[1];
     return /*#__PURE__*/React.createElement("div", {
       key: l,
       style: {
@@ -4990,15 +6240,15 @@ function CostCalculator(_ref61) {
     className: "ct-t"
   }, "\uD83D\uDCCA Brutto 14\u20AC/h \u6210\u672C\u901F\u67E5\u8868"), /*#__PURE__*/React.createElement("div", {
     className: "tw"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u96C7\u4F63\u7C7B\u578B"), /*#__PURE__*/React.createElement("th", null, "\u5468\u65F6"), /*#__PURE__*/React.createElement("th", null, "\u6708\u65F6"), /*#__PURE__*/React.createElement("th", null, "\u6708Brutto"), /*#__PURE__*/React.createElement("th", null, "\u771F\u5B9E\u6210\u672C"), /*#__PURE__*/React.createElement("th", null, "\u65F6\u5747\u6210\u672C"))), /*#__PURE__*/React.createElement("tbody", null, [[14, "Minijob", 10, 43.3, 603, 844, 19.5], [14, "正常雇用", 15, 65.0, 909, 1273, 19.6], [14, "正常雇用", 20, 86.6, 1212, 1697, 19.6], [14, "正常雇用", 25, 108.3, 1516, 2120, 19.6], [14, "正常雇用", 30, 129.9, 1819, 2546, 19.6], [14, "正常雇用", 35, 151.6, 2122, 2970, 19.6], [14, "正常雇用", 40, 173.3, 2426, 3395, 19.6]].map(function (_ref67, i) {
-    var _ref68 = _slicedToArray(_ref67, 7),
-      r = _ref68[0],
-      t = _ref68[1],
-      wh = _ref68[2],
-      mh = _ref68[3],
-      br = _ref68[4],
-      tc = _ref68[5],
-      hc = _ref68[6];
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u96C7\u4F63\u7C7B\u578B"), /*#__PURE__*/React.createElement("th", null, "\u5468\u65F6"), /*#__PURE__*/React.createElement("th", null, "\u6708\u65F6"), /*#__PURE__*/React.createElement("th", null, "\u6708Brutto"), /*#__PURE__*/React.createElement("th", null, "\u771F\u5B9E\u6210\u672C"), /*#__PURE__*/React.createElement("th", null, "\u65F6\u5747\u6210\u672C"))), /*#__PURE__*/React.createElement("tbody", null, [[14, "Minijob", 10, 43.3, 603, 844, 19.5], [14, "正常雇用", 15, 65.0, 909, 1273, 19.6], [14, "正常雇用", 20, 86.6, 1212, 1697, 19.6], [14, "正常雇用", 25, 108.3, 1516, 2120, 19.6], [14, "正常雇用", 30, 129.9, 1819, 2546, 19.6], [14, "正常雇用", 35, 151.6, 2122, 2970, 19.6], [14, "正常雇用", 40, 173.3, 2426, 3395, 19.6]].map(function (_ref73, i) {
+    var _ref74 = _slicedToArray(_ref73, 7),
+      r = _ref74[0],
+      t = _ref74[1],
+      wh = _ref74[2],
+      mh = _ref74[3],
+      br = _ref74[4],
+      tc = _ref74[5],
+      hc = _ref74[6];
     return /*#__PURE__*/React.createElement("tr", {
       key: i,
       style: {
@@ -5036,126 +6286,134 @@ function CostCalculator(_ref61) {
 var NAV = [{
   k: 'dashboard',
   i: '📊',
-  label: '仪表盘',
+  labelKey: 'nav.dashboard',
   roles: ['admin', 'hr', 'wh', 'fin', 'mgr', 'sup']
 }, {
   k: 'employees',
   i: '👥',
-  label: '员工花名册',
+  labelKey: 'nav.employees',
   roles: ['admin', 'hr', 'wh', 'fin', 'mgr', 'sup']
 }, {
   k: 'timesheets',
   i: '⏱️',
-  label: '工时记录',
+  labelKey: 'nav.timesheets',
   roles: ['admin', 'hr', 'wh', 'fin', 'mgr', 'sup']
 }, {
   k: 'zeitkonto',
   i: '⏳',
-  label: 'Zeitkonto',
+  labelKey: 'nav.zeitkonto',
   roles: ['admin', 'hr', 'mgr']
 }, {
   k: 'settlement',
   i: '💰',
-  label: '月度结算',
+  labelKey: 'nav.settlement',
   roles: ['admin', 'hr', 'fin', 'sup', 'mgr']
 }, {
   k: 'containers',
   i: '📦',
-  label: '卸柜记录',
+  labelKey: 'nav.containers',
   roles: ['admin', 'hr', 'wh', 'mgr']
 }, {
   sep: true
 }, {
   k: 'werkvertrag',
   i: '📋',
-  label: 'Werkvertrag项目',
+  labelKey: 'nav.werkvertrag',
   roles: ['admin', 'hr', 'mgr']
 }, {
   k: 'abmahnung',
   i: '⚠️',
-  label: 'Abmahnung',
+  labelKey: 'nav.abmahnung',
   roles: ['admin', 'hr', 'mgr']
 }, {
   sep: true
 }, {
   k: 'clock',
   i: '⏰',
-  label: '打卡',
+  labelKey: 'nav.clock',
   roles: ['admin', 'hr', 'wh', 'mgr', 'worker', 'sup']
 }, {
   k: 'grades',
   i: '🏅',
-  label: '职级薪资体系',
+  labelKey: 'nav.grades',
   roles: ['admin', 'hr', 'mgr']
 }, {
   k: 'warehouse_rates',
   i: '🏭',
-  label: '仓库价格配置',
+  labelKey: 'nav.warehouse_rates',
   roles: ['admin', 'hr', 'mgr', 'wh']
 }, {
   k: 'cost_calc',
   i: '🧮',
-  label: '岗位成本测算',
+  labelKey: 'nav.cost_calc',
   roles: ['admin', 'hr', 'mgr', 'fin']
 }, {
   k: 'docs',
   i: '📚',
-  label: '企业文档库',
+  labelKey: 'nav.docs',
   roles: ['admin', 'hr', 'wh', 'fin', 'mgr', 'sup', 'worker']
 }, {
   k: 'logs',
   i: '📝',
-  label: '审计日志',
+  labelKey: 'nav.logs',
   roles: ['admin', 'hr']
 }];
 function App() {
   var _NAV$find, _user$display_name, _user$display_name2;
   var _useState121 = useState(function () {
-      return localStorage.getItem('hr6_token') || null;
+      return localStorage.getItem('hr6_lang') || 'zh';
     }),
     _useState122 = _slicedToArray(_useState121, 2),
-    token = _useState122[0],
-    setToken = _useState122[1];
+    lang = _useState122[0],
+    setLang = _useState122[1];
+  var t = function t(key) {
+    return (I18N[lang] || I18N.zh)[key] || I18N.zh[key] || key;
+  };
   var _useState123 = useState(function () {
+      return localStorage.getItem('hr6_token') || null;
+    }),
+    _useState124 = _slicedToArray(_useState123, 2),
+    token = _useState124[0],
+    setToken = _useState124[1];
+  var _useState125 = useState(function () {
       try {
         return JSON.parse(localStorage.getItem('hr6_user')) || null;
       } catch (_unused) {
         return null;
       }
     }),
-    _useState124 = _slicedToArray(_useState123, 2),
-    user = _useState124[0],
-    setUser = _useState124[1];
-  var _useState125 = useState('dashboard'),
     _useState126 = _slicedToArray(_useState125, 2),
-    page = _useState126[0],
-    setPage = _useState126[1];
-  var _useState127 = useState(null),
+    user = _useState126[0],
+    setUser = _useState126[1];
+  var _useState127 = useState('dashboard'),
     _useState128 = _slicedToArray(_useState127, 2),
-    toast = _useState128[0],
-    setToast = _useState128[1];
-  var _useState129 = useState(false),
+    page = _useState128[0],
+    setPage = _useState128[1];
+  var _useState129 = useState(null),
     _useState130 = _slicedToArray(_useState129, 2),
-    mobNav = _useState130[0],
-    setMN = _useState130[1];
-  // ── Backend readiness check ──────────────────────────────────────
-  // Poll /health until the backend signals it is ready (HTTP 200).
-  // While it returns 503 (DB still initialising) we show a splash screen
-  // instead of letting users hit confusing errors.  Any other response
-  // (network failure, unexpected status) is treated as "ready" so that
-  // a misconfigured health endpoint never locks users out permanently.
+    toast = _useState130[0],
+    setToast = _useState130[1];
   var _useState131 = useState(false),
     _useState132 = _slicedToArray(_useState131, 2),
-    srvReady = _useState132[0],
-    setSrvReady = _useState132[1];
-  var _useState133 = useState(''),
+    mobNav = _useState132[0],
+    setMN = _useState132[1];
+  var _useState133 = useState(false),
     _useState134 = _slicedToArray(_useState133, 2),
-    srvStatus = _useState134[0],
-    setSrvStatus = _useState134[1];
+    srvReady = _useState134[0],
+    setSrvReady = _useState134[1];
+  var _useState135 = useState(''),
+    _useState136 = _slicedToArray(_useState135, 2),
+    srvStatus = _useState136[0],
+    setSrvStatus = _useState136[1];
+  useEffect(function () {
+    document.documentElement.dir = RTL_LANGS.has(lang) ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+    localStorage.setItem('hr6_lang', lang);
+  }, [lang]);
   useEffect(function () {
     var cancelled = false;
     var _check = /*#__PURE__*/function () {
-      var _ref69 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
+      var _ref75 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
         var r, j, _t1;
         return _regenerator().w(function (_context16) {
           while (1) switch (_context16.p = _context16.n) {
@@ -5190,10 +6448,6 @@ function App() {
             case 4:
               j = _context16.v;
               setSrvStatus(j.status || 'initializing');
-              // Server just restarted: in-memory token store is empty.
-              // Proactively clear stale browser credentials so the user sees
-              // the login page directly once the server is ready, instead of
-              // briefly rendering the main app and then bouncing back via 401.
               localStorage.removeItem('hr6_token');
               localStorage.removeItem('hr6_user');
               setToken(null);
@@ -5216,7 +6470,7 @@ function App() {
         }, _callee16, null, [[0, 7]]);
       }));
       return function check() {
-        return _ref69.apply(this, arguments);
+        return _ref75.apply(this, arguments);
       };
     }();
     _check();
@@ -5224,7 +6478,62 @@ function App() {
       cancelled = true;
     };
   }, []);
-  if (!srvReady) return /*#__PURE__*/React.createElement("div", {
+  var onLogin = function onLogin(tk, u) {
+    setToken(tk);
+    setUser(u);
+    localStorage.setItem('hr6_token', tk);
+    localStorage.setItem('hr6_user', JSON.stringify(u));
+    setPage(u.role === 'worker' ? 'clock' : 'dashboard');
+  };
+  var onLogout = function onLogout() {
+    api('/api/auth/logout', {
+      method: 'POST',
+      token: token
+    }).catch(function () {});
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('hr6_token');
+    localStorage.removeItem('hr6_user');
+  };
+  var toast_ = function toast_(m) {
+    var tp = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ok';
+    setToast({
+      m: m,
+      t: tp
+    });
+    setTimeout(function () {
+      return setToast(null);
+    }, 2500);
+  };
+  var navItems = token && user ? NAV.filter(function (n) {
+    return !n.k || !n.roles || n.roles.includes(user.role);
+  }) : [];
+  var go = function go(k) {
+    setPage(k);
+    setMN(false);
+  };
+  var pageLabel = (_NAV$find = NAV.find(function (n) {
+    return n.k === page;
+  })) !== null && _NAV$find !== void 0 && _NAV$find.labelKey ? t(NAV.find(function (n) {
+    return n.k === page;
+  }).labelKey) : page;
+  var colors = {
+    admin: '#4f6ef7',
+    hr: '#a78bfa',
+    wh: '#f5a623',
+    fin: '#2dd4a0',
+    mgr: '#ff6b9d',
+    sup: '#f0526c',
+    worker: '#38bdf8'
+  };
+  var roleColor = user ? colors[user.role] || '#6a7498' : '#6a7498';
+  if (!srvReady) return /*#__PURE__*/React.createElement(LangCtx.Provider, {
+    value: {
+      t: t,
+      lang: lang,
+      setLang: setLang
+    }
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'fixed',
       inset: 0,
@@ -5249,63 +6558,22 @@ function App() {
       fontSize: 12,
       color: 'var(--tx3)'
     }
-  }, "\u7CFB\u7EDF\u6B63\u5728\u542F\u52A8\u2026"), srvStatus && /*#__PURE__*/React.createElement("div", {
+  }, t('c.starting')), srvStatus && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: 'var(--tx3)',
       opacity: .6
     }
-  }, srvStatus));
-  var onLogin = function onLogin(t, u) {
-    setToken(t);
-    setUser(u);
-    localStorage.setItem('hr6_token', t);
-    localStorage.setItem('hr6_user', JSON.stringify(u));
-    setPage(u.role === 'worker' ? 'clock' : 'dashboard');
-  };
-  var onLogout = function onLogout() {
-    api('/api/auth/logout', {
-      method: 'POST',
-      token: token
-    }).catch(function () {});
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('hr6_token');
-    localStorage.removeItem('hr6_user');
-  };
-  var toast_ = function toast_(m) {
-    var t = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ok';
-    setToast({
-      m: m,
-      t: t
-    });
-    setTimeout(function () {
-      return setToast(null);
-    }, 2500);
-  };
-  if (!token || !user) return /*#__PURE__*/React.createElement(Login, {
+  }, srvStatus)));
+  if (!token || !user) return /*#__PURE__*/React.createElement(LangCtx.Provider, {
+    value: {
+      t: t,
+      lang: lang,
+      setLang: setLang
+    }
+  }, /*#__PURE__*/React.createElement(Login, {
     onLogin: onLogin
-  });
-  var navItems = NAV.filter(function (n) {
-    return !n.k || !n.roles || n.roles.includes(user.role);
-  });
-  var go = function go(k) {
-    setPage(k);
-    setMN(false);
-  };
-  var pageLabel = ((_NAV$find = NAV.find(function (n) {
-    return n.k === page;
-  })) === null || _NAV$find === void 0 ? void 0 : _NAV$find.label) || page;
-  var colors = {
-    admin: '#4f6ef7',
-    hr: '#a78bfa',
-    wh: '#f5a623',
-    fin: '#2dd4a0',
-    mgr: '#ff6b9d',
-    sup: '#f0526c',
-    worker: '#38bdf8'
-  };
-  var roleColor = colors[user.role] || '#6a7498';
+  }));
   var sidebar = /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "sb-hd"
   }, /*#__PURE__*/React.createElement("div", {
@@ -5328,7 +6596,7 @@ function App() {
       }
     }, /*#__PURE__*/React.createElement("span", {
       className: "ni-i"
-    }, n.i), /*#__PURE__*/React.createElement("span", null, n.label));
+    }, n.i), /*#__PURE__*/React.createElement("span", null, t(n.labelKey)));
   })), /*#__PURE__*/React.createElement("div", {
     className: "sb-ft"
   }, /*#__PURE__*/React.createElement("div", {
@@ -5353,11 +6621,21 @@ function App() {
       fontSize: 8,
       color: 'var(--tx3)'
     }
-  }, user.role))), /*#__PURE__*/React.createElement("button", {
+  }, user.role))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '4px 8px 8px'
+    }
+  }, /*#__PURE__*/React.createElement(LangSwitcher, null)), /*#__PURE__*/React.createElement("button", {
     className: "sb-btn dg",
     onClick: onLogout
-  }, "\uD83D\uDEAA \u9000\u51FA\u767B\u5F55")));
-  return /*#__PURE__*/React.createElement("div", {
+  }, "\uD83D\uDEAA ", t('c.logout'))));
+  return /*#__PURE__*/React.createElement(LangCtx.Provider, {
+    value: {
+      t: t,
+      lang: lang,
+      setLang: setLang
+    }
+  }, /*#__PURE__*/React.createElement("div", {
     className: "app"
   }, /*#__PURE__*/React.createElement("div", {
     className: "sidebar ".concat(mobNav ? 'open' : '')
@@ -5436,6 +6714,6 @@ function App() {
     token: token
   }))), toast && /*#__PURE__*/React.createElement("div", {
     className: "toast ".concat(toast.t === 'err' ? 'ter' : toast.t === 'warn' ? 'tow' : 'tok')
-  }, toast.m));
+  }, toast.m)));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App, null));
