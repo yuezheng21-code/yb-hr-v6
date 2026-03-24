@@ -58,8 +58,8 @@ open http://localhost:8000
 
 ```bash
 pip install -r requirements.txt
-python database.py    # 初始化数据库 + 插入示例数据
-uvicorn app:app --reload --port 8000
+python -c "import backend.database as d; d.init_db(); d.seed_data()"  # 初始化数据库 + 插入示例数据
+uvicorn backend.main:app --reload --port 8000
 # 访问 http://localhost:8000
 ```
 
@@ -89,14 +89,33 @@ uvicorn app:app --reload --port 8000
 
 ```
 hr-v6/
-├── app.py              # FastAPI 后端，全部 API 路由
-├── database.py         # 数据库 schema + 示例数据
+├── backend/
+│   ├── __init__.py
+│   ├── main.py         # FastAPI 主入口，lifespan、中间件、挂载所有路由
+│   ├── config.py       # 配置（DATABASE_URL、PORT 等）
+│   ├── database.py     # 数据库 schema + 示例数据（PostgreSQL/SQLite 自动切换）
+│   ├── deps.py         # 共享依赖（Token 存储、get_user、DB 辅助函数）
+│   └── routers/
+│       ├── auth.py         # 登录、PIN 登录、登出
+│       ├── analytics.py    # 仪表盘
+│       ├── employees.py    # 员工花名册
+│       ├── timesheets.py   # 工时记录 + 审批
+│       ├── zeitkonto.py    # 时间账户
+│       ├── abmahnung.py    # 书面警告
+│       ├── werkvertrag.py  # 工程合同
+│       ├── containers.py   # 卸柜记录
+│       ├── warehouses.py   # 仓库/供应商/职级/薪资
+│       ├── settlement.py   # 月度结算
+│       ├── clock.py        # 打卡
+│       └── logs.py         # 审计日志
+├── app.py              # 兼容入口（re-exports backend.main:app）
+├── database.py         # 兼容入口（re-exports backend.database）
 ├── static/
 │   └── index.html      # React 前端（单文件，连接后端 API）
 ├── uploads/            # 文件上传目录
 │   └── .gitkeep
 ├── requirements.txt
-├── Procfile            # Railway 启动命令
+├── Procfile            # Railway 启动命令（→ backend.main:app）
 ├── railway.toml        # Railway 配置
 ├── Dockerfile
 └── .gitignore
