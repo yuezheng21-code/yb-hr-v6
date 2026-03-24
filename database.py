@@ -652,12 +652,11 @@ def seed_data():
         ("worker","w123","工人入口","worker","","",""),
     ]
     for u,pw,dn,role,biz,wh,sup in _seed_users:
-        _upsert(conn,"users","username",u,{"username":u,"password_hash":_bcrypt.hashpw(pw.encode(),_bcrypt.gensalt(rounds=4)).decode(),"display_name":dn,"role":role,"biz_line":biz,"warehouse_code":wh,"supplier_id":sup})
-
-    # Ensure all seed users are active (repairs any stale active=0/NULL rows)
-    seed_usernames = tuple(row[0] for row in _seed_users)
-    placeholders = ",".join(["%s" if DATABASE_URL else "?"] * len(seed_usernames))
-    execute(conn, f"UPDATE users SET active=1 WHERE username IN ({placeholders})", seed_usernames)
+        ph = _bcrypt.hashpw(pw.encode(), _bcrypt.gensalt(rounds=4)).decode()
+        _upsert(conn,"users","username",u,{"username":u,"password_hash":ph,"display_name":dn,"role":role,"biz_line":biz,"warehouse_code":wh,"supplier_id":sup})
+        # Always reset password to the known default so login works after every
+        # redeploy, even if the hash was corrupted or changed in the live DB.
+        execute(conn, "UPDATE users SET password_hash=?,active=1 WHERE username=?", (ph, u))
 
     if existing > 0:
         conn.commit(); conn.close(); return
