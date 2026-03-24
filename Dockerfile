@@ -10,11 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 RUN mkdir -p uploads static && chmod +x start.sh
 
-# Use npm to reliably obtain React/ReactDOM UMD files and compile JSX.
-# This avoids any runtime CDN dependency, fixing the infinite loading screen.
-RUN npm install --no-save react@18.2.0 react-dom@18.2.0 @babel/core@7 @babel/preset-react@7 @babel/preset-env@7 && \
-    cp node_modules/react/umd/react.production.min.js static/react.production.min.js && \
-    cp node_modules/react-dom/umd/react-dom.production.min.js static/react-dom.production.min.js && \
+# Use npm/Babel to compile JSX to plain JS.
+# React/ReactDOM UMD files are already in static/ (committed to the repo).
+RUN npm install --no-save @babel/core@7 @babel/preset-react@7 @babel/preset-env@7 && \
     node -e "
       try {
         const Babel = require('@babel/core');
