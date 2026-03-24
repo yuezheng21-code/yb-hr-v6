@@ -75,6 +75,17 @@ const I18N = {
     'wh.select':'← 选择仓库','wh.edit':'编辑价格','wh.f_save':'保存',
     'cost.title':'岗位成本测算','cost.calc':'测算','cost.f_type':'雇佣类型',
     'cost.f_grade':'职级','cost.f_wh':'仓库','cost.f_weekly':'周工时','cost.f_months':'月数',
+    'nav.suppliers':'供应商管理',
+    'sup.add':'+ 新增供应商','sup.search':'搜索供应商...','sup.col_id':'编号',
+    'sup.col_name':'名称','sup.col_biz':'业务线','sup.col_contact':'联系人',
+    'sup.col_phone':'电话','sup.col_email':'邮件','sup.col_rating':'评级','sup.col_status':'状态',
+    'sup.add_title':'新增供应商','sup.edit_title':'编辑供应商',
+    'sup.f_name':'供应商名称 *','sup.f_biz':'业务线','sup.f_contact':'联系人',
+    'sup.f_phone':'电话','sup.f_email':'邮件','sup.f_tax':'报税方式',
+    'sup.f_rating':'评级','sup.f_notes':'备注',
+    'zk.fz_title':'安排 Freizeitausgleich','zk.fz_hours':'消化工时（h）','zk.fz_btn':'确认安排','zk.fz_desc':'当前 +{{h}}h','zk.fz_err':'请输入有效工时',
+    'abm.revoke_title':'撤销 Abmahnung','abm.revoke_reason':'撤销原因 *','abm.revoke_btn':'确认撤销','abm.revoke_placeholder':'请填写撤销原因...','abm.revoke_err':'请填写撤销原因',
+    'ct.complete_title':'完成卸柜','ct.complete_end':'结束时间','ct.complete_btn':'✓ 确认完成','ct.complete_hint':'确认后将标记视频已录制并完成卸柜。',
   },
   en: {
     'login.title':'Yuanbo+579 HR','login.admin':'👔 Admin Login','login.worker':'👷 Worker PIN',
@@ -151,6 +162,17 @@ const I18N = {
     'cost.title':'Position Cost Calculator','cost.calc':'Calculate',
     'cost.f_type':'Employment Type','cost.f_grade':'Grade','cost.f_wh':'Warehouse',
     'cost.f_weekly':'Weekly Hours','cost.f_months':'Months',
+    'nav.suppliers':'Suppliers',
+    'sup.add':'+ New Supplier','sup.search':'Search suppliers...','sup.col_id':'ID',
+    'sup.col_name':'Name','sup.col_biz':'Biz Line','sup.col_contact':'Contact',
+    'sup.col_phone':'Phone','sup.col_email':'Email','sup.col_rating':'Rating','sup.col_status':'Status',
+    'sup.add_title':'New Supplier','sup.edit_title':'Edit Supplier',
+    'sup.f_name':'Supplier Name *','sup.f_biz':'Business Line','sup.f_contact':'Contact Person',
+    'sup.f_phone':'Phone','sup.f_email':'Email','sup.f_tax':'Tax Handling',
+    'sup.f_rating':'Rating','sup.f_notes':'Notes',
+    'zk.fz_title':'Schedule Freizeitausgleich','zk.fz_hours':'Hours to compensate (h)','zk.fz_btn':'Confirm','zk.fz_desc':'Current +{{h}}h','zk.fz_err':'Please enter valid hours',
+    'abm.revoke_title':'Revoke Abmahnung','abm.revoke_reason':'Reason *','abm.revoke_btn':'Confirm Revoke','abm.revoke_placeholder':'Enter reason for revocation...','abm.revoke_err':'Please provide a reason',
+    'ct.complete_title':'Complete Container','ct.complete_end':'End Time','ct.complete_btn':'✓ Confirm Complete','ct.complete_hint':'This will mark the container as done and video recorded.',
   },
   de: {
     'login.title':'Yuanbo+579 HR','login.admin':'👔 Admin-Login','login.worker':'👷 Arbeiter-PIN',
@@ -233,6 +255,17 @@ const I18N = {
     'cost.title':'Stellenkostenkalkulation','cost.calc':'Berechnen',
     'cost.f_type':'Beschäftigungsart','cost.f_grade':'Stufe','cost.f_wh':'Lager',
     'cost.f_weekly':'Wochenstunden','cost.f_months':'Monate',
+    'nav.suppliers':'Lieferanten',
+    'sup.add':'+ Neuer Lieferant','sup.search':'Lieferanten suchen...','sup.col_id':'ID',
+    'sup.col_name':'Name','sup.col_biz':'Bereich','sup.col_contact':'Kontakt',
+    'sup.col_phone':'Telefon','sup.col_email':'E-Mail','sup.col_rating':'Bewertung','sup.col_status':'Status',
+    'sup.add_title':'Neuer Lieferant','sup.edit_title':'Lieferant bearbeiten',
+    'sup.f_name':'Lieferantenname *','sup.f_biz':'Geschäftsbereich','sup.f_contact':'Kontaktperson',
+    'sup.f_phone':'Telefon','sup.f_email':'E-Mail','sup.f_tax':'Steuerbehandlung',
+    'sup.f_rating':'Bewertung','sup.f_notes':'Notizen',
+    'zk.fz_title':'Freizeitausgleich planen','zk.fz_hours':'Stunden ausgleichen (h)','zk.fz_btn':'Bestätigen','zk.fz_desc':'Aktuell +{{h}}h','zk.fz_err':'Bitte gültige Stunden eingeben',
+    'abm.revoke_title':'Abmahnung widerrufen','abm.revoke_reason':'Grund *','abm.revoke_btn':'Widerruf bestätigen','abm.revoke_placeholder':'Grund eingeben...','abm.revoke_err':'Bitte Grund angeben',
+    'ct.complete_title':'Container abschließen','ct.complete_end':'Endzeit','ct.complete_btn':'✓ Abschluss bestätigen','ct.complete_hint':'Container wird als fertig und Video aufgezeichnet markiert.',
   },
   ar: {
     'login.title':'Yuanbo+579 HR','login.admin':'👔 دخول المسؤول','login.worker':'👷 رمز العامل',
@@ -316,6 +349,17 @@ const I18N = {
     'cost.title':'حاسبة تكاليف المنصب','cost.calc':'احسب',
     'cost.f_type':'نوع التوظيف','cost.f_grade':'الدرجة','cost.f_wh':'المستودع',
     'cost.f_weekly':'ساعات أسبوعية','cost.f_months':'أشهر',
+    'nav.suppliers':'الموردون',
+    'sup.add':'+ مورد جديد','sup.search':'بحث في الموردين...','sup.col_id':'ID',
+    'sup.col_name':'الاسم','sup.col_biz':'خط العمل','sup.col_contact':'جهة الاتصال',
+    'sup.col_phone':'الهاتف','sup.col_email':'البريد','sup.col_rating':'التقييم','sup.col_status':'الحالة',
+    'sup.add_title':'مورد جديد','sup.edit_title':'تعديل المورد',
+    'sup.f_name':'اسم المورد *','sup.f_biz':'خط العمل','sup.f_contact':'شخص الاتصال',
+    'sup.f_phone':'الهاتف','sup.f_email':'البريد','sup.f_tax':'طريقة الضريبة',
+    'sup.f_rating':'التقييم','sup.f_notes':'ملاحظات',
+    'zk.fz_title':'جدولة Freizeitausgleich','zk.fz_hours':'ساعات التعويض (h)','zk.fz_btn':'تأكيد','zk.fz_desc':'الحالي +{{h}}h','zk.fz_err':'يرجى إدخال ساعات صحيحة',
+    'abm.revoke_title':'إلغاء Abmahnung','abm.revoke_reason':'السبب *','abm.revoke_btn':'تأكيد الإلغاء','abm.revoke_placeholder':'أدخل سبب الإلغاء...','abm.revoke_err':'يرجى تقديم سبب',
+    'ct.complete_title':'إتمام الحاوية','ct.complete_end':'وقت الانتهاء','ct.complete_btn':'✓ تأكيد الإتمام','ct.complete_hint':'سيتم تحديد الحاوية كمكتملة ومسجلة.',
   },
   hu: {
     'login.title':'Yuanbo+579 HR','login.admin':'👔 Admin bejelentkezés',
@@ -399,6 +443,17 @@ const I18N = {
     'cost.title':'Pozíció-költségkalkulátor','cost.calc':'Számítás',
     'cost.f_type':'Foglalkoztatás típusa','cost.f_grade':'Fokozat','cost.f_wh':'Raktár',
     'cost.f_weekly':'Heti órák','cost.f_months':'Hónapok',
+    'nav.suppliers':'Szállítók',
+    'sup.add':'+ Új szállító','sup.search':'Szállítók keresése...','sup.col_id':'ID',
+    'sup.col_name':'Név','sup.col_biz':'Üzletág','sup.col_contact':'Kapcsolat',
+    'sup.col_phone':'Telefon','sup.col_email':'E-mail','sup.col_rating':'Értékelés','sup.col_status':'Állapot',
+    'sup.add_title':'Új szállító','sup.edit_title':'Szállító szerkesztése',
+    'sup.f_name':'Szállító neve *','sup.f_biz':'Üzletág','sup.f_contact':'Kapcsolattartó',
+    'sup.f_phone':'Telefon','sup.f_email':'E-mail','sup.f_tax':'Adókezelés',
+    'sup.f_rating':'Értékelés','sup.f_notes':'Megjegyzések',
+    'zk.fz_title':'Freizeitausgleich tervezése','zk.fz_hours':'Kompenzálandó órák (h)','zk.fz_btn':'Megerősítés','zk.fz_desc':'Jelenlegi +{{h}}h','zk.fz_err':'Kérjük adjon meg érvényes óraszámot',
+    'abm.revoke_title':'Abmahnung visszavonása','abm.revoke_reason':'Ok *','abm.revoke_btn':'Visszavonás megerősítése','abm.revoke_placeholder':'Adja meg a visszavonás okát...','abm.revoke_err':'Kérjük adja meg az okot',
+    'ct.complete_title':'Konténer befejezése','ct.complete_end':'Befejezési idő','ct.complete_btn':'✓ Befejezés megerősítése','ct.complete_hint':'A konténer befejezettnek és a videó rögzítettnek lesz jelölve.',
   },
   vi: {
     'login.title':'Yuanbo+579 HR','login.admin':'👔 Đăng nhập Quản lý',
@@ -482,11 +537,24 @@ const I18N = {
     'cost.title':'Tính chi phí vị trí','cost.calc':'Tính toán',
     'cost.f_type':'Loại hợp đồng','cost.f_grade':'Cấp','cost.f_wh':'Kho',
     'cost.f_weekly':'Giờ/tuần','cost.f_months':'Số tháng',
+    'nav.suppliers':'Nhà cung cấp',
+    'sup.add':'+ Thêm NCC','sup.search':'Tìm nhà cung cấp...','sup.col_id':'ID',
+    'sup.col_name':'Tên','sup.col_biz':'Dòng KD','sup.col_contact':'Liên hệ',
+    'sup.col_phone':'Điện thoại','sup.col_email':'Email','sup.col_rating':'Đánh giá','sup.col_status':'Trạng thái',
+    'sup.add_title':'Thêm nhà cung cấp','sup.edit_title':'Sửa nhà cung cấp',
+    'sup.f_name':'Tên NCC *','sup.f_biz':'Dòng kinh doanh','sup.f_contact':'Người liên hệ',
+    'sup.f_phone':'Điện thoại','sup.f_email':'Email','sup.f_tax':'Cách khai thuế',
+    'sup.f_rating':'Đánh giá','sup.f_notes':'Ghi chú',
+    'zk.fz_title':'Lên lịch Freizeitausgleich','zk.fz_hours':'Giờ bù (h)','zk.fz_btn':'Xác nhận','zk.fz_desc':'Hiện tại +{{h}}h','zk.fz_err':'Vui lòng nhập số giờ hợp lệ',
+    'abm.revoke_title':'Thu hồi Abmahnung','abm.revoke_reason':'Lý do *','abm.revoke_btn':'Xác nhận thu hồi','abm.revoke_placeholder':'Nhập lý do thu hồi...','abm.revoke_err':'Vui lòng cung cấp lý do',
+    'ct.complete_title':'Hoàn thành container','ct.complete_end':'Thời gian kết thúc','ct.complete_btn':'✓ Xác nhận hoàn thành','ct.complete_hint':'Container sẽ được đánh dấu hoàn thành và đã ghi video.',
   },
 };
 const RTL_LANGS = new Set(['ar']);
 const LangCtx = React.createContext({t:key=>key, lang:'zh', setLang:()=>{}});
 function useLang() { return React.useContext(LangCtx); }
+const ToastCtx = React.createContext(()=>{});
+function useToast() { return React.useContext(ToastCtx); }
 function LangSwitcher() {
   const {lang, setLang} = useLang();
   const OPTS = [['zh','中文'],['en','English'],['de','Deutsch'],['ar','العربية'],['hu','Magyar'],['vi','Tiếng Việt']];
@@ -623,7 +691,7 @@ function Employees({token,user}) {
   const [emps,setEmps]=useState([]); const [loading,setLoading]=useState(true);
   const [search,setSearch]=useState(''); const [fSt,setFSt]=useState('在职');
   const [editM,setEM]=useState(null); const [form,setForm]=useState({});
-  const {t}=useLang();
+  const {t}=useLang(); const showToast=useToast();
 
   const load = useCallback(()=>{
     setLoading(true);
@@ -641,8 +709,8 @@ function Employees({token,user}) {
     try {
       if(editM==='new') await api('/api/employees',{method:'POST',body:form,token});
       else await api(`/api/employees/${editM}`,{method:'PUT',body:form,token});
-      setEM(null); load();
-    } catch(e) { alert(e.message); }
+      setEM(null); load(); showToast(editM==='new'?'员工已创建':'员工已更新');
+    } catch(e) { showToast(e.message,'err'); }
   };
 
   return <div>
@@ -699,7 +767,7 @@ function Timesheets({token,user}) {
   const [fSt,setFSt]=useState(''); const [addM,setAddM]=useState(false);
   const [form,setForm]=useState({work_date:new Date().toISOString().slice(0,10),start_time:'08:00',end_time:'16:00'});
   const [emps,setEmps]=useState([]);
-  const {t}=useLang();
+  const {t}=useLang(); const showToast=useToast();
 
   const load = () => { setLoading(true); api(`/api/timesheets?status=${fSt}`,{token}).then(setTS).finally(()=>setLoading(false)); };
   useEffect(()=>{ load(); api('/api/employees?status=在职',{token}).then(setEmps); },[fSt]);
@@ -708,13 +776,13 @@ function Timesheets({token,user}) {
   const canApproveFin = ['admin','fin'].includes(user.role);
 
   const approve = async (id) => {
-    try { await api(`/api/timesheets/${id}/approve`,{method:'PUT',token}); load(); } catch(e) { alert(e.message); }
+    try { await api(`/api/timesheets/${id}/approve`,{method:'PUT',token}); load(); showToast('审批成功'); } catch(e) { showToast(e.message,'err'); }
   };
   const addTS = async () => {
-    try { await api('/api/timesheets',{method:'POST',body:form,token}); setAddM(false); load(); } catch(e) { alert(e.message); }
+    try { await api('/api/timesheets',{method:'POST',body:form,token}); setAddM(false); load(); showToast('工时已录入'); } catch(e) { showToast(e.message,'err'); }
   };
   const batchApprove = async (ids) => {
-    await api('/api/timesheets/batch-approve',{method:'PUT',body:{ids},token}); load();
+    try { await api('/api/timesheets/batch-approve',{method:'PUT',body:{ids},token}); load(); showToast(`已批量审批 ${ids.length} 条`); } catch(e) { showToast(e.message,'err'); }
   };
 
   const pending = ts.filter(row=>row.status==='待仓库审批'||row.status==='待财务确认');
@@ -769,7 +837,9 @@ function Zeitkonto({token,user}) {
   const [zk,setZK]=useState([]); const [loading,setLoading]=useState(true);
   const [sel,setSel]=useState(null); const [logs,setLogs]=useState([]);
   const [addM,setAddM]=useState(false);
+  const [fzModal,setFzModal]=useState(null); const [fzHours,setFzHours]=useState('');
   const [form,setForm]=useState({employee_id:'',log_date:new Date().toISOString().slice(0,10),entry_type:'plus',hours:'',reason:''});
+  const showToast=useToast();
 
   const load = () => { setLoading(true); api('/api/zeitkonto',{token}).then(setZK).finally(()=>setLoading(false)); };
   useEffect(()=>{ load(); },[]);
@@ -777,13 +847,12 @@ function Zeitkonto({token,user}) {
   const selRow = zk.find(z=>z.employee_id===sel);
   const openLogs = (id) => { setSel(id); api(`/api/zeitkonto/${id}/logs`,{token}).then(setLogs); };
   const addLog = async () => {
-    try { await api(`/api/zeitkonto/${form.employee_id}/log`,{method:'POST',body:{...form,hours:+form.hours},token}); setAddM(false); load(); } catch(e) { alert(e.message); }
+    try { await api(`/api/zeitkonto/${form.employee_id}/log`,{method:'POST',body:{...form,hours:+form.hours},token}); setAddM(false); load(); showToast('记录已添加'); } catch(e) { showToast(e.message,'err'); }
   };
-  const doFreizeitausgleich = async (id,hrs) => {
-    const h = prompt(`为 ${id} 安排 Freizeitausgleich，输入消化工时（h）：`);
-    if(!h) return;
-    await api(`/api/zeitkonto/${id}/freizeitausgleich`,{method:'PUT',body:{hours:+h},token});
-    load();
+  const doFreizeitausgleich = (id, plusHours) => { setFzModal({id,plusHours}); setFzHours(''); };
+  const confirmFz = async () => {
+    if(!fzHours||+fzHours<=0){showToast(t('zk.fz_err'),'err');return;}
+    try { await api(`/api/zeitkonto/${fzModal.id}/freizeitausgleich`,{method:'PUT',body:{hours:+fzHours},token}); setFzModal(null); load(); showToast('已安排 Freizeitausgleich'); } catch(e) { showToast(e.message,'err'); }
   };
 
   const canEdit = ['admin','hr','mgr'].includes(user.role);
@@ -856,6 +925,11 @@ function Zeitkonto({token,user}) {
         <div className="fg ful"><label className="fl">{t('zk.f_reason')}</label><input className="fi" value={form.reason} onChange={e=>setForm({...form,reason:e.target.value})}/></div>
       </div>
     </Modal>}
+    {fzModal && <Modal title={t('zk.fz_title')} onClose={()=>setFzModal(null)}
+      footer={<><button className="b bgh" onClick={()=>setFzModal(null)}>{t('c.cancel')}</button><button className="b bgo" onClick={confirmFz}>{t('zk.fz_btn')}</button></>}>
+      <div style={{marginBottom:14,fontSize:12,color:'var(--tx2)'}}>为员工 <b>{fzModal.id}</b> {t('zk.fz_title')}（{t('zk.fz_desc').replace('{{h}}',fzModal.plusHours)}）</div>
+      <div className="fg"><label className="fl">{t('zk.fz_hours')}</label><input className="fi" type="number" step="0.5" min="0.5" value={fzHours} onChange={e=>setFzHours(e.target.value)} autoFocus/></div>
+    </Modal>}
   </div>;
 }
 
@@ -863,9 +937,11 @@ function Zeitkonto({token,user}) {
 function Abmahnung({token,user}) {
   const [abms,setAbms]=useState([]); const [loading,setLoading]=useState(true);
   const [addM,setAddM]=useState(false); const [previewM,setPreviewM]=useState(null);
+  const [revokeModal,setRevokeModal]=useState(null); const [revokeReason,setRevokeReason]=useState('');
   const [emps,setEmps]=useState([]);
   const today = new Date().toISOString().slice(0,10);
   const [form,setForm]=useState({employee_id:'',abmahnung_type:'旷工（Unentschuldigtes Fehlen）',incident_date:today,issued_date:today,incident_description:'',internal_notes:'',delivery_method:'面交'});
+  const showToast=useToast(); const {t}=useLang();
 
   const TYPES = ['旷工（Unentschuldigtes Fehlen）','擅自超时（Eigenmächtige Arbeitszeitverlängerung）','多次迟到（Wiederholte Verspätung）','工时违规（ArbZG Verstoß）','其他违约行为'];
 
@@ -873,13 +949,13 @@ function Abmahnung({token,user}) {
   useEffect(()=>{ load(); api('/api/employees?status=在职',{token}).then(setEmps); },[]);
 
   const save = async () => {
-    if(!form.employee_id||!form.incident_description){alert('请填写员工和违约事实');return;}
-    try { await api('/api/abmahnungen',{method:'POST',body:form,token}); setAddM(false); load(); } catch(e) { alert(e.message); }
+    if(!form.employee_id||!form.incident_description){showToast('请填写员工和违约事实','err');return;}
+    try { await api('/api/abmahnungen',{method:'POST',body:form,token}); setAddM(false); load(); showToast('Abmahnung 已发出'); } catch(e) { showToast(e.message,'err'); }
   };
-  const revoke = async (id) => {
-    const reason = prompt('撤销原因：');
-    if(!reason) return;
-    await api(`/api/abmahnungen/${id}/revoke`,{method:'PUT',body:{reason},token}); load();
+  const revoke = (id) => { setRevokeModal(id); setRevokeReason(''); };
+  const confirmRevoke = async () => {
+    if(!revokeReason.trim()){showToast(t('abm.revoke_err'),'err');return;}
+    try { await api(`/api/abmahnungen/${revokeModal}/revoke`,{method:'PUT',body:{reason:revokeReason},token}); setRevokeModal(null); load(); showToast('已撤销'); } catch(e) { showToast(e.message,'err'); }
   };
 
   // Group by employee to find Kündigung candidates
@@ -960,6 +1036,10 @@ function Abmahnung({token,user}) {
       footer={<><button className="b bga" onClick={()=>window.print()}>⎙ 打印</button><button className="b bgh" onClick={()=>setPreviewM(null)}>关闭</button></>}>
       <div dangerouslySetInnerHTML={{__html:genLetter(previewM)}} style={{background:'white',borderRadius:8,padding:16}}/>
     </Modal>}
+    {revokeModal && <Modal title={t('abm.revoke_title')} onClose={()=>setRevokeModal(null)}
+      footer={<><button className="b bgh" onClick={()=>setRevokeModal(null)}>{t('c.cancel')}</button><button className="b bgr" onClick={confirmRevoke}>{t('abm.revoke_btn')}</button></>}>
+      <div className="fg"><label className="fl">{t('abm.revoke_reason')}</label><textarea className="fta" value={revokeReason} onChange={e=>setRevokeReason(e.target.value)} placeholder={t('abm.revoke_placeholder')} autoFocus/></div>
+    </Modal>}
   </div>;
 }
 
@@ -987,6 +1067,7 @@ function Werkvertrag({token,user}) {
   const [form,setForm]=useState({name:'',client:'',service_type:'',region:'',project_manager:''});
   const SERVICES=['卸柜承包','装卸承包','入库承包','出库承包','区域承包','快转/分拣承包','综合承包'];
   const REGIONS=['南部大区 (Köln/Düsseldorf)','鲁尔西大区 (Duisburg/Essen)','鲁尔东大区 (Dortmund/Unna)'];
+  const showToast=useToast();
 
   const load = ()=>{ setLoading(true); api('/api/werkvertrag',{token}).then(setProjs).finally(()=>setLoading(false)); };
   useEffect(()=>{ load(); },[]);
@@ -995,12 +1076,12 @@ function Werkvertrag({token,user}) {
   const canEdit = ['admin','hr','mgr'].includes(user.role);
 
   const createProj = async ()=>{
-    if(!form.name){alert('请填写项目名称');return;}
-    try{ const r=await api('/api/werkvertrag',{method:'POST',body:form,token}); setSelId(r.id); setPh(0); setNewM(false); load(); }catch(e){alert(e.message);}
+    if(!form.name){showToast('请填写项目名称','err');return;}
+    try{ const r=await api('/api/werkvertrag',{method:'POST',body:form,token}); setSelId(r.id); setPh(0); setNewM(false); load(); showToast('项目已创建'); }catch(e){showToast(e.message,'err');}
   };
   const updateProj = async (upd)=>{
     if(!selId) return;
-    try{ await api(`/api/werkvertrag/${selId}`,{method:'PUT',body:upd,token}); load(); }catch(e){alert(e.message);}
+    try{ await api(`/api/werkvertrag/${selId}`,{method:'PUT',body:upd,token}); load(); }catch(e){showToast(e.message,'err');}
   };
 
   const calcCost=(c={})=>{
@@ -1170,22 +1251,22 @@ function Werkvertrag({token,user}) {
 // ── CONTAINERS ──
 function Containers({token,user}) {
   const [cts,setCts]=useState([]); const [loading,setLoading]=useState(true);
-  const [addM,setAddM]=useState(false);
+  const [addM,setAddM]=useState(false); const [completeModal,setCompleteModal]=useState(null);
+  const [completeEndTime,setCompleteEndTime]=useState('16:00');
   const [emps,setEmps]=useState([]);
   const [form,setForm]=useState({container_no:'',container_type:'40GP',work_date:new Date().toISOString().slice(0,10),start_time:'08:00',seal_no:'',worker_ids:[],client_revenue:0,team_pay:0,notes:''});
-  const {t}=useLang();
+  const {t}=useLang(); const showToast=useToast();
 
   const load = ()=>{ setLoading(true); api('/api/containers',{token}).then(setCts).finally(()=>setLoading(false)); };
   useEffect(()=>{ load(); api('/api/employees?status=在职',{token}).then(setEmps); },[]);
 
   const addCt = async ()=>{
-    if(!form.container_no){alert('请输入柜号');return;}
-    await api('/api/containers',{method:'POST',body:form,token}); setAddM(false); load();
+    if(!form.container_no){showToast('请输入柜号','err');return;}
+    try { await api('/api/containers',{method:'POST',body:form,token}); setAddM(false); load(); showToast('卸柜记录已添加'); } catch(e) { showToast(e.message,'err'); }
   };
-  const complete = async (id)=>{
-    const et = prompt('结束时间 (HH:MM):','16:00');
-    if(!et) return;
-    await api(`/api/containers/${id}/complete`,{method:'PUT',body:{end_time:et,video_recorded:1},token}); load();
+  const complete = (id) => { setCompleteModal(id); setCompleteEndTime('16:00'); };
+  const confirmComplete = async () => {
+    try { await api(`/api/containers/${completeModal}/complete`,{method:'PUT',body:{end_time:completeEndTime,video_recorded:1},token}); setCompleteModal(null); load(); showToast('卸柜已完成'); } catch(e) { showToast(e.message,'err'); }
   };
 
   const TYPES=['20GP','40GP','40HQ','45HC'];
@@ -1227,6 +1308,11 @@ function Containers({token,user}) {
         </div>
         <div className="fg ful"><label className="fl">{t('ct.f_notes')}</label><input className="fi" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
       </div>
+    </Modal>}
+    {completeModal && <Modal title={t('ct.complete_title')} onClose={()=>setCompleteModal(null)}
+      footer={<><button className="b bgh" onClick={()=>setCompleteModal(null)}>{t('c.cancel')}</button><button className="b bgn" onClick={confirmComplete}>{t('ct.complete_btn')}</button></>}>
+      <div className="fg"><label className="fl">{t('ct.complete_end')}</label><input className="fi" type="time" value={completeEndTime} onChange={e=>setCompleteEndTime(e.target.value)} autoFocus/></div>
+      <div className="alert alert-ac" style={{marginTop:10,fontSize:10}}>{t('ct.complete_hint')}</div>
     </Modal>}
   </div>;
 }
@@ -2426,8 +2512,8 @@ function WarehouseRates({token,user}) {
 function CostCalculator({token}) {
   const [form,setForm]=useState({brutto_rate:14.0,weekly_hours:40,emp_type:'正常雇用'});
   const [result,setResult]=useState(null); const [loading,setLoading]=useState(false);
-  const {t}=useLang();
-  const calc=async()=>{ setLoading(true); try{ const r=await api('/api/cost-calc',{method:'POST',body:form,token}); setResult(r); }catch(e){alert(e.message);} finally{setLoading(false);} };
+  const {t}=useLang(); const showToast=useToast();
+  const calc=async()=>{ setLoading(true); try{ const r=await api('/api/cost-calc',{method:'POST',body:form,token}); setResult(r); }catch(e){showToast(e.message,'err');} finally{setLoading(false);} };
   useEffect(()=>{ calc(); },[form.brutto_rate,form.weekly_hours,form.emp_type]);
   return <div className="g2">
     <div className="cd">
@@ -2492,6 +2578,90 @@ function CostCalculator({token}) {
   </div>;
 }
 
+// ── SUPPLIERS ──
+function Suppliers({token,user}) {
+  const [sups,setSups]=useState([]); const [loading,setLoading]=useState(true);
+  const [search,setSearch]=useState(''); const [fSt,setFSt]=useState('');
+  const [editM,setEM]=useState(null); const [form,setForm]=useState({});
+  const {t}=useLang(); const showToast=useToast();
+
+  const RATINGS=['A','B','C'];
+
+  const load = useCallback(()=>{
+    setLoading(true);
+    api('/api/suppliers',{token}).then(data=>{
+      let filtered=data;
+      if(search) filtered=filtered.filter(s=>(s.name||'').toLowerCase().includes(search.toLowerCase())||(s.id||'').toLowerCase().includes(search.toLowerCase())||(s.contact_name||'').toLowerCase().includes(search.toLowerCase()));
+      if(fSt) filtered=filtered.filter(s=>s.status===fSt);
+      setSups(filtered);
+    }).finally(()=>setLoading(false));
+  },[token,search,fSt]);
+  useEffect(()=>{load();},[load]);
+
+  const canEdit = ['admin','hr'].includes(user.role);
+  const canDelete = user.role==='admin';
+
+  const openNew = () => { setForm({name:'',biz_line:'渊博',contact_name:'',phone:'',email:'',tax_handle:'供应商自行报税',rating:'B',status:'合作中',notes:''}); setEM('new'); };
+  const openEdit = (s) => { setForm({...s}); setEM(s.id); };
+  const save = async () => {
+    if(!form.name){showToast(t('sup.f_name').replace(' *','')+'不能为空','err');return;}
+    try {
+      if(editM==='new') await api('/api/suppliers',{method:'POST',body:form,token});
+      else await api(`/api/suppliers/${editM}`,{method:'PUT',body:form,token});
+      setEM(null); load(); showToast(editM==='new'?'供应商已创建':'供应商已更新');
+    } catch(e) { showToast(e.message,'err'); }
+  };
+  const deactivate = async (id) => {
+    try { await api(`/api/suppliers/${id}`,{method:'DELETE',token}); load(); showToast('已停止合作'); } catch(e) { showToast(e.message,'err'); }
+  };
+
+  const ratingColor = {'A':'var(--gn)','B':'var(--og)','C':'var(--rd)'};
+  const statusColor = {'合作中':'var(--gn)','停止合作':'var(--rd)'};
+
+  return <div>
+    <div className="ab">
+      <input className="si" placeholder={t('sup.search')} value={search} onChange={e=>setSearch(e.target.value)}/>
+      {[['','c.all'],['合作中','合作中'],['停止合作','停止合作']].map(([s,tk])=><button key={s} className={`fb ${fSt===s?'on':''}`} onClick={()=>setFSt(s)}>{s===''?t('c.all'):s}</button>)}
+      <div className="ml">
+        {canEdit && <button className="b bga" onClick={openNew}>{t('sup.add')}</button>}
+      </div>
+    </div>
+    {loading ? <Loading/> : <div className="tw"><div className="ts"><table>
+      <thead><tr><th>{t('sup.col_id')}</th><th>{t('sup.col_name')}</th><th>{t('sup.col_biz')}</th><th>{t('sup.col_contact')}</th><th>{t('sup.col_phone')}</th><th>{t('sup.col_email')}</th><th>{t('sup.col_rating')}</th><th>{t('sup.col_status')}</th><th>{t('c.action')}</th></tr></thead>
+      <tbody>{sups.length===0?<tr><td colSpan={9} style={{textAlign:'center',color:'var(--tx3)',padding:24}}>{t('c.no_data')}</td></tr>:sups.map(s=><tr key={s.id}>
+        <td className="mn gn fw6">{s.id}</td>
+        <td className="fw6">{s.name}</td>
+        <td><Bg t={s.biz_line}/></td>
+        <td>{s.contact_name}</td>
+        <td className="tm">{s.phone}</td>
+        <td className="tm" style={{fontSize:10}}>{s.email}</td>
+        <td><span style={{color:ratingColor[s.rating]||'var(--tx3)',fontWeight:700}}>{s.rating}</span></td>
+        <td><span style={{color:statusColor[s.status]||'var(--tx3)',fontSize:10,fontWeight:600}}>{s.status}</span></td>
+        <td style={{display:'flex',gap:4}}>
+          {canEdit && <button className="b bgh" style={{fontSize:9}} onClick={()=>openEdit(s)}>{t('c.edit')}</button>}
+          {canDelete && s.status==='合作中' && <button className="b bgr" style={{fontSize:9}} onClick={()=>deactivate(s.id)}>停合作</button>}
+        </td>
+      </tr>)}
+      </tbody>
+    </table></div></div>}
+
+    {editM && <Modal title={editM==='new'?t('sup.add_title'):t('sup.edit_title')} onClose={()=>setEM(null)}
+      footer={<><button className="b bgh" onClick={()=>setEM(null)}>{t('c.cancel')}</button><button className="b bga" onClick={save}>{t('c.save')}</button></>}>
+      <div className="fr">
+        <div className="fg ful"><label className="fl">{t('sup.f_name')}</label><input className="fi" value={form.name||''} onChange={e=>setForm({...form,name:e.target.value})} autoFocus/></div>
+        <div className="fg"><label className="fl">{t('sup.f_biz')}</label><select className="fsl" value={form.biz_line||'渊博'} onChange={e=>setForm({...form,biz_line:e.target.value})}><option>渊博</option><option>579</option></select></div>
+        <div className="fg"><label className="fl">{t('sup.f_contact')}</label><input className="fi" value={form.contact_name||''} onChange={e=>setForm({...form,contact_name:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('sup.f_phone')}</label><input className="fi" value={form.phone||''} onChange={e=>setForm({...form,phone:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('sup.f_email')}</label><input className="fi" type="email" value={form.email||''} onChange={e=>setForm({...form,email:e.target.value})}/></div>
+        <div className="fg"><label className="fl">{t('sup.f_tax')}</label><select className="fsl" value={form.tax_handle||'供应商自行报税'} onChange={e=>setForm({...form,tax_handle:e.target.value})}><option>供应商自行报税</option><option>我方代报税</option></select></div>
+        <div className="fg"><label className="fl">{t('sup.f_rating')}</label><select className="fsl" value={form.rating||'B'} onChange={e=>setForm({...form,rating:e.target.value})}>{RATINGS.map(r=><option key={r}>{r}</option>)}</select></div>
+        <div className="fg"><label className="fl">{t('c.status')}</label><select className="fsl" value={form.status||'合作中'} onChange={e=>setForm({...form,status:e.target.value})}><option>合作中</option><option>停止合作</option></select></div>
+        <div className="fg ful"><label className="fl">{t('sup.f_notes')}</label><textarea className="fta" value={form.notes||''} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
+      </div>
+    </Modal>}
+  </div>;
+}
+
 // ── MAIN APP ──
 const NAV = [
   {k:'dashboard',i:'📊',labelKey:'nav.dashboard',roles:['admin','hr','wh','fin','mgr','sup']},
@@ -2503,6 +2673,7 @@ const NAV = [
   {sep:true},
   {k:'werkvertrag',i:'📋',labelKey:'nav.werkvertrag',roles:['admin','hr','mgr']},
   {k:'abmahnung',i:'⚠️',labelKey:'nav.abmahnung',roles:['admin','hr','mgr']},
+  {k:'suppliers',i:'🏢',labelKey:'nav.suppliers',roles:['admin','hr','mgr']},
   {sep:true},
   {k:'clock',i:'⏰',labelKey:'nav.clock',roles:['admin','hr','wh','mgr','worker','sup']},
   {k:'grades',i:'🏅',labelKey:'nav.grades',roles:['admin','hr','mgr']},
@@ -2553,7 +2724,7 @@ function App() {
 
   const onLogin = (tk,u) => { setToken(tk); setUser(u); localStorage.setItem('hr6_token',tk); localStorage.setItem('hr6_user',JSON.stringify(u)); setPage(u.role==='worker'?'clock':'dashboard'); };
   const onLogout = () => { api('/api/auth/logout',{method:'POST',token}).catch(()=>{}); setToken(null); setUser(null); localStorage.removeItem('hr6_token'); localStorage.removeItem('hr6_user'); };
-  const toast_ = (m,tp='ok') => { setToast({m,t:tp}); setTimeout(()=>setToast(null),2500); };
+  const toast_ = useCallback((m,tp='ok') => { setToast({m,t:tp}); setTimeout(()=>setToast(null),2500); },[]);
 
   const navItems = token&&user ? NAV.filter(n=>!n.k||(!n.roles||(n.roles.includes(user.role)))) : [];
   const go = (k) => { setPage(k); setMN(false); };
@@ -2569,7 +2740,7 @@ function App() {
     </div>
   </LangCtx.Provider>;
 
-  if(!token||!user) return <LangCtx.Provider value={{t,lang,setLang}}><Login onLogin={onLogin}/></LangCtx.Provider>;
+  if(!token||!user) return <LangCtx.Provider value={{t,lang,setLang}}><ToastCtx.Provider value={toast_}><Login onLogin={onLogin}/></ToastCtx.Provider></LangCtx.Provider>;
 
   const sidebar = <>
     <div className="sb-hd">
@@ -2590,6 +2761,7 @@ function App() {
   </>;
 
   return <LangCtx.Provider value={{t,lang,setLang}}>
+    <ToastCtx.Provider value={toast_}>
     <div className="app">
       <div className={`sidebar ${mobNav?'open':''}`}>{sidebar}</div>
       <div className={`mob-overlay ${mobNav?'show':''}`} onClick={()=>setMN(false)}/>
@@ -2616,6 +2788,7 @@ function App() {
           {page==='containers' && <Containers token={token} user={user}/>}
           {page==='werkvertrag' && <Werkvertrag token={token} user={user}/>}
           {page==='abmahnung' && <Abmahnung token={token} user={user}/>}
+          {page==='suppliers' && <Suppliers token={token} user={user}/>}
           {page==='clock' && <Clock token={token} user={user}/>}
           {page==='logs' && <AuditLogs token={token}/>}
           {page==='docs' && <KnowledgeBase token={token} user={user}/>}
@@ -2626,6 +2799,7 @@ function App() {
       </div>
       {toast && <div className={`toast ${toast.t==='err'?'ter':toast.t==='warn'?'tow':'tok'}`}>{toast.m}</div>}
     </div>
+    </ToastCtx.Provider>
   </LangCtx.Provider>;
 }
 

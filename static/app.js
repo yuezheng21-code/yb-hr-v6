@@ -1,3 +1,5 @@
+"use strict";
+
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
@@ -224,7 +226,42 @@ var I18N = {
     'cost.f_grade': '职级',
     'cost.f_wh': '仓库',
     'cost.f_weekly': '周工时',
-    'cost.f_months': '月数'
+    'cost.f_months': '月数',
+    'nav.suppliers': '供应商管理',
+    'sup.add': '+ 新增供应商',
+    'sup.search': '搜索供应商...',
+    'sup.col_id': '编号',
+    'sup.col_name': '名称',
+    'sup.col_biz': '业务线',
+    'sup.col_contact': '联系人',
+    'sup.col_phone': '电话',
+    'sup.col_email': '邮件',
+    'sup.col_rating': '评级',
+    'sup.col_status': '状态',
+    'sup.add_title': '新增供应商',
+    'sup.edit_title': '编辑供应商',
+    'sup.f_name': '供应商名称 *',
+    'sup.f_biz': '业务线',
+    'sup.f_contact': '联系人',
+    'sup.f_phone': '电话',
+    'sup.f_email': '邮件',
+    'sup.f_tax': '报税方式',
+    'sup.f_rating': '评级',
+    'sup.f_notes': '备注',
+    'zk.fz_title': '安排 Freizeitausgleich',
+    'zk.fz_hours': '消化工时（h）',
+    'zk.fz_btn': '确认安排',
+    'zk.fz_desc': '当前 +{{h}}h',
+    'zk.fz_err': '请输入有效工时',
+    'abm.revoke_title': '撤销 Abmahnung',
+    'abm.revoke_reason': '撤销原因 *',
+    'abm.revoke_btn': '确认撤销',
+    'abm.revoke_placeholder': '请填写撤销原因...',
+    'abm.revoke_err': '请填写撤销原因',
+    'ct.complete_title': '完成卸柜',
+    'ct.complete_end': '结束时间',
+    'ct.complete_btn': '✓ 确认完成',
+    'ct.complete_hint': '确认后将标记视频已录制并完成卸柜。'
   },
   en: {
     'login.title': 'Yuanbo+579 HR',
@@ -417,7 +454,42 @@ var I18N = {
     'cost.f_grade': 'Grade',
     'cost.f_wh': 'Warehouse',
     'cost.f_weekly': 'Weekly Hours',
-    'cost.f_months': 'Months'
+    'cost.f_months': 'Months',
+    'nav.suppliers': 'Suppliers',
+    'sup.add': '+ New Supplier',
+    'sup.search': 'Search suppliers...',
+    'sup.col_id': 'ID',
+    'sup.col_name': 'Name',
+    'sup.col_biz': 'Biz Line',
+    'sup.col_contact': 'Contact',
+    'sup.col_phone': 'Phone',
+    'sup.col_email': 'Email',
+    'sup.col_rating': 'Rating',
+    'sup.col_status': 'Status',
+    'sup.add_title': 'New Supplier',
+    'sup.edit_title': 'Edit Supplier',
+    'sup.f_name': 'Supplier Name *',
+    'sup.f_biz': 'Business Line',
+    'sup.f_contact': 'Contact Person',
+    'sup.f_phone': 'Phone',
+    'sup.f_email': 'Email',
+    'sup.f_tax': 'Tax Handling',
+    'sup.f_rating': 'Rating',
+    'sup.f_notes': 'Notes',
+    'zk.fz_title': 'Schedule Freizeitausgleich',
+    'zk.fz_hours': 'Hours to compensate (h)',
+    'zk.fz_btn': 'Confirm',
+    'zk.fz_desc': 'Current +{{h}}h',
+    'zk.fz_err': 'Please enter valid hours',
+    'abm.revoke_title': 'Revoke Abmahnung',
+    'abm.revoke_reason': 'Reason *',
+    'abm.revoke_btn': 'Confirm Revoke',
+    'abm.revoke_placeholder': 'Enter reason for revocation...',
+    'abm.revoke_err': 'Please provide a reason',
+    'ct.complete_title': 'Complete Container',
+    'ct.complete_end': 'End Time',
+    'ct.complete_btn': '✓ Confirm Complete',
+    'ct.complete_hint': 'This will mark the container as done and video recorded.'
   },
   de: {
     'login.title': 'Yuanbo+579 HR',
@@ -610,7 +682,42 @@ var I18N = {
     'cost.f_grade': 'Stufe',
     'cost.f_wh': 'Lager',
     'cost.f_weekly': 'Wochenstunden',
-    'cost.f_months': 'Monate'
+    'cost.f_months': 'Monate',
+    'nav.suppliers': 'Lieferanten',
+    'sup.add': '+ Neuer Lieferant',
+    'sup.search': 'Lieferanten suchen...',
+    'sup.col_id': 'ID',
+    'sup.col_name': 'Name',
+    'sup.col_biz': 'Bereich',
+    'sup.col_contact': 'Kontakt',
+    'sup.col_phone': 'Telefon',
+    'sup.col_email': 'E-Mail',
+    'sup.col_rating': 'Bewertung',
+    'sup.col_status': 'Status',
+    'sup.add_title': 'Neuer Lieferant',
+    'sup.edit_title': 'Lieferant bearbeiten',
+    'sup.f_name': 'Lieferantenname *',
+    'sup.f_biz': 'Geschäftsbereich',
+    'sup.f_contact': 'Kontaktperson',
+    'sup.f_phone': 'Telefon',
+    'sup.f_email': 'E-Mail',
+    'sup.f_tax': 'Steuerbehandlung',
+    'sup.f_rating': 'Bewertung',
+    'sup.f_notes': 'Notizen',
+    'zk.fz_title': 'Freizeitausgleich planen',
+    'zk.fz_hours': 'Stunden ausgleichen (h)',
+    'zk.fz_btn': 'Bestätigen',
+    'zk.fz_desc': 'Aktuell +{{h}}h',
+    'zk.fz_err': 'Bitte gültige Stunden eingeben',
+    'abm.revoke_title': 'Abmahnung widerrufen',
+    'abm.revoke_reason': 'Grund *',
+    'abm.revoke_btn': 'Widerruf bestätigen',
+    'abm.revoke_placeholder': 'Grund eingeben...',
+    'abm.revoke_err': 'Bitte Grund angeben',
+    'ct.complete_title': 'Container abschließen',
+    'ct.complete_end': 'Endzeit',
+    'ct.complete_btn': '✓ Abschluss bestätigen',
+    'ct.complete_hint': 'Container wird als fertig und Video aufgezeichnet markiert.'
   },
   ar: {
     'login.title': 'Yuanbo+579 HR',
@@ -803,7 +910,42 @@ var I18N = {
     'cost.f_grade': 'الدرجة',
     'cost.f_wh': 'المستودع',
     'cost.f_weekly': 'ساعات أسبوعية',
-    'cost.f_months': 'أشهر'
+    'cost.f_months': 'أشهر',
+    'nav.suppliers': 'الموردون',
+    'sup.add': '+ مورد جديد',
+    'sup.search': 'بحث في الموردين...',
+    'sup.col_id': 'ID',
+    'sup.col_name': 'الاسم',
+    'sup.col_biz': 'خط العمل',
+    'sup.col_contact': 'جهة الاتصال',
+    'sup.col_phone': 'الهاتف',
+    'sup.col_email': 'البريد',
+    'sup.col_rating': 'التقييم',
+    'sup.col_status': 'الحالة',
+    'sup.add_title': 'مورد جديد',
+    'sup.edit_title': 'تعديل المورد',
+    'sup.f_name': 'اسم المورد *',
+    'sup.f_biz': 'خط العمل',
+    'sup.f_contact': 'شخص الاتصال',
+    'sup.f_phone': 'الهاتف',
+    'sup.f_email': 'البريد',
+    'sup.f_tax': 'طريقة الضريبة',
+    'sup.f_rating': 'التقييم',
+    'sup.f_notes': 'ملاحظات',
+    'zk.fz_title': 'جدولة Freizeitausgleich',
+    'zk.fz_hours': 'ساعات التعويض (h)',
+    'zk.fz_btn': 'تأكيد',
+    'zk.fz_desc': 'الحالي +{{h}}h',
+    'zk.fz_err': 'يرجى إدخال ساعات صحيحة',
+    'abm.revoke_title': 'إلغاء Abmahnung',
+    'abm.revoke_reason': 'السبب *',
+    'abm.revoke_btn': 'تأكيد الإلغاء',
+    'abm.revoke_placeholder': 'أدخل سبب الإلغاء...',
+    'abm.revoke_err': 'يرجى تقديم سبب',
+    'ct.complete_title': 'إتمام الحاوية',
+    'ct.complete_end': 'وقت الانتهاء',
+    'ct.complete_btn': '✓ تأكيد الإتمام',
+    'ct.complete_hint': 'سيتم تحديد الحاوية كمكتملة ومسجلة.'
   },
   hu: {
     'login.title': 'Yuanbo+579 HR',
@@ -996,7 +1138,42 @@ var I18N = {
     'cost.f_grade': 'Fokozat',
     'cost.f_wh': 'Raktár',
     'cost.f_weekly': 'Heti órák',
-    'cost.f_months': 'Hónapok'
+    'cost.f_months': 'Hónapok',
+    'nav.suppliers': 'Szállítók',
+    'sup.add': '+ Új szállító',
+    'sup.search': 'Szállítók keresése...',
+    'sup.col_id': 'ID',
+    'sup.col_name': 'Név',
+    'sup.col_biz': 'Üzletág',
+    'sup.col_contact': 'Kapcsolat',
+    'sup.col_phone': 'Telefon',
+    'sup.col_email': 'E-mail',
+    'sup.col_rating': 'Értékelés',
+    'sup.col_status': 'Állapot',
+    'sup.add_title': 'Új szállító',
+    'sup.edit_title': 'Szállító szerkesztése',
+    'sup.f_name': 'Szállító neve *',
+    'sup.f_biz': 'Üzletág',
+    'sup.f_contact': 'Kapcsolattartó',
+    'sup.f_phone': 'Telefon',
+    'sup.f_email': 'E-mail',
+    'sup.f_tax': 'Adókezelés',
+    'sup.f_rating': 'Értékelés',
+    'sup.f_notes': 'Megjegyzések',
+    'zk.fz_title': 'Freizeitausgleich tervezése',
+    'zk.fz_hours': 'Kompenzálandó órák (h)',
+    'zk.fz_btn': 'Megerősítés',
+    'zk.fz_desc': 'Jelenlegi +{{h}}h',
+    'zk.fz_err': 'Kérjük adjon meg érvényes óraszámot',
+    'abm.revoke_title': 'Abmahnung visszavonása',
+    'abm.revoke_reason': 'Ok *',
+    'abm.revoke_btn': 'Visszavonás megerősítése',
+    'abm.revoke_placeholder': 'Adja meg a visszavonás okát...',
+    'abm.revoke_err': 'Kérjük adja meg az okot',
+    'ct.complete_title': 'Konténer befejezése',
+    'ct.complete_end': 'Befejezési idő',
+    'ct.complete_btn': '✓ Befejezés megerősítése',
+    'ct.complete_hint': 'A konténer befejezettnek és a videó rögzítettnek lesz jelölve.'
   },
   vi: {
     'login.title': 'Yuanbo+579 HR',
@@ -1189,7 +1366,42 @@ var I18N = {
     'cost.f_grade': 'Cấp',
     'cost.f_wh': 'Kho',
     'cost.f_weekly': 'Giờ/tuần',
-    'cost.f_months': 'Số tháng'
+    'cost.f_months': 'Số tháng',
+    'nav.suppliers': 'Nhà cung cấp',
+    'sup.add': '+ Thêm NCC',
+    'sup.search': 'Tìm nhà cung cấp...',
+    'sup.col_id': 'ID',
+    'sup.col_name': 'Tên',
+    'sup.col_biz': 'Dòng KD',
+    'sup.col_contact': 'Liên hệ',
+    'sup.col_phone': 'Điện thoại',
+    'sup.col_email': 'Email',
+    'sup.col_rating': 'Đánh giá',
+    'sup.col_status': 'Trạng thái',
+    'sup.add_title': 'Thêm nhà cung cấp',
+    'sup.edit_title': 'Sửa nhà cung cấp',
+    'sup.f_name': 'Tên NCC *',
+    'sup.f_biz': 'Dòng kinh doanh',
+    'sup.f_contact': 'Người liên hệ',
+    'sup.f_phone': 'Điện thoại',
+    'sup.f_email': 'Email',
+    'sup.f_tax': 'Cách khai thuế',
+    'sup.f_rating': 'Đánh giá',
+    'sup.f_notes': 'Ghi chú',
+    'zk.fz_title': 'Lên lịch Freizeitausgleich',
+    'zk.fz_hours': 'Giờ bù (h)',
+    'zk.fz_btn': 'Xác nhận',
+    'zk.fz_desc': 'Hiện tại +{{h}}h',
+    'zk.fz_err': 'Vui lòng nhập số giờ hợp lệ',
+    'abm.revoke_title': 'Thu hồi Abmahnung',
+    'abm.revoke_reason': 'Lý do *',
+    'abm.revoke_btn': 'Xác nhận thu hồi',
+    'abm.revoke_placeholder': 'Nhập lý do thu hồi...',
+    'abm.revoke_err': 'Vui lòng cung cấp lý do',
+    'ct.complete_title': 'Hoàn thành container',
+    'ct.complete_end': 'Thời gian kết thúc',
+    'ct.complete_btn': '✓ Xác nhận hoàn thành',
+    'ct.complete_hint': 'Container sẽ được đánh dấu hoàn thành và đã ghi video.'
   }
 };
 var RTL_LANGS = new Set(['ar']);
@@ -1202,6 +1414,10 @@ var LangCtx = React.createContext({
 });
 function useLang() {
   return React.useContext(LangCtx);
+}
+var ToastCtx = React.createContext(function () {});
+function useToast() {
+  return React.useContext(ToastCtx);
 }
 function LangSwitcher() {
   var _useLang = useLang(),
@@ -1238,59 +1454,59 @@ function api(_x) {
   return _api.apply(this, arguments);
 } // ── COLORS ──
 function _api() {
-  _api = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17(path) {
-    var _ref76,
-      _ref76$method,
+  _api = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19(path) {
+    var _ref81,
+      _ref81$method,
       method,
       body,
       token,
       h,
       r,
       e,
-      _args17 = arguments;
-    return _regenerator().w(function (_context17) {
-      while (1) switch (_context17.n) {
+      _args19 = arguments;
+    return _regenerator().w(function (_context19) {
+      while (1) switch (_context19.n) {
         case 0:
-          _ref76 = _args17.length > 1 && _args17[1] !== undefined ? _args17[1] : {}, _ref76$method = _ref76.method, method = _ref76$method === void 0 ? 'GET' : _ref76$method, body = _ref76.body, token = _ref76.token;
+          _ref81 = _args19.length > 1 && _args19[1] !== undefined ? _args19[1] : {}, _ref81$method = _ref81.method, method = _ref81$method === void 0 ? 'GET' : _ref81$method, body = _ref81.body, token = _ref81.token;
           h = {
             'Content-Type': 'application/json'
           };
           if (token) h['Authorization'] = 'Bearer ' + token;
-          _context17.n = 1;
+          _context19.n = 1;
           return fetch(BASE + path, {
             method: method,
             headers: h,
             body: body ? JSON.stringify(body) : undefined
           });
         case 1:
-          r = _context17.v;
+          r = _context19.v;
           if (r.ok) {
-            _context17.n = 4;
+            _context19.n = 4;
             break;
           }
           if (!(r.status === 401 && token && !_sessionExpired)) {
-            _context17.n = 2;
+            _context19.n = 2;
             break;
           }
           _sessionExpired = true;
           localStorage.removeItem('hr6_token');
           localStorage.removeItem('hr6_user');
           window.location.reload();
-          return _context17.a(2);
+          return _context19.a(2);
         case 2:
-          _context17.n = 3;
+          _context19.n = 3;
           return r.json().catch(function () {
             return {
               detail: 'Network error'
             };
           });
         case 3:
-          e = _context17.v;
+          e = _context19.v;
           throw new Error(e.detail || r.statusText);
         case 4:
-          return _context17.a(2, r.json());
+          return _context19.a(2, r.json());
       }
-    }, _callee17);
+    }, _callee19);
   }));
   return _api.apply(this, arguments);
 }
@@ -1818,6 +2034,7 @@ function Employees(_ref1) {
     setForm = _useState26[1];
   var _useLang5 = useLang(),
     t = _useLang5.t;
+  var showToast = useToast();
   var load = useCallback(function () {
     setLoading(true);
     api("/api/employees?search=".concat(search, "&status=").concat(fSt), {
@@ -1878,12 +2095,13 @@ function Employees(_ref1) {
           case 3:
             setEM(null);
             load();
+            showToast(editM === 'new' ? '员工已创建' : '员工已更新');
             _context3.n = 5;
             break;
           case 4:
             _context3.p = 4;
             _t3 = _context3.v;
-            alert(_t3.message);
+            showToast(_t3.message, 'err');
           case 5:
             return _context3.a(2);
         }
@@ -2206,6 +2424,7 @@ function Timesheets(_ref13) {
     setEmps = _useState38[1];
   var _useLang6 = useLang(),
     t = _useLang6.t;
+  var showToast = useToast();
   var load = function load() {
     setLoading(true);
     api("/api/timesheets?status=".concat(fSt), {
@@ -2236,12 +2455,13 @@ function Timesheets(_ref13) {
             });
           case 1:
             load();
+            showToast('审批成功');
             _context4.n = 3;
             break;
           case 2:
             _context4.p = 2;
             _t4 = _context4.v;
-            alert(_t4.message);
+            showToast(_t4.message, 'err');
           case 3:
             return _context4.a(2);
         }
@@ -2267,12 +2487,13 @@ function Timesheets(_ref13) {
           case 1:
             setAddM(false);
             load();
+            showToast('工时已录入');
             _context5.n = 3;
             break;
           case 2:
             _context5.p = 2;
             _t5 = _context5.v;
-            alert(_t5.message);
+            showToast(_t5.message, 'err');
           case 3:
             return _context5.a(2);
         }
@@ -2284,9 +2505,11 @@ function Timesheets(_ref13) {
   }();
   var batchApprove = /*#__PURE__*/function () {
     var _ref16 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(ids) {
+      var _t6;
       return _regenerator().w(function (_context6) {
-        while (1) switch (_context6.n) {
+        while (1) switch (_context6.p = _context6.n) {
           case 0:
+            _context6.p = 0;
             _context6.n = 1;
             return api('/api/timesheets/batch-approve', {
               method: 'PUT',
@@ -2297,10 +2520,17 @@ function Timesheets(_ref13) {
             });
           case 1:
             load();
+            showToast("\u5DF2\u6279\u91CF\u5BA1\u6279 ".concat(ids.length, " \u6761"));
+            _context6.n = 3;
+            break;
           case 2:
+            _context6.p = 2;
+            _t6 = _context6.v;
+            showToast(_t6.message, 'err');
+          case 3:
             return _context6.a(2);
         }
-      }, _callee6);
+      }, _callee6, null, [[0, 2]]);
     }));
     return function batchApprove(_x3) {
       return _ref16.apply(this, arguments);
@@ -2548,16 +2778,25 @@ function Zeitkonto(_ref19) {
     _useState48 = _slicedToArray(_useState47, 2),
     addM = _useState48[0],
     setAddM = _useState48[1];
-  var _useState49 = useState({
+  var _useState49 = useState(null),
+    _useState50 = _slicedToArray(_useState49, 2),
+    fzModal = _useState50[0],
+    setFzModal = _useState50[1];
+  var _useState51 = useState(''),
+    _useState52 = _slicedToArray(_useState51, 2),
+    fzHours = _useState52[0],
+    setFzHours = _useState52[1];
+  var _useState53 = useState({
       employee_id: '',
       log_date: new Date().toISOString().slice(0, 10),
       entry_type: 'plus',
       hours: '',
       reason: ''
     }),
-    _useState50 = _slicedToArray(_useState49, 2),
-    form = _useState50[0],
-    setForm = _useState50[1];
+    _useState54 = _slicedToArray(_useState53, 2),
+    form = _useState54[0],
+    setForm = _useState54[1];
+  var showToast = useToast();
   var load = function load() {
     setLoading(true);
     api('/api/zeitkonto', {
@@ -2580,7 +2819,7 @@ function Zeitkonto(_ref19) {
   };
   var addLog = /*#__PURE__*/function () {
     var _ref20 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
-      var _t6;
+      var _t7;
       return _regenerator().w(function (_context7) {
         while (1) switch (_context7.p = _context7.n) {
           case 0:
@@ -2596,12 +2835,13 @@ function Zeitkonto(_ref19) {
           case 1:
             setAddM(false);
             load();
+            showToast('记录已添加');
             _context7.n = 3;
             break;
           case 2:
             _context7.p = 2;
-            _t6 = _context7.v;
-            alert(_t6.message);
+            _t7 = _context7.v;
+            showToast(_t7.message, 'err');
           case 3:
             return _context7.a(2);
         }
@@ -2611,35 +2851,51 @@ function Zeitkonto(_ref19) {
       return _ref20.apply(this, arguments);
     };
   }();
-  var doFreizeitausgleich = /*#__PURE__*/function () {
-    var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(id, hrs) {
-      var h;
+  var doFreizeitausgleich = function doFreizeitausgleich(id, plusHours) {
+    setFzModal({
+      id: id,
+      plusHours: plusHours
+    });
+    setFzHours('');
+  };
+  var confirmFz = /*#__PURE__*/function () {
+    var _ref21 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+      var _t8;
       return _regenerator().w(function (_context8) {
-        while (1) switch (_context8.n) {
+        while (1) switch (_context8.p = _context8.n) {
           case 0:
-            h = prompt("\u4E3A ".concat(id, " \u5B89\u6392 Freizeitausgleich\uFF0C\u8F93\u5165\u6D88\u5316\u5DE5\u65F6\uFF08h\uFF09\uFF1A"));
-            if (h) {
+            if (!(!fzHours || +fzHours <= 0)) {
               _context8.n = 1;
               break;
             }
+            showToast(t('zk.fz_err'), 'err');
             return _context8.a(2);
           case 1:
+            _context8.p = 1;
             _context8.n = 2;
-            return api("/api/zeitkonto/".concat(id, "/freizeitausgleich"), {
+            return api("/api/zeitkonto/".concat(fzModal.id, "/freizeitausgleich"), {
               method: 'PUT',
               body: {
-                hours: +h
+                hours: +fzHours
               },
               token: token
             });
           case 2:
+            setFzModal(null);
             load();
+            showToast('已安排 Freizeitausgleich');
+            _context8.n = 4;
+            break;
           case 3:
+            _context8.p = 3;
+            _t8 = _context8.v;
+            showToast(_t8.message, 'err');
+          case 4:
             return _context8.a(2);
         }
-      }, _callee8);
+      }, _callee8, null, [[1, 3]]);
     }));
-    return function doFreizeitausgleich(_x4, _x5) {
+    return function confirmFz() {
       return _ref21.apply(this, arguments);
     };
   }();
@@ -2900,35 +3156,77 @@ function Zeitkonto(_ref19) {
         reason: e.target.value
       }));
     }
-  })))));
+  })))), fzModal && /*#__PURE__*/React.createElement(Modal, {
+    title: t('zk.fz_title'),
+    onClose: function onClose() {
+      return setFzModal(null);
+    },
+    footer: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      className: "b bgh",
+      onClick: function onClick() {
+        return setFzModal(null);
+      }
+    }, t('c.cancel')), /*#__PURE__*/React.createElement("button", {
+      className: "b bgo",
+      onClick: confirmFz
+    }, t('zk.fz_btn')))
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 14,
+      fontSize: 12,
+      color: 'var(--tx2)'
+    }
+  }, "\u4E3A\u5458\u5DE5 ", /*#__PURE__*/React.createElement("b", null, fzModal.id), " ", t('zk.fz_title'), "\uFF08", t('zk.fz_desc').replace('{{h}}', fzModal.plusHours), "\uFF09"), /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('zk.fz_hours')), /*#__PURE__*/React.createElement("input", {
+    className: "fi",
+    type: "number",
+    step: "0.5",
+    min: "0.5",
+    value: fzHours,
+    onChange: function onChange(e) {
+      return setFzHours(e.target.value);
+    },
+    autoFocus: true
+  }))));
 }
 
 // ── ABMAHNUNG ──
 function Abmahnung(_ref24) {
   var token = _ref24.token,
     user = _ref24.user;
-  var _useState51 = useState([]),
-    _useState52 = _slicedToArray(_useState51, 2),
-    abms = _useState52[0],
-    setAbms = _useState52[1];
-  var _useState53 = useState(true),
-    _useState54 = _slicedToArray(_useState53, 2),
-    loading = _useState54[0],
-    setLoading = _useState54[1];
-  var _useState55 = useState(false),
+  var _useState55 = useState([]),
     _useState56 = _slicedToArray(_useState55, 2),
-    addM = _useState56[0],
-    setAddM = _useState56[1];
-  var _useState57 = useState(null),
+    abms = _useState56[0],
+    setAbms = _useState56[1];
+  var _useState57 = useState(true),
     _useState58 = _slicedToArray(_useState57, 2),
-    previewM = _useState58[0],
-    setPreviewM = _useState58[1];
-  var _useState59 = useState([]),
+    loading = _useState58[0],
+    setLoading = _useState58[1];
+  var _useState59 = useState(false),
     _useState60 = _slicedToArray(_useState59, 2),
-    emps = _useState60[0],
-    setEmps = _useState60[1];
+    addM = _useState60[0],
+    setAddM = _useState60[1];
+  var _useState61 = useState(null),
+    _useState62 = _slicedToArray(_useState61, 2),
+    previewM = _useState62[0],
+    setPreviewM = _useState62[1];
+  var _useState63 = useState(null),
+    _useState64 = _slicedToArray(_useState63, 2),
+    revokeModal = _useState64[0],
+    setRevokeModal = _useState64[1];
+  var _useState65 = useState(''),
+    _useState66 = _slicedToArray(_useState65, 2),
+    revokeReason = _useState66[0],
+    setRevokeReason = _useState66[1];
+  var _useState67 = useState([]),
+    _useState68 = _slicedToArray(_useState67, 2),
+    emps = _useState68[0],
+    setEmps = _useState68[1];
   var today = new Date().toISOString().slice(0, 10);
-  var _useState61 = useState({
+  var _useState69 = useState({
       employee_id: '',
       abmahnung_type: '旷工（Unentschuldigtes Fehlen）',
       incident_date: today,
@@ -2937,9 +3235,12 @@ function Abmahnung(_ref24) {
       internal_notes: '',
       delivery_method: '面交'
     }),
-    _useState62 = _slicedToArray(_useState61, 2),
-    form = _useState62[0],
-    setForm = _useState62[1];
+    _useState70 = _slicedToArray(_useState69, 2),
+    form = _useState70[0],
+    setForm = _useState70[1];
+  var showToast = useToast();
+  var _useLang8 = useLang(),
+    t = _useLang8.t;
   var TYPES = ['旷工（Unentschuldigtes Fehlen）', '擅自超时（Eigenmächtige Arbeitszeitverlängerung）', '多次迟到（Wiederholte Verspätung）', '工时违规（ArbZG Verstoß）', '其他违约行为'];
   var load = function load() {
     setLoading(true);
@@ -2957,7 +3258,7 @@ function Abmahnung(_ref24) {
   }, []);
   var save = /*#__PURE__*/function () {
     var _ref25 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
-      var _t7;
+      var _t9;
       return _regenerator().w(function (_context9) {
         while (1) switch (_context9.p = _context9.n) {
           case 0:
@@ -2965,7 +3266,7 @@ function Abmahnung(_ref24) {
               _context9.n = 1;
               break;
             }
-            alert('请填写员工和违约事实');
+            showToast('请填写员工和违约事实', 'err');
             return _context9.a(2);
           case 1:
             _context9.p = 1;
@@ -2978,12 +3279,13 @@ function Abmahnung(_ref24) {
           case 2:
             setAddM(false);
             load();
+            showToast('Abmahnung 已发出');
             _context9.n = 4;
             break;
           case 3:
             _context9.p = 3;
-            _t7 = _context9.v;
-            alert(_t7.message);
+            _t9 = _context9.v;
+            showToast(_t9.message, 'err');
           case 4:
             return _context9.a(2);
         }
@@ -2993,35 +3295,48 @@ function Abmahnung(_ref24) {
       return _ref25.apply(this, arguments);
     };
   }();
-  var revoke = /*#__PURE__*/function () {
-    var _ref26 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(id) {
-      var reason;
+  var revoke = function revoke(id) {
+    setRevokeModal(id);
+    setRevokeReason('');
+  };
+  var confirmRevoke = /*#__PURE__*/function () {
+    var _ref26 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+      var _t0;
       return _regenerator().w(function (_context0) {
-        while (1) switch (_context0.n) {
+        while (1) switch (_context0.p = _context0.n) {
           case 0:
-            reason = prompt('撤销原因：');
-            if (reason) {
+            if (revokeReason.trim()) {
               _context0.n = 1;
               break;
             }
+            showToast(t('abm.revoke_err'), 'err');
             return _context0.a(2);
           case 1:
+            _context0.p = 1;
             _context0.n = 2;
-            return api("/api/abmahnungen/".concat(id, "/revoke"), {
+            return api("/api/abmahnungen/".concat(revokeModal, "/revoke"), {
               method: 'PUT',
               body: {
-                reason: reason
+                reason: revokeReason
               },
               token: token
             });
           case 2:
+            setRevokeModal(null);
             load();
+            showToast('已撤销');
+            _context0.n = 4;
+            break;
           case 3:
+            _context0.p = 3;
+            _t0 = _context0.v;
+            showToast(_t0.message, 'err');
+          case 4:
             return _context0.a(2);
         }
-      }, _callee0);
+      }, _callee0, null, [[1, 3]]);
     }));
-    return function revoke(_x6) {
+    return function confirmRevoke() {
       return _ref26.apply(this, arguments);
     };
   }();
@@ -3274,7 +3589,33 @@ function Abmahnung(_ref24) {
       borderRadius: 8,
       padding: 16
     }
-  })));
+  })), revokeModal && /*#__PURE__*/React.createElement(Modal, {
+    title: t('abm.revoke_title'),
+    onClose: function onClose() {
+      return setRevokeModal(null);
+    },
+    footer: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      className: "b bgh",
+      onClick: function onClick() {
+        return setRevokeModal(null);
+      }
+    }, t('c.cancel')), /*#__PURE__*/React.createElement("button", {
+      className: "b bgr",
+      onClick: confirmRevoke
+    }, t('abm.revoke_btn')))
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('abm.revoke_reason')), /*#__PURE__*/React.createElement("textarea", {
+    className: "fta",
+    value: revokeReason,
+    onChange: function onChange(e) {
+      return setRevokeReason(e.target.value);
+    },
+    placeholder: t('abm.revoke_placeholder'),
+    autoFocus: true
+  }))));
 }
 
 // ── WERKVERTRAG ──
@@ -3344,38 +3685,39 @@ function Werkvertrag(_ref31) {
   var _selP$cost_data;
   var token = _ref31.token,
     user = _ref31.user;
-  var _useState63 = useState([]),
-    _useState64 = _slicedToArray(_useState63, 2),
-    projs = _useState64[0],
-    setProjs = _useState64[1];
-  var _useState65 = useState(true),
-    _useState66 = _slicedToArray(_useState65, 2),
-    loading = _useState66[0],
-    setLoading = _useState66[1];
-  var _useState67 = useState(null),
-    _useState68 = _slicedToArray(_useState67, 2),
-    selId = _useState68[0],
-    setSelId = _useState68[1];
-  var _useState69 = useState(0),
-    _useState70 = _slicedToArray(_useState69, 2),
-    ph = _useState70[0],
-    setPh = _useState70[1];
-  var _useState71 = useState(false),
+  var _useState71 = useState([]),
     _useState72 = _slicedToArray(_useState71, 2),
-    newM = _useState72[0],
-    setNewM = _useState72[1];
-  var _useState73 = useState({
+    projs = _useState72[0],
+    setProjs = _useState72[1];
+  var _useState73 = useState(true),
+    _useState74 = _slicedToArray(_useState73, 2),
+    loading = _useState74[0],
+    setLoading = _useState74[1];
+  var _useState75 = useState(null),
+    _useState76 = _slicedToArray(_useState75, 2),
+    selId = _useState76[0],
+    setSelId = _useState76[1];
+  var _useState77 = useState(0),
+    _useState78 = _slicedToArray(_useState77, 2),
+    ph = _useState78[0],
+    setPh = _useState78[1];
+  var _useState79 = useState(false),
+    _useState80 = _slicedToArray(_useState79, 2),
+    newM = _useState80[0],
+    setNewM = _useState80[1];
+  var _useState81 = useState({
       name: '',
       client: '',
       service_type: '',
       region: '',
       project_manager: ''
     }),
-    _useState74 = _slicedToArray(_useState73, 2),
-    form = _useState74[0],
-    setForm = _useState74[1];
+    _useState82 = _slicedToArray(_useState81, 2),
+    form = _useState82[0],
+    setForm = _useState82[1];
   var SERVICES = ['卸柜承包', '装卸承包', '入库承包', '出库承包', '区域承包', '快转/分拣承包', '综合承包'];
   var REGIONS = ['南部大区 (Köln/Düsseldorf)', '鲁尔西大区 (Duisburg/Essen)', '鲁尔东大区 (Dortmund/Unna)'];
+  var showToast = useToast();
   var load = function load() {
     setLoading(true);
     api('/api/werkvertrag', {
@@ -3393,7 +3735,7 @@ function Werkvertrag(_ref31) {
   var canEdit = ['admin', 'hr', 'mgr'].includes(user.role);
   var createProj = /*#__PURE__*/function () {
     var _ref32 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
-      var r, _t8;
+      var r, _t1;
       return _regenerator().w(function (_context1) {
         while (1) switch (_context1.p = _context1.n) {
           case 0:
@@ -3401,7 +3743,7 @@ function Werkvertrag(_ref31) {
               _context1.n = 1;
               break;
             }
-            alert('请填写项目名称');
+            showToast('请填写项目名称', 'err');
             return _context1.a(2);
           case 1:
             _context1.p = 1;
@@ -3417,12 +3759,13 @@ function Werkvertrag(_ref31) {
             setPh(0);
             setNewM(false);
             load();
+            showToast('项目已创建');
             _context1.n = 4;
             break;
           case 3:
             _context1.p = 3;
-            _t8 = _context1.v;
-            alert(_t8.message);
+            _t1 = _context1.v;
+            showToast(_t1.message, 'err');
           case 4:
             return _context1.a(2);
         }
@@ -3434,7 +3777,7 @@ function Werkvertrag(_ref31) {
   }();
   var updateProj = /*#__PURE__*/function () {
     var _ref33 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(upd) {
-      var _t9;
+      var _t10;
       return _regenerator().w(function (_context10) {
         while (1) switch (_context10.p = _context10.n) {
           case 0:
@@ -3457,14 +3800,14 @@ function Werkvertrag(_ref31) {
             break;
           case 3:
             _context10.p = 3;
-            _t9 = _context10.v;
-            alert(_t9.message);
+            _t10 = _context10.v;
+            showToast(_t10.message, 'err');
           case 4:
             return _context10.a(2);
         }
       }, _callee10, null, [[1, 3]]);
     }));
-    return function updateProj(_x7) {
+    return function updateProj(_x4) {
       return _ref33.apply(this, arguments);
     };
   }();
@@ -4291,23 +4634,31 @@ function Werkvertrag(_ref31) {
 function Containers(_ref44) {
   var token = _ref44.token,
     user = _ref44.user;
-  var _useState75 = useState([]),
-    _useState76 = _slicedToArray(_useState75, 2),
-    cts = _useState76[0],
-    setCts = _useState76[1];
-  var _useState77 = useState(true),
-    _useState78 = _slicedToArray(_useState77, 2),
-    loading = _useState78[0],
-    setLoading = _useState78[1];
-  var _useState79 = useState(false),
-    _useState80 = _slicedToArray(_useState79, 2),
-    addM = _useState80[0],
-    setAddM = _useState80[1];
-  var _useState81 = useState([]),
-    _useState82 = _slicedToArray(_useState81, 2),
-    emps = _useState82[0],
-    setEmps = _useState82[1];
-  var _useState83 = useState({
+  var _useState83 = useState([]),
+    _useState84 = _slicedToArray(_useState83, 2),
+    cts = _useState84[0],
+    setCts = _useState84[1];
+  var _useState85 = useState(true),
+    _useState86 = _slicedToArray(_useState85, 2),
+    loading = _useState86[0],
+    setLoading = _useState86[1];
+  var _useState87 = useState(false),
+    _useState88 = _slicedToArray(_useState87, 2),
+    addM = _useState88[0],
+    setAddM = _useState88[1];
+  var _useState89 = useState(null),
+    _useState90 = _slicedToArray(_useState89, 2),
+    completeModal = _useState90[0],
+    setCompleteModal = _useState90[1];
+  var _useState91 = useState('16:00'),
+    _useState92 = _slicedToArray(_useState91, 2),
+    completeEndTime = _useState92[0],
+    setCompleteEndTime = _useState92[1];
+  var _useState93 = useState([]),
+    _useState94 = _slicedToArray(_useState93, 2),
+    emps = _useState94[0],
+    setEmps = _useState94[1];
+  var _useState95 = useState({
       container_no: '',
       container_type: '40GP',
       work_date: new Date().toISOString().slice(0, 10),
@@ -4318,11 +4669,12 @@ function Containers(_ref44) {
       team_pay: 0,
       notes: ''
     }),
-    _useState84 = _slicedToArray(_useState83, 2),
-    form = _useState84[0],
-    setForm = _useState84[1];
-  var _useLang8 = useLang(),
-    t = _useLang8.t;
+    _useState96 = _slicedToArray(_useState95, 2),
+    form = _useState96[0],
+    setForm = _useState96[1];
+  var _useLang9 = useLang(),
+    t = _useLang9.t;
+  var showToast = useToast();
   var load = function load() {
     setLoading(true);
     api('/api/containers', {
@@ -4339,16 +4691,18 @@ function Containers(_ref44) {
   }, []);
   var addCt = /*#__PURE__*/function () {
     var _ref45 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
+      var _t11;
       return _regenerator().w(function (_context11) {
-        while (1) switch (_context11.n) {
+        while (1) switch (_context11.p = _context11.n) {
           case 0:
             if (form.container_no) {
               _context11.n = 1;
               break;
             }
-            alert('请输入柜号');
+            showToast('请输入柜号', 'err');
             return _context11.a(2);
           case 1:
+            _context11.p = 1;
             _context11.n = 2;
             return api('/api/containers', {
               method: 'POST',
@@ -4358,45 +4712,58 @@ function Containers(_ref44) {
           case 2:
             setAddM(false);
             load();
+            showToast('卸柜记录已添加');
+            _context11.n = 4;
+            break;
           case 3:
+            _context11.p = 3;
+            _t11 = _context11.v;
+            showToast(_t11.message, 'err');
+          case 4:
             return _context11.a(2);
         }
-      }, _callee11);
+      }, _callee11, null, [[1, 3]]);
     }));
     return function addCt() {
       return _ref45.apply(this, arguments);
     };
   }();
-  var complete = /*#__PURE__*/function () {
-    var _ref46 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(id) {
-      var et;
+  var complete = function complete(id) {
+    setCompleteModal(id);
+    setCompleteEndTime('16:00');
+  };
+  var confirmComplete = /*#__PURE__*/function () {
+    var _ref46 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+      var _t12;
       return _regenerator().w(function (_context12) {
-        while (1) switch (_context12.n) {
+        while (1) switch (_context12.p = _context12.n) {
           case 0:
-            et = prompt('结束时间 (HH:MM):', '16:00');
-            if (et) {
-              _context12.n = 1;
-              break;
-            }
-            return _context12.a(2);
-          case 1:
-            _context12.n = 2;
-            return api("/api/containers/".concat(id, "/complete"), {
+            _context12.p = 0;
+            _context12.n = 1;
+            return api("/api/containers/".concat(completeModal, "/complete"), {
               method: 'PUT',
               body: {
-                end_time: et,
+                end_time: completeEndTime,
                 video_recorded: 1
               },
               token: token
             });
-          case 2:
+          case 1:
+            setCompleteModal(null);
             load();
+            showToast('卸柜已完成');
+            _context12.n = 3;
+            break;
+          case 2:
+            _context12.p = 2;
+            _t12 = _context12.v;
+            showToast(_t12.message, 'err');
           case 3:
             return _context12.a(2);
         }
-      }, _callee12);
+      }, _callee12, null, [[0, 2]]);
     }));
-    return function complete(_x8) {
+    return function confirmComplete() {
       return _ref46.apply(this, arguments);
     };
   }();
@@ -4585,26 +4952,58 @@ function Containers(_ref44) {
         notes: e.target.value
       }));
     }
-  })))));
+  })))), completeModal && /*#__PURE__*/React.createElement(Modal, {
+    title: t('ct.complete_title'),
+    onClose: function onClose() {
+      return setCompleteModal(null);
+    },
+    footer: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      className: "b bgh",
+      onClick: function onClick() {
+        return setCompleteModal(null);
+      }
+    }, t('c.cancel')), /*#__PURE__*/React.createElement("button", {
+      className: "b bgn",
+      onClick: confirmComplete
+    }, t('ct.complete_btn')))
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('ct.complete_end')), /*#__PURE__*/React.createElement("input", {
+    className: "fi",
+    type: "time",
+    value: completeEndTime,
+    onChange: function onChange(e) {
+      return setCompleteEndTime(e.target.value);
+    },
+    autoFocus: true
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "alert alert-ac",
+    style: {
+      marginTop: 10,
+      fontSize: 10
+    }
+  }, t('ct.complete_hint'))));
 }
 
 // ── SETTLEMENT ──
 function Settlement(_ref47) {
   var token = _ref47.token;
-  var _useState85 = useState(null),
-    _useState86 = _slicedToArray(_useState85, 2),
-    data = _useState86[0],
-    setData = _useState86[1];
-  var _useState87 = useState(true),
-    _useState88 = _slicedToArray(_useState87, 2),
-    loading = _useState88[0],
-    setLoading = _useState88[1];
-  var _useState89 = useState(new Date().toISOString().slice(0, 7)),
-    _useState90 = _slicedToArray(_useState89, 2),
-    month = _useState90[0],
-    setMonth = _useState90[1];
-  var _useLang9 = useLang(),
-    t = _useLang9.t;
+  var _useState97 = useState(null),
+    _useState98 = _slicedToArray(_useState97, 2),
+    data = _useState98[0],
+    setData = _useState98[1];
+  var _useState99 = useState(true),
+    _useState100 = _slicedToArray(_useState99, 2),
+    loading = _useState100[0],
+    setLoading = _useState100[1];
+  var _useState101 = useState(new Date().toISOString().slice(0, 7)),
+    _useState102 = _slicedToArray(_useState101, 2),
+    month = _useState102[0],
+    setMonth = _useState102[1];
+  var _useLang0 = useLang(),
+    t = _useLang0.t;
   var load = function load() {
     setLoading(true);
     api("/api/settlement/monthly?month=".concat(month), {
@@ -4674,16 +5073,16 @@ function Settlement(_ref47) {
 function Clock(_ref50) {
   var token = _ref50.token,
     user = _ref50.user;
-  var _useState91 = useState(new Date()),
-    _useState92 = _slicedToArray(_useState91, 2),
-    now = _useState92[0],
-    setNow = _useState92[1];
-  var _useState93 = useState([]),
-    _useState94 = _slicedToArray(_useState93, 2),
-    logs = _useState94[0],
-    setLogs = _useState94[1];
-  var _useLang0 = useLang(),
-    t = _useLang0.t;
+  var _useState103 = useState(new Date()),
+    _useState104 = _slicedToArray(_useState103, 2),
+    now = _useState104[0],
+    setNow = _useState104[1];
+  var _useState105 = useState([]),
+    _useState106 = _slicedToArray(_useState105, 2),
+    logs = _useState106[0],
+    setLogs = _useState106[1];
+  var _useLang1 = useLang(),
+    t = _useLang1.t;
   useEffect(function () {
     var i = setInterval(function () {
       return setNow(new Date());
@@ -4726,7 +5125,7 @@ function Clock(_ref50) {
         }
       }, _callee13);
     }));
-    return function punch(_x9) {
+    return function punch(_x5) {
       return _ref51.apply(this, arguments);
     };
   }();
@@ -4828,16 +5227,16 @@ function Clock(_ref50) {
 // ── AUDIT LOGS ──
 function AuditLogs(_ref52) {
   var token = _ref52.token;
-  var _useState95 = useState([]),
-    _useState96 = _slicedToArray(_useState95, 2),
-    logs = _useState96[0],
-    setLogs = _useState96[1];
-  var _useState97 = useState(true),
-    _useState98 = _slicedToArray(_useState97, 2),
-    loading = _useState98[0],
-    setLoading = _useState98[1];
-  var _useLang1 = useLang(),
-    t = _useLang1.t;
+  var _useState107 = useState([]),
+    _useState108 = _slicedToArray(_useState107, 2),
+    logs = _useState108[0],
+    setLogs = _useState108[1];
+  var _useState109 = useState(true),
+    _useState110 = _slicedToArray(_useState109, 2),
+    loading = _useState110[0],
+    setLoading = _useState110[1];
+  var _useLang10 = useLang(),
+    t = _useLang10.t;
   useEffect(function () {
     api('/api/logs', {
       token: token
@@ -5154,8 +5553,8 @@ function KnowledgeBase(_ref53) {
     _React$useState8 = _slicedToArray(_React$useState7, 2),
     printing = _React$useState8[0],
     setPrinting = _React$useState8[1];
-  var _useLang10 = useLang(),
-    t = _useLang10.t;
+  var _useLang11 = useLang(),
+    t = _useLang11.t;
   var CATS = ['职级职责', '安全须知', '法规法条', '模板库', '员工手册'];
   var CAT_ICONS = {
     '职级职责': '🏅',
@@ -5443,20 +5842,20 @@ function KnowledgeBase(_ref53) {
 // ── GRADE SALARIES ──
 function GradeSalaries(_ref54) {
   var token = _ref54.token;
-  var _useState99 = useState([]),
-    _useState100 = _slicedToArray(_useState99, 2),
-    grades = _useState100[0],
-    setGrades = _useState100[1];
-  var _useState101 = useState([]),
-    _useState102 = _slicedToArray(_useState101, 2),
-    kpi = _useState102[0],
-    setKpi = _useState102[1];
-  var _useState103 = useState(true),
-    _useState104 = _slicedToArray(_useState103, 2),
-    loading = _useState104[0],
-    setLoading = _useState104[1];
-  var _useLang11 = useLang(),
-    t = _useLang11.t;
+  var _useState111 = useState([]),
+    _useState112 = _slicedToArray(_useState111, 2),
+    grades = _useState112[0],
+    setGrades = _useState112[1];
+  var _useState113 = useState([]),
+    _useState114 = _slicedToArray(_useState113, 2),
+    kpi = _useState114[0],
+    setKpi = _useState114[1];
+  var _useState115 = useState(true),
+    _useState116 = _slicedToArray(_useState115, 2),
+    loading = _useState116[0],
+    setLoading = _useState116[1];
+  var _useLang12 = useLang(),
+    t = _useLang12.t;
   useEffect(function () {
     Promise.all([api('/api/grades', {
       token: token
@@ -5559,28 +5958,28 @@ function GradeSalaries(_ref54) {
 function WarehouseRates(_ref57) {
   var token = _ref57.token,
     user = _ref57.user;
-  var _useState105 = useState([]),
-    _useState106 = _slicedToArray(_useState105, 2),
-    whs = _useState106[0],
-    setWhs = _useState106[1];
-  var _useState107 = useState(null),
-    _useState108 = _slicedToArray(_useState107, 2),
-    sel = _useState108[0],
-    setSel = _useState108[1];
-  var _useState109 = useState(true),
-    _useState110 = _slicedToArray(_useState109, 2),
-    loading = _useState110[0],
-    setLoading = _useState110[1];
-  var _useState111 = useState(false),
-    _useState112 = _slicedToArray(_useState111, 2),
-    editing = _useState112[0],
-    setEditing = _useState112[1];
-  var _useState113 = useState({}),
-    _useState114 = _slicedToArray(_useState113, 2),
-    form = _useState114[0],
-    setForm = _useState114[1];
-  var _useLang12 = useLang(),
-    t = _useLang12.t;
+  var _useState117 = useState([]),
+    _useState118 = _slicedToArray(_useState117, 2),
+    whs = _useState118[0],
+    setWhs = _useState118[1];
+  var _useState119 = useState(null),
+    _useState120 = _slicedToArray(_useState119, 2),
+    sel = _useState120[0],
+    setSel = _useState120[1];
+  var _useState121 = useState(true),
+    _useState122 = _slicedToArray(_useState121, 2),
+    loading = _useState122[0],
+    setLoading = _useState122[1];
+  var _useState123 = useState(false),
+    _useState124 = _slicedToArray(_useState123, 2),
+    editing = _useState124[0],
+    setEditing = _useState124[1];
+  var _useState125 = useState({}),
+    _useState126 = _slicedToArray(_useState125, 2),
+    form = _useState126[0],
+    setForm = _useState126[1];
+  var _useLang13 = useLang(),
+    t = _useLang13.t;
   useEffect(function () {
     api('/api/warehouses', {
       token: token
@@ -6018,27 +6417,28 @@ function WarehouseRates(_ref57) {
 // ── COST CALCULATOR ──
 function CostCalculator(_ref67) {
   var token = _ref67.token;
-  var _useState115 = useState({
+  var _useState127 = useState({
       brutto_rate: 14.0,
       weekly_hours: 40,
       emp_type: '正常雇用'
     }),
-    _useState116 = _slicedToArray(_useState115, 2),
-    form = _useState116[0],
-    setForm = _useState116[1];
-  var _useState117 = useState(null),
-    _useState118 = _slicedToArray(_useState117, 2),
-    result = _useState118[0],
-    setResult = _useState118[1];
-  var _useState119 = useState(false),
-    _useState120 = _slicedToArray(_useState119, 2),
-    loading = _useState120[0],
-    setLoading = _useState120[1];
-  var _useLang13 = useLang(),
-    t = _useLang13.t;
+    _useState128 = _slicedToArray(_useState127, 2),
+    form = _useState128[0],
+    setForm = _useState128[1];
+  var _useState129 = useState(null),
+    _useState130 = _slicedToArray(_useState129, 2),
+    result = _useState130[0],
+    setResult = _useState130[1];
+  var _useState131 = useState(false),
+    _useState132 = _slicedToArray(_useState131, 2),
+    loading = _useState132[0],
+    setLoading = _useState132[1];
+  var _useLang14 = useLang(),
+    t = _useLang14.t;
+  var showToast = useToast();
   var calc = /*#__PURE__*/function () {
     var _ref68 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
-      var r, _t0;
+      var r, _t13;
       return _regenerator().w(function (_context15) {
         while (1) switch (_context15.p = _context15.n) {
           case 0:
@@ -6057,8 +6457,8 @@ function CostCalculator(_ref67) {
             break;
           case 3:
             _context15.p = 3;
-            _t0 = _context15.v;
-            alert(_t0.message);
+            _t13 = _context15.v;
+            showToast(_t13.message, 'err');
           case 4:
             _context15.p = 4;
             setLoading(false);
@@ -6282,6 +6682,388 @@ function CostCalculator(_ref67) {
   }, "\u8BA1\u7B97\u57FA\u51C6: Brutto \u20AC14/h \xB7 \u96C7\u4E3BSV ~21% \xB7 \u5047\u671F8.33% \xB7 \u7BA1\u74065%\u3002Minijob\u6708\u6536\u5165\u2264\u20AC538\uFF0C\u516C\u53F8\u989D\u5916\u7F3415%KV+1.3%RV+0.6%ALV\u224830%\u3002")));
 }
 
+// ── SUPPLIERS ──
+function Suppliers(_ref75) {
+  var token = _ref75.token,
+    user = _ref75.user;
+  var _useState133 = useState([]),
+    _useState134 = _slicedToArray(_useState133, 2),
+    sups = _useState134[0],
+    setSups = _useState134[1];
+  var _useState135 = useState(true),
+    _useState136 = _slicedToArray(_useState135, 2),
+    loading = _useState136[0],
+    setLoading = _useState136[1];
+  var _useState137 = useState(''),
+    _useState138 = _slicedToArray(_useState137, 2),
+    search = _useState138[0],
+    setSearch = _useState138[1];
+  var _useState139 = useState(''),
+    _useState140 = _slicedToArray(_useState139, 2),
+    fSt = _useState140[0],
+    setFSt = _useState140[1];
+  var _useState141 = useState(null),
+    _useState142 = _slicedToArray(_useState141, 2),
+    editM = _useState142[0],
+    setEM = _useState142[1];
+  var _useState143 = useState({}),
+    _useState144 = _slicedToArray(_useState143, 2),
+    form = _useState144[0],
+    setForm = _useState144[1];
+  var _useLang15 = useLang(),
+    t = _useLang15.t;
+  var showToast = useToast();
+  var RATINGS = ['A', 'B', 'C'];
+  var load = useCallback(function () {
+    setLoading(true);
+    api('/api/suppliers', {
+      token: token
+    }).then(function (data) {
+      var filtered = data;
+      if (search) filtered = filtered.filter(function (s) {
+        return (s.name || '').toLowerCase().includes(search.toLowerCase()) || (s.id || '').toLowerCase().includes(search.toLowerCase()) || (s.contact_name || '').toLowerCase().includes(search.toLowerCase());
+      });
+      if (fSt) filtered = filtered.filter(function (s) {
+        return s.status === fSt;
+      });
+      setSups(filtered);
+    }).finally(function () {
+      return setLoading(false);
+    });
+  }, [token, search, fSt]);
+  useEffect(function () {
+    load();
+  }, [load]);
+  var canEdit = ['admin', 'hr'].includes(user.role);
+  var canDelete = user.role === 'admin';
+  var openNew = function openNew() {
+    setForm({
+      name: '',
+      biz_line: '渊博',
+      contact_name: '',
+      phone: '',
+      email: '',
+      tax_handle: '供应商自行报税',
+      rating: 'B',
+      status: '合作中',
+      notes: ''
+    });
+    setEM('new');
+  };
+  var openEdit = function openEdit(s) {
+    setForm(_objectSpread({}, s));
+    setEM(s.id);
+  };
+  var save = /*#__PURE__*/function () {
+    var _ref76 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
+      var _t14;
+      return _regenerator().w(function (_context16) {
+        while (1) switch (_context16.p = _context16.n) {
+          case 0:
+            if (form.name) {
+              _context16.n = 1;
+              break;
+            }
+            showToast(t('sup.f_name').replace(' *', '') + '不能为空', 'err');
+            return _context16.a(2);
+          case 1:
+            _context16.p = 1;
+            if (!(editM === 'new')) {
+              _context16.n = 3;
+              break;
+            }
+            _context16.n = 2;
+            return api('/api/suppliers', {
+              method: 'POST',
+              body: form,
+              token: token
+            });
+          case 2:
+            _context16.n = 4;
+            break;
+          case 3:
+            _context16.n = 4;
+            return api("/api/suppliers/".concat(editM), {
+              method: 'PUT',
+              body: form,
+              token: token
+            });
+          case 4:
+            setEM(null);
+            load();
+            showToast(editM === 'new' ? '供应商已创建' : '供应商已更新');
+            _context16.n = 6;
+            break;
+          case 5:
+            _context16.p = 5;
+            _t14 = _context16.v;
+            showToast(_t14.message, 'err');
+          case 6:
+            return _context16.a(2);
+        }
+      }, _callee16, null, [[1, 5]]);
+    }));
+    return function save() {
+      return _ref76.apply(this, arguments);
+    };
+  }();
+  var deactivate = /*#__PURE__*/function () {
+    var _ref77 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17(id) {
+      var _t15;
+      return _regenerator().w(function (_context17) {
+        while (1) switch (_context17.p = _context17.n) {
+          case 0:
+            _context17.p = 0;
+            _context17.n = 1;
+            return api("/api/suppliers/".concat(id), {
+              method: 'DELETE',
+              token: token
+            });
+          case 1:
+            load();
+            showToast('已停止合作');
+            _context17.n = 3;
+            break;
+          case 2:
+            _context17.p = 2;
+            _t15 = _context17.v;
+            showToast(_t15.message, 'err');
+          case 3:
+            return _context17.a(2);
+        }
+      }, _callee17, null, [[0, 2]]);
+    }));
+    return function deactivate(_x6) {
+      return _ref77.apply(this, arguments);
+    };
+  }();
+  var ratingColor = {
+    'A': 'var(--gn)',
+    'B': 'var(--og)',
+    'C': 'var(--rd)'
+  };
+  var statusColor = {
+    '合作中': 'var(--gn)',
+    '停止合作': 'var(--rd)'
+  };
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "ab"
+  }, /*#__PURE__*/React.createElement("input", {
+    className: "si",
+    placeholder: t('sup.search'),
+    value: search,
+    onChange: function onChange(e) {
+      return setSearch(e.target.value);
+    }
+  }), [['', 'c.all'], ['合作中', '合作中'], ['停止合作', '停止合作']].map(function (_ref78) {
+    var _ref79 = _slicedToArray(_ref78, 2),
+      s = _ref79[0],
+      tk = _ref79[1];
+    return /*#__PURE__*/React.createElement("button", {
+      key: s,
+      className: "fb ".concat(fSt === s ? 'on' : ''),
+      onClick: function onClick() {
+        return setFSt(s);
+      }
+    }, s === '' ? t('c.all') : s);
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ml"
+  }, canEdit && /*#__PURE__*/React.createElement("button", {
+    className: "b bga",
+    onClick: openNew
+  }, t('sup.add')))), loading ? /*#__PURE__*/React.createElement(Loading, null) : /*#__PURE__*/React.createElement("div", {
+    className: "tw"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ts"
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, t('sup.col_id')), /*#__PURE__*/React.createElement("th", null, t('sup.col_name')), /*#__PURE__*/React.createElement("th", null, t('sup.col_biz')), /*#__PURE__*/React.createElement("th", null, t('sup.col_contact')), /*#__PURE__*/React.createElement("th", null, t('sup.col_phone')), /*#__PURE__*/React.createElement("th", null, t('sup.col_email')), /*#__PURE__*/React.createElement("th", null, t('sup.col_rating')), /*#__PURE__*/React.createElement("th", null, t('sup.col_status')), /*#__PURE__*/React.createElement("th", null, t('c.action')))), /*#__PURE__*/React.createElement("tbody", null, sups.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: 9,
+    style: {
+      textAlign: 'center',
+      color: 'var(--tx3)',
+      padding: 24
+    }
+  }, t('c.no_data'))) : sups.map(function (s) {
+    return /*#__PURE__*/React.createElement("tr", {
+      key: s.id
+    }, /*#__PURE__*/React.createElement("td", {
+      className: "mn gn fw6"
+    }, s.id), /*#__PURE__*/React.createElement("td", {
+      className: "fw6"
+    }, s.name), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(Bg, {
+      t: s.biz_line
+    })), /*#__PURE__*/React.createElement("td", null, s.contact_name), /*#__PURE__*/React.createElement("td", {
+      className: "tm"
+    }, s.phone), /*#__PURE__*/React.createElement("td", {
+      className: "tm",
+      style: {
+        fontSize: 10
+      }
+    }, s.email), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: ratingColor[s.rating] || 'var(--tx3)',
+        fontWeight: 700
+      }
+    }, s.rating)), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", {
+      style: {
+        color: statusColor[s.status] || 'var(--tx3)',
+        fontSize: 10,
+        fontWeight: 600
+      }
+    }, s.status)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        display: 'flex',
+        gap: 4
+      }
+    }, canEdit && /*#__PURE__*/React.createElement("button", {
+      className: "b bgh",
+      style: {
+        fontSize: 9
+      },
+      onClick: function onClick() {
+        return openEdit(s);
+      }
+    }, t('c.edit')), canDelete && s.status === '合作中' && /*#__PURE__*/React.createElement("button", {
+      className: "b bgr",
+      style: {
+        fontSize: 9
+      },
+      onClick: function onClick() {
+        return deactivate(s.id);
+      }
+    }, "\u505C\u5408\u4F5C")));
+  }))))), editM && /*#__PURE__*/React.createElement(Modal, {
+    title: editM === 'new' ? t('sup.add_title') : t('sup.edit_title'),
+    onClose: function onClose() {
+      return setEM(null);
+    },
+    footer: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      className: "b bgh",
+      onClick: function onClick() {
+        return setEM(null);
+      }
+    }, t('c.cancel')), /*#__PURE__*/React.createElement("button", {
+      className: "b bga",
+      onClick: save
+    }, t('c.save')))
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fr"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "fg ful"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('sup.f_name')), /*#__PURE__*/React.createElement("input", {
+    className: "fi",
+    value: form.name || '',
+    onChange: function onChange(e) {
+      return setForm(_objectSpread(_objectSpread({}, form), {}, {
+        name: e.target.value
+      }));
+    },
+    autoFocus: true
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('sup.f_biz')), /*#__PURE__*/React.createElement("select", {
+    className: "fsl",
+    value: form.biz_line || '渊博',
+    onChange: function onChange(e) {
+      return setForm(_objectSpread(_objectSpread({}, form), {}, {
+        biz_line: e.target.value
+      }));
+    }
+  }, /*#__PURE__*/React.createElement("option", null, "\u6E0A\u535A"), /*#__PURE__*/React.createElement("option", null, "579"))), /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('sup.f_contact')), /*#__PURE__*/React.createElement("input", {
+    className: "fi",
+    value: form.contact_name || '',
+    onChange: function onChange(e) {
+      return setForm(_objectSpread(_objectSpread({}, form), {}, {
+        contact_name: e.target.value
+      }));
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('sup.f_phone')), /*#__PURE__*/React.createElement("input", {
+    className: "fi",
+    value: form.phone || '',
+    onChange: function onChange(e) {
+      return setForm(_objectSpread(_objectSpread({}, form), {}, {
+        phone: e.target.value
+      }));
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('sup.f_email')), /*#__PURE__*/React.createElement("input", {
+    className: "fi",
+    type: "email",
+    value: form.email || '',
+    onChange: function onChange(e) {
+      return setForm(_objectSpread(_objectSpread({}, form), {}, {
+        email: e.target.value
+      }));
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('sup.f_tax')), /*#__PURE__*/React.createElement("select", {
+    className: "fsl",
+    value: form.tax_handle || '供应商自行报税',
+    onChange: function onChange(e) {
+      return setForm(_objectSpread(_objectSpread({}, form), {}, {
+        tax_handle: e.target.value
+      }));
+    }
+  }, /*#__PURE__*/React.createElement("option", null, "\u4F9B\u5E94\u5546\u81EA\u884C\u62A5\u7A0E"), /*#__PURE__*/React.createElement("option", null, "\u6211\u65B9\u4EE3\u62A5\u7A0E"))), /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('sup.f_rating')), /*#__PURE__*/React.createElement("select", {
+    className: "fsl",
+    value: form.rating || 'B',
+    onChange: function onChange(e) {
+      return setForm(_objectSpread(_objectSpread({}, form), {}, {
+        rating: e.target.value
+      }));
+    }
+  }, RATINGS.map(function (r) {
+    return /*#__PURE__*/React.createElement("option", {
+      key: r
+    }, r);
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "fg"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('c.status')), /*#__PURE__*/React.createElement("select", {
+    className: "fsl",
+    value: form.status || '合作中',
+    onChange: function onChange(e) {
+      return setForm(_objectSpread(_objectSpread({}, form), {}, {
+        status: e.target.value
+      }));
+    }
+  }, /*#__PURE__*/React.createElement("option", null, "\u5408\u4F5C\u4E2D"), /*#__PURE__*/React.createElement("option", null, "\u505C\u6B62\u5408\u4F5C"))), /*#__PURE__*/React.createElement("div", {
+    className: "fg ful"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "fl"
+  }, t('sup.f_notes')), /*#__PURE__*/React.createElement("textarea", {
+    className: "fta",
+    value: form.notes || '',
+    onChange: function onChange(e) {
+      return setForm(_objectSpread(_objectSpread({}, form), {}, {
+        notes: e.target.value
+      }));
+    }
+  })))));
+}
+
 // ── MAIN APP ──
 var NAV = [{
   k: 'dashboard',
@@ -6326,6 +7108,11 @@ var NAV = [{
   labelKey: 'nav.abmahnung',
   roles: ['admin', 'hr', 'mgr']
 }, {
+  k: 'suppliers',
+  i: '🏢',
+  labelKey: 'nav.suppliers',
+  roles: ['admin', 'hr', 'mgr']
+}, {
   sep: true
 }, {
   k: 'clock',
@@ -6360,51 +7147,51 @@ var NAV = [{
 }];
 function App() {
   var _NAV$find, _user$display_name, _user$display_name2;
-  var _useState121 = useState(function () {
+  var _useState145 = useState(function () {
       return localStorage.getItem('hr6_lang') || 'zh';
     }),
-    _useState122 = _slicedToArray(_useState121, 2),
-    lang = _useState122[0],
-    setLang = _useState122[1];
+    _useState146 = _slicedToArray(_useState145, 2),
+    lang = _useState146[0],
+    setLang = _useState146[1];
   var t = function t(key) {
     return (I18N[lang] || I18N.zh)[key] || I18N.zh[key] || key;
   };
-  var _useState123 = useState(function () {
+  var _useState147 = useState(function () {
       return localStorage.getItem('hr6_token') || null;
     }),
-    _useState124 = _slicedToArray(_useState123, 2),
-    token = _useState124[0],
-    setToken = _useState124[1];
-  var _useState125 = useState(function () {
+    _useState148 = _slicedToArray(_useState147, 2),
+    token = _useState148[0],
+    setToken = _useState148[1];
+  var _useState149 = useState(function () {
       try {
         return JSON.parse(localStorage.getItem('hr6_user')) || null;
       } catch (_unused) {
         return null;
       }
     }),
-    _useState126 = _slicedToArray(_useState125, 2),
-    user = _useState126[0],
-    setUser = _useState126[1];
-  var _useState127 = useState('dashboard'),
-    _useState128 = _slicedToArray(_useState127, 2),
-    page = _useState128[0],
-    setPage = _useState128[1];
-  var _useState129 = useState(null),
-    _useState130 = _slicedToArray(_useState129, 2),
-    toast = _useState130[0],
-    setToast = _useState130[1];
-  var _useState131 = useState(false),
-    _useState132 = _slicedToArray(_useState131, 2),
-    mobNav = _useState132[0],
-    setMN = _useState132[1];
-  var _useState133 = useState(false),
-    _useState134 = _slicedToArray(_useState133, 2),
-    srvReady = _useState134[0],
-    setSrvReady = _useState134[1];
-  var _useState135 = useState(''),
-    _useState136 = _slicedToArray(_useState135, 2),
-    srvStatus = _useState136[0],
-    setSrvStatus = _useState136[1];
+    _useState150 = _slicedToArray(_useState149, 2),
+    user = _useState150[0],
+    setUser = _useState150[1];
+  var _useState151 = useState('dashboard'),
+    _useState152 = _slicedToArray(_useState151, 2),
+    page = _useState152[0],
+    setPage = _useState152[1];
+  var _useState153 = useState(null),
+    _useState154 = _slicedToArray(_useState153, 2),
+    toast = _useState154[0],
+    setToast = _useState154[1];
+  var _useState155 = useState(false),
+    _useState156 = _slicedToArray(_useState155, 2),
+    mobNav = _useState156[0],
+    setMN = _useState156[1];
+  var _useState157 = useState(false),
+    _useState158 = _slicedToArray(_useState157, 2),
+    srvReady = _useState158[0],
+    setSrvReady = _useState158[1];
+  var _useState159 = useState(''),
+    _useState160 = _slicedToArray(_useState159, 2),
+    srvStatus = _useState160[0],
+    setSrvStatus = _useState160[1];
   useEffect(function () {
     document.documentElement.dir = RTL_LANGS.has(lang) ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
@@ -6413,64 +7200,64 @@ function App() {
   useEffect(function () {
     var cancelled = false;
     var _check = /*#__PURE__*/function () {
-      var _ref75 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
-        var r, j, _t1;
-        return _regenerator().w(function (_context16) {
-          while (1) switch (_context16.p = _context16.n) {
+      var _ref80 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18() {
+        var r, j, _t16;
+        return _regenerator().w(function (_context18) {
+          while (1) switch (_context18.p = _context18.n) {
             case 0:
-              _context16.p = 0;
-              _context16.n = 1;
+              _context18.p = 0;
+              _context18.n = 1;
               return fetch(BASE + HEALTH_ENDPOINT);
             case 1:
-              r = _context16.v;
+              r = _context18.v;
               if (!cancelled) {
-                _context16.n = 2;
+                _context18.n = 2;
                 break;
               }
-              return _context16.a(2);
+              return _context18.a(2);
             case 2:
               if (!r.ok) {
-                _context16.n = 3;
+                _context18.n = 3;
                 break;
               }
               setSrvReady(true);
-              _context16.n = 6;
+              _context18.n = 6;
               break;
             case 3:
               if (!(r.status === 503)) {
-                _context16.n = 5;
+                _context18.n = 5;
                 break;
               }
-              _context16.n = 4;
+              _context18.n = 4;
               return r.json().catch(function () {
                 return {};
               });
             case 4:
-              j = _context16.v;
+              j = _context18.v;
               setSrvStatus(j.status || 'initializing');
               localStorage.removeItem('hr6_token');
               localStorage.removeItem('hr6_user');
               setToken(null);
               setUser(null);
               setTimeout(_check, HEALTH_POLL_INTERVAL_MS);
-              _context16.n = 6;
+              _context18.n = 6;
               break;
             case 5:
               setSrvReady(true);
             case 6:
-              _context16.n = 8;
+              _context18.n = 8;
               break;
             case 7:
-              _context16.p = 7;
-              _t1 = _context16.v;
+              _context18.p = 7;
+              _t16 = _context18.v;
               if (!cancelled) setSrvReady(true);
             case 8:
-              return _context16.a(2);
+              return _context18.a(2);
           }
-        }, _callee16, null, [[0, 7]]);
+        }, _callee18, null, [[0, 7]]);
       }));
       return function check() {
-        return _ref75.apply(this, arguments);
+        return _ref80.apply(this, arguments);
       };
     }();
     _check();
@@ -6495,7 +7282,7 @@ function App() {
     localStorage.removeItem('hr6_token');
     localStorage.removeItem('hr6_user');
   };
-  var toast_ = function toast_(m) {
+  var toast_ = useCallback(function (m) {
     var tp = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'ok';
     setToast({
       m: m,
@@ -6504,7 +7291,7 @@ function App() {
     setTimeout(function () {
       return setToast(null);
     }, 2500);
-  };
+  }, []);
   var navItems = token && user ? NAV.filter(function (n) {
     return !n.k || !n.roles || n.roles.includes(user.role);
   }) : [];
@@ -6571,9 +7358,11 @@ function App() {
       lang: lang,
       setLang: setLang
     }
+  }, /*#__PURE__*/React.createElement(ToastCtx.Provider, {
+    value: toast_
   }, /*#__PURE__*/React.createElement(Login, {
     onLogin: onLogin
-  }));
+  })));
   var sidebar = /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "sb-hd"
   }, /*#__PURE__*/React.createElement("div", {
@@ -6635,6 +7424,8 @@ function App() {
       lang: lang,
       setLang: setLang
     }
+  }, /*#__PURE__*/React.createElement(ToastCtx.Provider, {
+    value: toast_
   }, /*#__PURE__*/React.createElement("div", {
     className: "app"
   }, /*#__PURE__*/React.createElement("div", {
@@ -6697,6 +7488,9 @@ function App() {
   }), page === 'abmahnung' && /*#__PURE__*/React.createElement(Abmahnung, {
     token: token,
     user: user
+  }), page === 'suppliers' && /*#__PURE__*/React.createElement(Suppliers, {
+    token: token,
+    user: user
   }), page === 'clock' && /*#__PURE__*/React.createElement(Clock, {
     token: token,
     user: user
@@ -6714,6 +7508,6 @@ function App() {
     token: token
   }))), toast && /*#__PURE__*/React.createElement("div", {
     className: "toast ".concat(toast.t === 'err' ? 'ter' : toast.t === 'warn' ? 'tow' : 'tok')
-  }, toast.m)));
+  }, toast.m))));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App, null));

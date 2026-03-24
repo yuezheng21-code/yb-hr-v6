@@ -9,3 +9,5 @@ uploads/*
 .DS_Store
 # React/ReactDOM UMD files are committed to the repo (static/) so they load
 # reliably without depending on a successful Docker npm install at build time.
+package.json
+node_modules/
