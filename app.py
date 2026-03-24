@@ -526,11 +526,47 @@ def warehouse_rates(code: str, u: dict = Depends(get_user)):
     if not wh: raise HTTPException(404)
     return dict(wh)
 
+_SUPPLIER_FIELDS = {"name", "biz_line", "contact_name", "phone", "email", "tax_handle", "rating", "status", "notes"}
+
 @app.get("/api/suppliers")
 def list_suppliers(u: dict = Depends(get_user)):
     db = database.get_db()
     result = rows(db, "SELECT * FROM suppliers ORDER BY name")
     db.close(); return result
+
+@app.post("/api/suppliers")
+def create_supplier(data: dict = Body(...), u: dict = Depends(get_user)):
+    if u["role"] not in ("admin", "hr"): raise HTTPException(403)
+    safe = {k: v for k, v in data.items() if k in _SUPPLIER_FIELDS}
+    if not safe.get("name"): raise HTTPException(400, "name is required")
+    db = database.get_db()
+    existing = [r["id"] for r in rows(db, "SELECT id FROM suppliers WHERE id LIKE 'SUP-%'")]
+    nums = [int(x.split("-")[1]) for x in existing if len(x.split("-")) > 1 and x.split("-")[1].isdigit()]
+    sup_id = f"SUP-{max(nums, default=0) + 1:03d}"
+    safe["id"] = sup_id
+    cols = ",".join(safe.keys()); phs = ",".join(["?"] * len(safe))
+    database.execute(db, f"INSERT INTO suppliers({cols}) VALUES({phs})", list(safe.values()))
+    auditlog(db, u, "CREATE", "suppliers", sup_id, safe.get("name", ""))
+    database.commit(db); db.close(); return {"id": sup_id}
+
+@app.put("/api/suppliers/{sup_id}")
+def update_supplier(sup_id: str, data: dict = Body(...), u: dict = Depends(get_user)):
+    if u["role"] not in ("admin", "hr"): raise HTTPException(403)
+    safe = {k: v for k, v in data.items() if k in _SUPPLIER_FIELDS}
+    if not safe: raise HTTPException(400, "no valid fields to update")
+    db = database.get_db()
+    sets = ",".join(f"{k}=?" for k in safe)
+    database.execute(db, f"UPDATE suppliers SET {sets} WHERE id=?", list(safe.values()) + [sup_id])
+    auditlog(db, u, "UPDATE", "suppliers", sup_id)
+    database.commit(db); db.close(); return {"ok": True}
+
+@app.delete("/api/suppliers/{sup_id}")
+def deactivate_supplier(sup_id: str, u: dict = Depends(get_user)):
+    if u["role"] != "admin": raise HTTPException(403)
+    db = database.get_db()
+    database.execute(db, "UPDATE suppliers SET status='停止合作' WHERE id=?", (sup_id,))
+    auditlog(db, u, "DEACTIVATE", "suppliers", sup_id)
+    database.commit(db); db.close(); return {"ok": True}
 
 @app.get("/api/grades")
 def get_grades(u: dict = Depends(get_user)):
