@@ -98,7 +98,7 @@ export default function App() {
     <>
       <div className="sb-hd">
         <div className="sb-logo">渊</div>
-        <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V6 · LIVE</div></div>
+        <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V7 · LIVE</div></div>
       </div>
       <div className="nav">
         {navItems.map((n, i) =>
