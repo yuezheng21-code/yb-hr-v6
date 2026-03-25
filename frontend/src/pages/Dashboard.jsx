@@ -4,6 +4,7 @@ import { useLang } from '../context/LangContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { StatCard, Chart } from '../components/common/index.js';
 
+// Number of months to include in the margin analysis dashboard widget
 const MARGIN_ANALYSIS_MONTHS = 3;
 
 export default function Dashboard({ token, user }) {

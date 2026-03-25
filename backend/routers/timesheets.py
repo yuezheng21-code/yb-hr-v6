@@ -291,9 +291,9 @@ def export_timesheets(
 
     output.seek(0)
     # Build a safe filename using only alphanumeric chars and hyphens to prevent header injection
-    def _safe(s: str) -> str:
+    def _sanitize_filename(s: str) -> str:
         return re.sub(r"[^a-zA-Z0-9\-]", "", (s or "all"))[:20]
-    filename = f"timesheets_{_safe(date_from)}_{_safe(date_to)}.csv"
+    filename = f"timesheets_{_sanitize_filename(date_from)}_{_sanitize_filename(date_to)}.csv"
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
