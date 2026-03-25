@@ -37,14 +37,19 @@ export default function Dashboard({ token }) {
         ))}
       </div>
       <div className="cd">
-        <div className="ct-t">🚀 渊博579 HR V7.0 — Phase 2 在线</div>
+        <div className="ct-t">🚀 渊博579 HR V7.0 — 全功能在线</div>
         <div style={{ color: 'var(--tx3)', fontSize: 12, lineHeight: 1.8 }}>
           ✅ 员工管理、供应商管理、仓库配置<br/>
           ✅ 工时记录 (CRUD + 仓库/财务审批流)<br/>
           ✅ 装卸柜记录 (CRUD + 拆分到工时)<br/>
           ✅ 打卡系统 (上班/下班打卡)<br/>
           ✅ 结算引擎 (hourly / piece / hourly_kpi / container + 夜班/周末/节假日补贴)<br/>
-          🔜 月度结算、报价、推荐返佣 (Phase 3-5)
+          ✅ 月度结算 (员工 / 供应商 / 项目毛利分析)<br/>
+          ✅ 员工推荐奖励 (P1_P4 ~ P9 + 防刷检测)<br/>
+          ✅ 合作伙伴返佣 (Bronze ~ Platinum 4级)<br/>
+          ✅ 报价与成本测算 (P1-P9 职级 + 阶梯折扣)<br/>
+          ✅ 派遣需求 + 人才储备池 + 招聘漏斗<br/>
+          ✅ 系统消息 + 审计日志 + 多语言 (8种)
         </div>
       </div>
     </div>

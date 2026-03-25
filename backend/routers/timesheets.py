@@ -16,6 +16,7 @@ from backend.schemas.timesheet import TimesheetCreate, TimesheetUpdate, Timeshee
 from backend.middleware.auth import get_current_user
 from backend.services.settlement_calc import calc_settlement, calc_shift_bonus_rate, compute_hours
 from backend.services.sequence import next_sequence_no, make_prefix
+from backend.services.compliance import ARBZG
 
 router = APIRouter(prefix="/api/v1/timesheets", tags=["timesheets"])
 
@@ -184,6 +185,70 @@ def batch_approve(
             count += 1
     db.commit()
     return {"approved": count}
+
+
+@router.get("/zeitkonto-summary")
+def zeitkonto_summary(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Compute Zeitkonto balance per employee from booked timesheets.
+    Returns ArbZG compliance summary: plus_hours (overtime above 8h/day),
+    minus_hours, daily_max, over10_days.
+    """
+    if user.role not in {"admin", "hr", "mgr", "wh", "fin"}:
+        raise HTTPException(403, "Forbidden")
+
+    stmt = (
+        select(
+            Employee.id.label("employee_id"),
+            Employee.name.label("employee_name"),
+            Employee.grade,
+            Employee.biz_line,
+            Employee.primary_warehouse.label("warehouse_code"),
+            func.coalesce(func.sum(Timesheet.hours), 0).label("total_hours"),
+            func.coalesce(func.max(Timesheet.hours), 0).label("daily_max"),
+            func.count(Timesheet.id).label("shift_count"),
+        )
+        .outerjoin(Timesheet, (Timesheet.employee_id == Employee.id) & (Timesheet.approval_status == "booked"))
+        .where(Employee.status == "active")
+        .group_by(Employee.id, Employee.name, Employee.grade, Employee.biz_line, Employee.primary_warehouse)
+        .order_by(Employee.name)
+    )
+
+    if user.role == "wh":
+        stmt = stmt.where(Employee.primary_warehouse == user.bound_warehouse)
+    elif user.role == "sup":
+        stmt = stmt.where(Employee.supplier_id == user.bound_supplier_id)
+
+    rows = db.execute(stmt).mappings().all()
+
+    standard_daily = ARBZG["daily_soft_limit"]   # 8h — standard shift hours
+    hard_daily_limit = ARBZG["daily_hard_limit"]  # 10h — ArbZG §3 absolute maximum
+
+    result = []
+    for r in rows:
+        total_hours = float(r["total_hours"] or 0)
+        shift_count = int(r["shift_count"] or 0)
+        daily_max = float(r["daily_max"] or 0)
+        plus_hours = max(0, round(total_hours - shift_count * standard_daily, 1)) if shift_count > 0 else 0
+        minus_hours = max(0, round(shift_count * standard_daily - total_hours, 1)) if shift_count > 0 and total_hours < shift_count * standard_daily else 0
+        over10_days = 1 if daily_max > hard_daily_limit else 0
+
+        result.append({
+            "employee_id": r["employee_id"],
+            "employee_name": r["employee_name"],
+            "grade": r["grade"],
+            "biz_line": r["biz_line"],
+            "warehouse_code": r["warehouse_code"] or "",
+            "plus_hours": plus_hours,
+            "minus_hours": minus_hours,
+            "daily_max": daily_max,
+            "over10_days": over10_days,
+        })
+
+    return result
 
 
 @router.get("/{ts_id}", response_model=TimesheetOut)

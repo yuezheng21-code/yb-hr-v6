@@ -46,7 +46,7 @@ function PageContent({ page, token, user }) {
     case 'warehouses':     return <WarehouseRates {...props} />;
     case 'warehouse_rates':return <WarehouseRates {...props} />;
     case 'logs':           return <AuditLogs {...props} />;
-    case 'cost_calc':      return <Commissions {...props} />;
+    case 'cost_calc':      return <Quotations {...props} />;
     case 'dispatch':       return <Dispatch {...props} />;
     case 'talent':         return <Talent {...props} />;
     case 'recruit':        return <Recruit {...props} />;
