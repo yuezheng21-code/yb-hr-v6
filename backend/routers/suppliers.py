@@ -27,7 +27,8 @@ def list_suppliers(
     if status:
         stmt = stmt.where(Supplier.status == status)
     if q:
-        stmt = stmt.where(Supplier.name.ilike(f"%{q}%") | Supplier.code.ilike(f"%{q}%"))
+        q_escaped = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        stmt = stmt.where(Supplier.name.ilike(f"%{q_escaped}%") | Supplier.code.ilike(f"%{q_escaped}%"))
     return db.scalars(stmt.offset(skip).limit(limit)).all()
 
 

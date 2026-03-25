@@ -61,7 +61,6 @@ def run_seed(db: Session) -> None:
             )
             db.add(user)
         else:
-            existing.password_hash = _hash(u["password"])
             existing.is_active = True
 
     # Seed suppliers

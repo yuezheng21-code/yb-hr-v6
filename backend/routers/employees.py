@@ -73,8 +73,9 @@ def list_employees(
     if source_type:
         stmt = stmt.where(Employee.source_type == source_type)
     if q:
+        q_escaped = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         stmt = stmt.where(
-            Employee.name.ilike(f"%{q}%") | Employee.emp_no.ilike(f"%{q}%") | Employee.phone.ilike(f"%{q}%")
+            Employee.name.ilike(f"%{q_escaped}%") | Employee.emp_no.ilike(f"%{q_escaped}%") | Employee.phone.ilike(f"%{q_escaped}%")
         )
     emps = db.scalars(stmt.offset(skip).limit(limit)).all()
     result = []
