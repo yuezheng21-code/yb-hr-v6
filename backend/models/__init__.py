@@ -9,6 +9,7 @@ from backend.models.settlement import EmployeeSettlement, SupplierSettlement, Pr
 from backend.models.referral import ReferralRecord
 from backend.models.commission import CommissionRecord, CommissionMonthly
 from backend.models.quotation import Quotation, CostCalculation  # noqa: F401
+from backend.models.dispatch import DispatchDemand, TalentPool  # noqa: F401
 
 __all__ = [
     "User", "Employee", "Supplier", "Warehouse",
@@ -16,4 +17,5 @@ __all__ = [
     "EmployeeSettlement", "SupplierSettlement", "ProjectSettlement",
     "ReferralRecord", "CommissionRecord", "CommissionMonthly",
     "Quotation", "CostCalculation",
+    "DispatchDemand", "TalentPool",
 ]
