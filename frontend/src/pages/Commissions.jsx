@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../services/api.js';
+import { api, downloadBlob } from '../services/api.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
@@ -96,15 +96,11 @@ export default function Commissions({ token, user }) {
 
   const downloadXlsx = async () => {
     try {
-      const res = await fetch(`/api/v1/commissions/export/${calcPeriod}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const blob = await res.blob();
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `commissions_${calcPeriod}.xlsx`;
-      a.click();
+      await downloadBlob(
+        `/api/v1/commissions/export/${calcPeriod}`,
+        token,
+        `commissions_${calcPeriod}.xlsx`,
+      );
     } catch (e) { showToast(e.message, 'err'); }
   };
 
