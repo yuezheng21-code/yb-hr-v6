@@ -99,6 +99,14 @@ def check_downgrade(db: Session, record: CommissionRecord) -> Optional[str]:
     return None
 
 
+def _add_months(base_date: date, months: int) -> date:
+    """Add a number of months to a date, clamping to valid day ranges."""
+    total_month = base_date.month + months
+    year = base_date.year + (total_month - 1) // 12
+    month = ((total_month - 1) % 12) + 1
+    return date(year, month, 1)
+
+
 def calculate_monthly(
     db: Session,
     record: CommissionRecord,
@@ -112,11 +120,7 @@ def calculate_monthly(
     # Check if first payout delay applies
     delay = record.first_payout_delay or 0
     if record.validity_start and delay > 0:
-        earliest_payout = date(
-            record.validity_start.year + ((record.validity_start.month + delay - 1) // 12),
-            ((record.validity_start.month + delay - 1) % 12) + 1,
-            1,
-        )
+        earliest_payout = _add_months(record.validity_start, delay)
         year, mo = int(period[:4]), int(period[5:7])
         period_date = date(year, mo, 1)
         if period_date < earliest_payout:

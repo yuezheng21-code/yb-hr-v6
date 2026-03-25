@@ -98,7 +98,8 @@ export default function Commissions({ token, user }) {
     const body = {};
     commissions.filter(c => ['active','pending'].includes(c.status)).forEach(c => {
       const amt = invoiceInputs[c.id];
-      if (amt) body[String(c.id)] = parseFloat(amt);
+      const parsed = parseFloat(amt);
+      if (amt && !isNaN(parsed)) body[String(c.id)] = parsed;
     });
     if (Object.keys(body).length === 0) { showToast('请先填写发票金额', 'err'); return; }
     try {

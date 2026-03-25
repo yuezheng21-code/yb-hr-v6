@@ -44,8 +44,8 @@ def check_eligibility(referrer: Employee) -> Tuple[bool, str]:
         return False, f"推荐人职级 {referrer.grade} 不在奖励范围 (仅P1-P5)"
     # Check probation: join_date must be >3 months ago
     if referrer.join_date:
-        cutoff = date.today() - timedelta(days=90)
-        if referrer.join_date > cutoff:
+        min_join_date = date.today() - timedelta(days=90)
+        if referrer.join_date > min_join_date:
             return False, "推荐人试用期未满 (需满3个月)"
     return True, "ok"
 
