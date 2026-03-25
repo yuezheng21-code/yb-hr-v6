@@ -7,6 +7,8 @@ import json
 from datetime import datetime
 from typing import Optional, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from fastapi.responses import StreamingResponse
+from backend.services import export_service
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from backend.database import get_db
@@ -206,6 +208,21 @@ def get_price_matrix(
     return quotation_builder.get_price_matrix()
 
 
+@router.put("/price-matrix")
+def update_price_matrix(
+    body: dict = Body(...),
+    user: User = Depends(get_current_user),
+):
+    """Update the in-memory price matrix (admin only, resets on server restart)."""
+    if user.role != "admin":
+        raise HTTPException(403, "Forbidden")
+    try:
+        result = quotation_builder.update_price_matrix(body)
+        return {"status": "updated", "matrix": result}
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
 @router.post("/{quotation_id}/build-items")
 def build_quote_items(
     quotation_id: int,
@@ -250,6 +267,32 @@ def get_quotation_cost_calcs(
         .where(CostCalculation.quotation_id == quotation_id)
         .order_by(CostCalculation.created_at.desc())
     ).all()
+
+
+@router.get("/{quotation_id}/export-xlsx")
+def export_quotation_xlsx(
+    quotation_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Export quotation as German-format Excel workbook."""
+    if user.role not in {"admin", "fin", "mgr"}:
+        raise HTTPException(403, "Forbidden")
+    q = db.get(Quotation, quotation_id)
+    if not q:
+        raise HTTPException(404, "Not found")
+    cost_calcs = db.scalars(
+        select(CostCalculation)
+        .where(CostCalculation.quotation_id == quotation_id)
+        .order_by(CostCalculation.created_at.desc())
+    ).all()
+    xlsx_bytes = export_service.export_quotation_xlsx(q, list(cost_calcs))
+    filename = f"Angebot_{q.quote_no}.xlsx"
+    return StreamingResponse(
+        iter([xlsx_bytes]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
 @router.get("/{quotation_id}", response_model=QuotationOut)

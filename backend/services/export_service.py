@@ -215,3 +215,154 @@ def export_commissions_xlsx(rows: list, monthly_map: dict, period: str) -> bytes
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
+
+
+def export_quotation_xlsx(quotation, cost_calcs: list) -> bytes:
+    """Export a quotation to German-format Excel.
+    quotation: Quotation ORM object
+    cost_calcs: list of CostCalculation ORM objects linked to this quotation
+    """
+    import json
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment, PatternFill
+    wb = Workbook()
+
+    # ── Sheet 1: Angebot ──────────────────────────────────────────────────
+    ws = wb.active
+    ws.title = "Angebot"
+
+    # Company header
+    ws.merge_cells("A1:F1")
+    c = ws["A1"]
+    c.value = "渊博579 HR Dispatch Management GmbH — Angebot"
+    c.font = Font(bold=True, size=14, color="FFFFFF")
+    c.fill = PatternFill("solid", fgColor="1E3A5F")
+    c.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 28
+
+    # Quote meta
+    ws["A3"] = "Angebot-Nr:"
+    ws["B3"] = quotation.quote_no
+    ws["A4"] = "Auftraggeber:"
+    ws["B4"] = quotation.client_name
+    ws["A5"] = "Kontakt:"
+    ws["B5"] = quotation.client_contact or ""
+    ws["A6"] = "Lager:"
+    ws["B6"] = quotation.warehouse_code or ""
+    ws["A7"] = "Projekttyp:"
+    ws["B7"] = quotation.project_type or ""
+    ws["A8"] = "Gültig bis:"
+    ws["B8"] = quotation.valid_until.strftime("%d.%m.%Y") if quotation.valid_until else ""
+    ws["A9"] = "Status:"
+    ws["B9"] = quotation.status
+    ws["D3"] = "Erstellt am:"
+    ws["E3"] = quotation.created_at.strftime("%d.%m.%Y") if quotation.created_at else ""
+    ws["D4"] = "Erstellt von:"
+    ws["E4"] = quotation.created_by or ""
+    ws["D5"] = "Genehmigt von:"
+    ws["E5"] = quotation.approved_by or ""
+
+    for row in range(3, 10):
+        ws.cell(row=row, column=1).font = Font(bold=True, size=10)
+
+    # Line items header
+    row_start = 12
+    ws.cell(row=row_start, column=1, value="Pos.")
+    ws.cell(row=row_start, column=2, value="Leistungsart")
+    ws.cell(row=row_start, column=3, value="Einheit")
+    ws.cell(row=row_start, column=4, value="Menge")
+    ws.cell(row=row_start, column=5, value="Einzelpreis (€)")
+    ws.cell(row=row_start, column=6, value="Rabatt (%)")
+    ws.cell(row=row_start, column=7, value="Nettobetrag (€)")
+    for col in range(1, 8):
+        cell = ws.cell(row=row_start, column=col)
+        cell.font = Font(bold=True, color="FFFFFF", size=10)
+        cell.fill = PatternFill("solid", fgColor="2E5FA3")
+        cell.alignment = Alignment(horizontal="center")
+
+    # Line items data
+    items = []
+    if quotation.items_json:
+        try:
+            items = json.loads(quotation.items_json)
+        except Exception:
+            items = []
+
+    r = row_start + 1
+    subtotal = 0.0
+    for i, item in enumerate(items, start=1):
+        ws.cell(row=r, column=1, value=i)
+        label = item.get("label") or item.get("biz_line", "")
+        ws.cell(row=r, column=2, value=f"{item.get('biz_line','')} {label}".strip())
+        ws.cell(row=r, column=3, value=item.get("unit", ""))
+        ws.cell(row=r, column=4, value=item.get("volume", 0))
+        ws.cell(row=r, column=5, value=round(item.get("base_price", item.get("net_price", 0)), 4))
+        ws.cell(row=r, column=6, value=f"{round(item.get('discount',0)*100, 0):.0f}%")
+        ws.cell(row=r, column=7, value=round(item.get("amount", 0), 2))
+        subtotal += item.get("amount", 0)
+        r += 1
+
+    # Hourly cost line if no items
+    if not items and quotation.quote_hourly_rate:
+        ws.cell(row=r, column=2, value="Personaldienstleistung (Stundenlohn)")
+        ws.cell(row=r, column=3, value="Std.")
+        ws.cell(row=r, column=5, value=round(quotation.quote_hourly_rate, 2))
+        r += 1
+
+    r += 1
+    subtotal = round(subtotal, 2) or round((quotation.total_monthly_estimate or 0) / 1.19, 2)
+    mwst = round(subtotal * 0.19, 2)
+    total = round(subtotal + mwst, 2)
+
+    ws.cell(row=r, column=6, value="Summe Netto:")
+    ws.cell(row=r, column=7, value=subtotal)
+    ws.cell(row=r, column=6).font = Font(bold=True)
+    r += 1
+    ws.cell(row=r, column=6, value="MwSt. 19%:")
+    ws.cell(row=r, column=7, value=mwst)
+    r += 1
+    ws.cell(row=r, column=6, value="Gesamtbetrag Brutto:")
+    ws.cell(row=r, column=7, value=total)
+    ws.cell(row=r, column=6).font = Font(bold=True, size=12)
+    ws.cell(row=r, column=7).font = Font(bold=True, size=12, color="1B5E20")
+
+    # Cost summary if available
+    if quotation.cost_total_per_hour:
+        r += 2
+        ws.cell(row=r, column=1, value="Kostenübersicht")
+        ws.cell(row=r, column=1).font = Font(bold=True, size=11)
+        r += 1
+        for label_de, val in [
+            ("Bruttolohn/Std.", f"€{quotation.cost_hourly_rate:.4f}"),
+            ("Sozialversicherung", f"{round((quotation.cost_social_rate or 0)*100, 0):.0f}%"),
+            ("Verwaltungskosten", f"{round((quotation.cost_management_fee or 0)*100, 0):.0f}%"),
+            ("Gesamtkosten/Std.", f"€{quotation.cost_total_per_hour:.4f}"),
+            ("Angebotsrate/Std.", f"€{quotation.quote_hourly_rate:.2f}" if quotation.quote_hourly_rate else "-"),
+            ("Ziel-Gewinnspanne", f"{round((quotation.quote_margin or 0)*100, 0):.0f}%"),
+        ]:
+            ws.cell(row=r, column=1, value=label_de)
+            ws.cell(row=r, column=1).font = Font(bold=True, size=10)
+            ws.cell(row=r, column=2, value=val)
+            r += 1
+
+    _auto_col_width(ws)
+
+    # ── Sheet 2: Kostenanalyse ────────────────────────────────────────────
+    ws2 = wb.create_sheet(title="Kostenanalyse P1-P9")
+    _make_wb_title(ws2, "Personalkosten nach Entgeltgruppe (P1-P9)", 5)
+    _add_header_row(ws2, ["Entgeltgruppe", "Bruttolohn/Std. (€)", "Gesamtkosten/Std. (€)", "Empfohlen. Preis 20% (€)", "Empfohlen. Preis 25% (€)"])
+    import backend.config as cfg
+    from backend.services import cost_calculator
+    for i, (grade, coeff) in enumerate(cfg.COEFFICIENTS.items(), start=3):
+        r20 = cost_calculator.calc_full(grade=grade, target_margin=0.20)
+        r25 = cost_calculator.calc_full(grade=grade, target_margin=0.25)
+        ws2.cell(row=i, column=1, value=grade)
+        ws2.cell(row=i, column=2, value=round(r20["gross_hourly"], 4))
+        ws2.cell(row=i, column=3, value=round(r20["total_cost_per_hour"], 4))
+        ws2.cell(row=i, column=4, value=round(r20["suggested_rate"], 2))
+        ws2.cell(row=i, column=5, value=round(r25["suggested_rate"], 2))
+    _auto_col_width(ws2)
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()

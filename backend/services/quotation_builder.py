@@ -14,6 +14,8 @@ from typing import Optional
 # v7.0 价格矩阵 (€/unit or €/h)
 # Tier: standard / bronze / silver / gold
 # Each biz line has a base unit price; discount applied to non-excluded items
+_runtime_matrix: dict = {}
+
 DEFAULT_PRICE_MATRIX: dict = {
     "9A": {  # 出库 (outbound)
         "label": "出库作业",
@@ -66,8 +68,17 @@ NON_DISCOUNT_CODES = {"returns", "value_added", "surcharge"}
 
 
 def get_price_matrix() -> dict:
-    """Return the current price matrix."""
-    return DEFAULT_PRICE_MATRIX
+    """Return the current price matrix (runtime override or default)."""
+    return _runtime_matrix if _runtime_matrix else DEFAULT_PRICE_MATRIX
+
+
+def update_price_matrix(data: dict) -> dict:
+    """Update the runtime price matrix. Validates basic structure."""
+    global _runtime_matrix
+    if not isinstance(data, dict) or not data:
+        raise ValueError("Price matrix must be a non-empty dict")
+    _runtime_matrix = data
+    return _runtime_matrix
 
 
 def determine_tier(biz_line: str, monthly_volume: float, matrix: dict | None = None) -> str:

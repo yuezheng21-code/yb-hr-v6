@@ -111,6 +111,20 @@ export default function Quotations({ token, user }) {
     } catch(e) { showToast(e.message, 'err'); }
   };
 
+  const downloadQuoteXlsx = async (id, quoteNo) => {
+    try {
+      const res = await fetch(`/api/v1/quotations/${id}/export-xlsx`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Angebot_${quoteNo}.xlsx`;
+      a.click();
+    } catch (e) { showToast(e.message, 'err'); }
+  };
+
   const approveQuote = async (id) => {
     try {
       await api(`/api/v1/quotations/${id}/approve`, { method:'PUT', body:{}, token });
@@ -194,6 +208,9 @@ export default function Quotations({ token, user }) {
                   }}>{STATUS_LABELS[selQ.status]||selQ.status}</span>
                 </div>
                 <div style={{ display:'flex', gap:8 }}>
+                  {canCalc && (
+                    <button className="b bgh" onClick={() => downloadQuoteXlsx(selQ.id, selQ.quote_no)}>↓ Excel</button>
+                  )}
                   {canCalc && selQ.status !== 'accepted' && (
                     <button className="b bgs" onClick={() => setCostModal(true)}>成本测算</button>
                   )}
@@ -213,14 +230,14 @@ export default function Quotations({ token, user }) {
               </div>
 
               <div style={{ display:'flex', gap:2, marginBottom:14, borderBottom:'1px solid var(--bd)' }}>
-                {['info','cost','items'].map(t_ => (
+                {['info','cost','items', ...(canEdit ? ['matrix'] : [])].map(t_ => (
                   <button key={t_} onClick={() => setTab(t_)}
                     style={{
                       padding:'6px 16px', fontSize:12, border:'none', cursor:'pointer', borderRadius:'4px 4px 0 0',
                       background: tab===t_ ? 'var(--ac)' : 'transparent',
                       color: tab===t_ ? '#fff' : 'var(--tx2)',
                     }}>
-                    {t_==='info' ? '基本信息' : t_==='cost' ? '成本测算' : '报价明细'}
+                    {t_==='info' ? '基本信息' : t_==='cost' ? '成本测算' : t_==='items' ? '报价明细' : '价格矩阵'}
                   </button>
                 ))}
               </div>
@@ -378,6 +395,40 @@ export default function Quotations({ token, user }) {
                     </div>
                   )}
                 </div>
+              )}
+              {tab === 'matrix' && priceMatrix && (
+                <div>
+                  <div style={{ fontSize:11, color:'var(--tx3)', marginBottom:12 }}>
+                    v7.0 阶梯价格矩阵 — 标准/Bronze(-3%)/Silver(-5%)/Gold(-8%)，独立评定，互不叠加
+                  </div>
+                  {Object.entries(priceMatrix).map(([code, biz]) => (
+                    <div key={code} style={{ marginBottom:16, background:'var(--bg3)', borderRadius:'var(--R2)', padding:12 }}>
+                      <div style={{ fontWeight:700, marginBottom:8, fontSize:13 }}>
+                        {code} — {biz.label} <span style={{ fontSize:10, color:'var(--tx3)', marginLeft:4 }}>基价 €{biz.base_price}/{biz.unit}</span>
+                      </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6 }}>
+                        {Object.entries(biz.tiers).map(([tier, info]) => {
+                          const colors = { standard:'#94a3b8', bronze:'#cd7f32', silver:'#9ca3af', gold:'#f59e0b' };
+                          const c = colors[tier] || '#94a3b8';
+                          return (
+                            <div key={tier} style={{ background: c + '15', border:`1px solid ${c}44`, borderRadius:6, padding:'8px 10px' }}>
+                              <div style={{ fontWeight:700, fontSize:11, color: c }}>{tier.toUpperCase()}</div>
+                              <div style={{ fontSize:10, color:'var(--tx3)', marginTop:2 }}>
+                                {info.min_volume.toLocaleString()} – {info.max_volume ? info.max_volume.toLocaleString() : '∞'}
+                              </div>
+                              <div style={{ fontSize:12, fontWeight:600, marginTop:4, color: info.discount > 0 ? 'var(--gn)' : 'var(--tx2)' }}>
+                                {info.discount > 0 ? `-${(info.discount*100).toFixed(0)}%` : '—'}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {tab === 'matrix' && !priceMatrix && (
+                <div style={{ textAlign:'center', padding:20, color:'var(--tx3)' }}>价格矩阵加载中…</div>
               )}
             </div>
           </div>
