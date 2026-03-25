@@ -23,4 +23,7 @@ export const NAV_ITEMS = [
   { key: 'warehouse_rates', icon: '🏭', labelKey: 'nav.warehouse_rates',  roles: ['admin','hr','mgr','wh'] },
   { key: 'cost_calc',       icon: '🧮', labelKey: 'nav.cost_calc',        roles: ['admin','hr','mgr','fin'] },
   { key: 'logs',            icon: '📝', labelKey: 'nav.logs',             roles: ['admin','hr'] },
+  { sep: true },
+  { key: 'messages',        icon: '✉️', labelKey: 'nav.messages',         roles: ['admin','hr','wh','fin','mgr','sup','worker'] },
+  { key: 'admin',           icon: '🔧', labelKey: 'nav.admin',            roles: ['admin'] },
 ];

@@ -21,6 +21,8 @@ import WarehouseRates from './pages/WarehouseRates.jsx';
 import AuditLogs from './pages/AuditLogs.jsx';
 import Dispatch from './pages/Dispatch.jsx';
 import Talent from './pages/Talent.jsx';
+import Messages from './pages/Messages.jsx';
+import Admin from './pages/Admin.jsx';
 
 const ROLE_COLORS = { admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
 
@@ -43,6 +45,8 @@ function PageContent({ page, token, user }) {
     case 'cost_calc':      return <Commissions {...props} />;
     case 'dispatch':       return <Dispatch {...props} />;
     case 'talent':         return <Talent {...props} />;
+    case 'messages':       return <Messages {...props} />;
+    case 'admin':          return <Admin {...props} />;
     default:               return <Dashboard {...props} />;
   }
 }

@@ -139,6 +139,8 @@ from backend.routers import referrals as referrals_v7
 from backend.routers import commissions as commissions_v7
 from backend.routers.quotations import router as quotations_router, cost_router
 from backend.routers.dispatch import dispatch_router, talent_router
+from backend.routers import messages as messages_v7
+from backend.routers import admin as admin_v7
 
 app.include_router(auth_v7.router)
 app.include_router(employees_v7.router)
@@ -155,6 +157,8 @@ app.include_router(quotations_router)
 app.include_router(cost_router)
 app.include_router(dispatch_router)
 app.include_router(talent_router)
+app.include_router(messages_v7.router)
+app.include_router(admin_v7.router)
 
 # ── Static files + catch-all ─────────────────────────────────────────
 _REPO_ROOT = os.path.dirname(os.path.dirname(__file__))
