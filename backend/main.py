@@ -116,13 +116,16 @@ def health():
     with _db_lock:
         ready = _db_ready
         status = _db_status
-    return {
+    body = {
         "status": "ok" if ready else "starting",
         "db_ready": ready,
         "db_status": status,
         "version": "7.0.0",
         "time": datetime.now().isoformat(),
     }
+    if not ready:
+        return JSONResponse(status_code=503, headers={"Retry-After": "5"}, content=body)
+    return body
 
 
 # ── V7 Routers (/api/v1/) ────────────────────────────────────────────
