@@ -106,7 +106,7 @@ export async function downloadBlob(path, token, filename) {
   URL.revokeObjectURL(url);
 }
 
-export function pollHealth(onReady, onError) {
+export function pollHealth(onReady, onStatusUpdate) {
   let attempts = 0;
   const MAX = 120;
   const INTERVAL = 3000;
@@ -120,14 +120,14 @@ export function pollHealth(onReady, onError) {
         onReady();
         return;
       }
-      onError(data.db_status || 'starting');
+      onStatusUpdate(data.db_status || 'starting');
     } catch {
-      onError('connecting...');
+      onStatusUpdate('connecting...');
     }
     if (++attempts < MAX) {
       timer = setTimeout(check, INTERVAL);
     } else {
-      onError('Server unreachable');
+      onStatusUpdate('Server did not become ready after 6 minutes');
     }
   };
 

@@ -5,7 +5,7 @@ import i18n, { RTL_LANGS, LANG_OPTIONS } from '../i18n/index.js';
 const LangCtx = createContext(null);
 
 export function LangProvider({ children }) {
-  const [lang, setLangState] = useState(() => i18n.language || localStorage.getItem('hr7_lang') || 'zh');
+  const [lang, setLangState] = useState(() => i18n.language);
 
   const setLang = (l) => {
     setLangState(l);
