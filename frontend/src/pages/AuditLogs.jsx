@@ -9,7 +9,7 @@ export default function AuditLogs({ token }) {
   const { t } = useLang();
 
   useEffect(() => {
-    api('/api/logs', { token }).then(setLogs).finally(() => setLoading(false));
+    api('/api/v1/admin/audit-logs', { token }).then(setLogs).finally(() => setLoading(false));
   }, [token]);
 
   return (

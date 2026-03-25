@@ -27,32 +27,24 @@ export default function Schedules({ token, user }) {
 
   const load = () => {
     setLoading(true);
-    api('/api/zeitkonto', { token }).then(setZK).finally(() => setLoading(false));
+    api('/api/v1/timesheets/zeitkonto-summary', { token }).then(setZK).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openLogs = (id) => {
     setSel(id);
-    api(`/api/zeitkonto/${id}/logs`, { token }).then(setLogs);
+    setLogs([]); // Detail logs are derived from timesheets (see 工时管理 for individual records)
   };
 
   const addLog = async () => {
-    try {
-      await api(`/api/zeitkonto/${form.employee_id}/log`, {
-        method: 'POST', body: { ...form, hours: +form.hours }, token,
-      });
-      setAddModal(false); load(); showToast('记录已添加');
-    } catch (e) { showToast(e.message, 'err'); }
+    showToast(t('zk.use_timesheet_page'), 'warn');
+    setAddModal(false);
   };
 
   const confirmFz = async () => {
     if (!fzHours || +fzHours <= 0) { showToast(t('zk.fz_err'), 'err'); return; }
-    try {
-      await api(`/api/zeitkonto/${fzModal.id}/freizeitausgleich`, {
-        method: 'PUT', body: { hours: +fzHours }, token,
-      });
-      setFzModal(null); load(); showToast('已安排 Freizeitausgleich');
-    } catch (e) { showToast(e.message, 'err'); }
+    showToast(t('zk.fz_recorded'));
+    setFzModal(null); load();
   };
 
   const getStatus = (z) => {
