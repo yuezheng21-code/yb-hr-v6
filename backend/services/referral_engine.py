@@ -192,11 +192,12 @@ def detect_anomaly(db: Session, referrer_id: int, month: str) -> dict:
     if len(month_referrals) > 5:
         flags.append(f"单月推荐 {len(month_referrals)} 人 (上限5人)")
 
-    # Rule 2: >50% of referees left within 3 months
-    completed_3mo = [r for r in month_referrals if r.status in ("month3", "month6", "month12", "completed")]
-    cancelled = [r for r in month_referrals if r.status == "cancelled"]
-    if completed_3mo:
-        leave_rate = len(cancelled) / len(completed_3mo)
+    # Rule 2: >50% of referees left (cancelled) among those that reached at least onboarded status
+    # Only meaningful when we have referrals that got past the submission stage
+    reached_onboarded = [r for r in month_referrals if r.status not in ("submitted", "verified")]
+    cancelled_early = [r for r in reached_onboarded if r.status == "cancelled"]
+    if reached_onboarded:
+        leave_rate = len(cancelled_early) / len(reached_onboarded)
         if leave_rate > 0.5:
             flags.append(f"推荐离职率 {leave_rate:.0%} >50%")
 

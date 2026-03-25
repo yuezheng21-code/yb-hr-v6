@@ -179,7 +179,7 @@ export default function Referrals({ token, user }) {
                     {isHR && r.status === 'onboarded' && (
                       <button className="b bga xs" onClick={() => doDay14(r.id)}>14天确认</button>
                     )}
-                    {(isHR || isFin) && ['day14_confirmed','month1','month3','month6'].includes(r.status) && (
+                    {(isHR || isFin) && ['day14_confirmed','month1','month3','month6','month12'].includes(r.status) && (
                       <button className="b bga xs" onClick={() => {
                         const next = { day14_confirmed:'month1', month1:'month3', month3:'month6', month6:'month12' }[r.status];
                         setMilestoneTarget(next);
