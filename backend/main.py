@@ -177,6 +177,13 @@ app.mount("/assets", StaticFiles(directory=_ASSETS_DIR if os.path.isdir(_ASSETS_
 
 @app.get("/{full_path:path}")
 def catch_all(full_path: str):
+    # Serve real dist files (PWA sw.js, manifest.webmanifest, icons, workbox, etc.)
+    # before falling back to index.html for SPA client-side routing.
+    if full_path:
+        candidate = os.path.realpath(os.path.join(_DIST_DIR, full_path))
+        dist_root = os.path.realpath(_DIST_DIR)
+        if candidate.startswith(dist_root + os.sep) and os.path.isfile(candidate):
+            return FileResponse(candidate)
     index = os.path.join(_DIST_DIR, "index.html")
     if os.path.exists(index):
         return FileResponse(index)

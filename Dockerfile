@@ -12,7 +12,7 @@ RUN mkdir -p uploads static && chmod +x start.sh
 
 # Build the React + Vite frontend → output lands in frontend/dist/
 # backend/main.py auto-detects frontend/dist and serves it instead of legacy static/
-RUN cd frontend && npm ci --prefer-offline && npm run build && rm -rf node_modules
+RUN cd frontend && npm ci && npm run build && rm -rf node_modules
 
 ENV PORT=8000
 ENV PYTHONUNBUFFERED=1
