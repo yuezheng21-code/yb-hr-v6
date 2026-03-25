@@ -60,6 +60,22 @@ def _next_ps_no(db: Session) -> str:
     return next_sequence_no(db, ProjectSettlement, ProjectSettlement.settle_no, make_prefix("PS"))
 
 
+def _compute_costs(gross: float) -> dict:
+    """Compute cost breakdown from gross pay using configured rates."""
+    social = round(gross * SOCIAL_RATE, 2)
+    vacation = round(gross * VACATION_RATE, 2)
+    sick = round(gross * SICK_RATE, 2)
+    mgmt = round(gross * MGMT_OVERHEAD, 2)
+    total_cost = round(gross + social + vacation + sick + mgmt, 2)
+    return {
+        "social_cost": social,
+        "vacation_cost": vacation,
+        "sick_cost": sick,
+        "mgmt_cost": mgmt,
+        "total_cost": total_cost,
+    }
+
+
 # ── Employee Settlement ─────────────────────────────────────────────
 
 @router.get("/employee", response_model=list[EmployeeSettlementOut])
@@ -155,11 +171,7 @@ def generate_employee_settlements(
         grade = emp.grade if emp else "P1"
 
         gross = float(row["gross_pay"] or 0)
-        social = round(gross * SOCIAL_RATE, 2)
-        vacation = round(gross * VACATION_RATE, 2)
-        sick = round(gross * SICK_RATE, 2)
-        mgmt = round(gross * MGMT_OVERHEAD, 2)
-        total_cost = round(gross + social + vacation + sick + mgmt, 2)
+        costs = _compute_costs(gross)
 
         if existing:
             existing.timesheet_count = int(row["ts_count"] or 0)
@@ -169,12 +181,9 @@ def generate_employee_settlements(
             existing.bonus_pay = round(float(row["bonus_pay"] or 0), 2)
             existing.deduction = round(float(row["deduction"] or 0), 2)
             existing.gross_pay = round(gross, 2)
-            existing.social_cost = social
-            existing.vacation_cost = vacation
-            existing.sick_cost = sick
-            existing.mgmt_cost = mgmt
-            existing.total_cost = total_cost
             existing.grade = grade
+            for k, v in costs.items():
+                setattr(existing, k, v)
         else:
             es = EmployeeSettlement(
                 settle_no=_next_es_no(db),
@@ -193,12 +202,8 @@ def generate_employee_settlements(
                 bonus_pay=round(float(row["bonus_pay"] or 0), 2),
                 deduction=round(float(row["deduction"] or 0), 2),
                 gross_pay=round(gross, 2),
-                social_cost=social,
-                vacation_cost=vacation,
-                sick_cost=sick,
-                mgmt_cost=mgmt,
-                total_cost=total_cost,
                 status="draft",
+                **costs,
             )
             db.add(es)
             created += 1

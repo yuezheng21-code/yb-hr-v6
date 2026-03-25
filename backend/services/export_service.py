@@ -33,14 +33,20 @@ def _add_header_row(ws, headers: list, row: int = 2) -> None:
 
 
 def _auto_col_width(ws) -> None:
-    """Auto-fit column widths based on content."""
+    """Auto-fit column widths based on content. Skips merged cells."""
+    from openpyxl.cell.cell import MergedCell
     for col in ws.columns:
         max_len = 0
-        col_letter = col[0].column_letter
+        col_letter = None
         for cell in col:
+            if isinstance(cell, MergedCell):
+                continue
+            if col_letter is None:
+                col_letter = cell.column_letter
             if cell.value is not None:
                 max_len = max(max_len, len(str(cell.value)))
-        ws.column_dimensions[col_letter].width = min(max_len + 4, 40)
+        if col_letter:
+            ws.column_dimensions[col_letter].width = min(max_len + 4, 40)
 
 
 def export_employee_settlements_xlsx(rows: list, period: str) -> bytes:
