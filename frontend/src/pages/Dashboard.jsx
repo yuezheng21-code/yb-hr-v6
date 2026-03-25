@@ -21,7 +21,7 @@ export default function Dashboard({ token }) {
   const stats = [
     [data.active_employees ?? 0, t('dash.employees'), 'var(--cy)', '👥'],
     [data.pending_timesheets ?? 0, t('dash.pending_ts'), 'var(--og)', '⏳'],
-    [(data.current_month_hours ?? 0) + 'h', t('dash.total_hours'), 'var(--pp)', '⏱️'],
+    [(data.current_month_hours ?? 0).toFixed(1) + 'h', t('dash.total_hours'), 'var(--pp)', '⏱️'],
     [data.total_suppliers ?? 0, t('nav.suppliers'), 'var(--gn)', '🏢'],
     [data.total_warehouses ?? 0, t('nav.warehouse_rates'), 'var(--ac)', '🏭'],
   ];

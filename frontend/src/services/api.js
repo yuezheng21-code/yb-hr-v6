@@ -4,6 +4,13 @@
 
 let _sessionExpired = false;
 
+function clearAllAuthKeys() {
+  localStorage.removeItem('hr7_token');
+  localStorage.removeItem('hr7_user');
+  localStorage.removeItem('hr6_token');
+  localStorage.removeItem('hr6_user');
+}
+
 export async function api(path, { method = 'GET', body, token } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = 'Bearer ' + token;
@@ -17,10 +24,7 @@ export async function api(path, { method = 'GET', body, token } = {}) {
   if (!res.ok) {
     if (res.status === 401 && token && !_sessionExpired) {
       _sessionExpired = true;
-      localStorage.removeItem('hr7_token');
-      localStorage.removeItem('hr7_user');
-      localStorage.removeItem('hr6_token');
-      localStorage.removeItem('hr6_user');
+      clearAllAuthKeys();
       window.location.reload();
       return;
     }
@@ -76,8 +80,7 @@ export function pollHealth(onReady, onStatus) {
       } else if (res.status === 503) {
         const json = await res.json().catch(() => ({}));
         onStatus(json.status || 'initializing');
-        localStorage.removeItem('hr7_token');
-        localStorage.removeItem('hr7_user');
+        clearAllAuthKeys();
         setTimeout(check, INTERVAL);
       } else {
         onReady();
