@@ -5,5 +5,10 @@ from backend.models.warehouse import Warehouse
 from backend.models.timesheet import Timesheet
 from backend.models.container import ContainerRecord
 from backend.models.clock import ClockEvent
+from backend.models.settlement import EmployeeSettlement, SupplierSettlement, ProjectSettlement
 
-__all__ = ["User", "Employee", "Supplier", "Warehouse", "Timesheet", "ContainerRecord", "ClockEvent"]
+__all__ = [
+    "User", "Employee", "Supplier", "Warehouse",
+    "Timesheet", "ContainerRecord", "ClockEvent",
+    "EmployeeSettlement", "SupplierSettlement", "ProjectSettlement",
+]

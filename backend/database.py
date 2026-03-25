@@ -50,7 +50,7 @@ def get_db() -> Generator[Session, None, None]:
 
 def init_db() -> None:
     """Create all tables (if not exist). Called at startup."""
-    from backend.models import user, employee, supplier, warehouse, timesheet, container, clock  # noqa: F401
+    from backend.models import user, employee, supplier, warehouse, timesheet, container, clock, settlement  # noqa: F401
     Base.metadata.create_all(bind=engine)
 
 
