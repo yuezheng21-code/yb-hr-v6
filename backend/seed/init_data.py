@@ -48,13 +48,15 @@ WAREHOUSES = [
 
 
 def run_seed(db: Session) -> None:
-    # Seed users
+    # Seed users — always reset password_hash and is_active so that the
+    # credentials listed in the guide always work (mirrors V6 behaviour).
     for u in USERS:
+        pw_hash = _hash(u["password"])
         existing = db.scalar(select(User).where(User.username == u["username"]))
         if existing is None:
             user = User(
                 username=u["username"],
-                password_hash=_hash(u["password"]),
+                password_hash=pw_hash,
                 display_name=u["display_name"],
                 role=u["role"],
                 bound_warehouse=u.get("bound_warehouse"),
@@ -62,6 +64,7 @@ def run_seed(db: Session) -> None:
             )
             db.add(user)
         else:
+            existing.password_hash = pw_hash
             existing.is_active = True
             if u.get("pin") and not existing.pin:
                 existing.pin = u["pin"]
