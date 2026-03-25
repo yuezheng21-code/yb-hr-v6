@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { api, downloadCsv } from '../services/api.js';
+import { api } from '../services/api.js';
 import { useLang } from '../context/LangContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
-import { StatusBadge, fmt } from '../components/StatusBadge.jsx';
+import { StatusBadge } from '../components/StatusBadge.jsx';
 
 export default function Timesheets({ token, user }) {
   const [ts, setTS] = useState([]);
@@ -26,19 +26,19 @@ export default function Timesheets({ token, user }) {
 
   const load = () => {
     setLoading(true);
-    api(`/api/timesheets?status=${encodeURIComponent(filterStatus)}`, { token })
+    api(`/api/v1/timesheets?status=${encodeURIComponent(filterStatus)}`, { token })
       .then(setTS)
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     load();
-    api('/api/employees?status=在职', { token }).then(setEmps);
+    api('/api/v1/employees?status=active', { token }).then(setEmps);
   }, [filterStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const approve = async (id) => {
     try {
-      await api(`/api/timesheets/${id}/approve`, { method:'PUT', token });
+      await api(`/api/v1/timesheets/${id}/approve`, { method:'PUT', token });
       load();
       showToast('审批成功');
     } catch (e) { showToast(e.message, 'err'); }
@@ -46,7 +46,7 @@ export default function Timesheets({ token, user }) {
 
   const addTS = async () => {
     try {
-      await api('/api/timesheets', { method:'POST', body:form, token });
+      await api('/api/v1/timesheets', { method:'POST', body:form, token });
       setAddModal(false);
       load();
       showToast('工时已录入');
@@ -55,17 +55,17 @@ export default function Timesheets({ token, user }) {
 
   const batchApprove = async (ids) => {
     try {
-      await api('/api/timesheets/batch-approve', { method:'PUT', body:{ ids }, token });
+      await api('/api/v1/timesheets/batch-approve', { method:'POST', body:{ ids }, token });
       load();
       showToast(`已批量审批 ${ids.length} 条`);
     } catch (e) { showToast(e.message, 'err'); }
   };
 
-  const pending = ts.filter(r => r.status === '待仓库审批' || r.status === '待财务确认');
+  const pending = ts.filter(r => r.approval_status === 'wh_pending' || r.approval_status === 'fin_pending');
 
   const statusFilters = [
-    ['', 'c.all'], ['待仓库审批','待仓库审批'], ['待财务确认','待财务确认'],
-    ['已入账','已入账'], ['驳回','驳回'],
+    ['', 'c.all'], ['draft','draft'], ['wh_pending','wh_pending'],
+    ['fin_pending','fin_pending'], ['booked','booked'], ['rejected','rejected'],
   ];
 
   return (
@@ -82,12 +82,6 @@ export default function Timesheets({ token, user }) {
               {t('ts.batch')} ({pending.length})
             </button>
           )}
-          <button className="b bgh" onClick={() => {
-            const qs = filterStatus ? `?status=${encodeURIComponent(filterStatus)}` : '';
-            downloadCsv(`/api/timesheets/export${qs}`, token,
-              `timesheets${filterStatus ? '_' + filterStatus : ''}.csv`)
-              .catch(e => showToast(e.message, 'err'));
-          }}>↓ CSV</button>
           <button className="b bga" onClick={() => setAddModal(true)}>{t('ts.add')}</button>
         </div>
       </div>
@@ -103,28 +97,28 @@ export default function Timesheets({ token, user }) {
           </tr></thead>
           <tbody>{ts.map(row => (
             <tr key={row.id}>
-              <td className="mn tm">{row.id?.slice(-10)}</td>
-              <td className="fw6">{row.employee_name}</td>
-              <td style={{ color:'var(--pp)',fontWeight:600 }}>{row.grade||'—'}</td>
+              <td className="mn tm">{row.ts_no}</td>
+              <td className="fw6">{row.emp_name}</td>
+              <td style={{ color:'var(--pp)',fontWeight:600 }}>{row.biz_line||'—'}</td>
               <td>{row.warehouse_code}</td>
               <td>{row.work_date}</td>
               <td>
-                <span style={{ color: row.shift==='夜班'?'var(--pp)':row.shift==='周末'?'var(--og)':row.shift==='节假日'?'var(--rd)':'var(--tx3)', fontSize:10 }}>
-                  {row.shift||'白班'}
+                <span style={{ color: row.settlement_type==='container'?'var(--pp)':row.settlement_type==='piece'?'var(--og)':'var(--tx3)', fontSize:10 }}>
+                  {row.settlement_type||'hourly'}
                 </span>
               </td>
               <td className="mn fw6">{row.hours}h</td>
-              <td className="mn tm">€{fmt(row.base_rate)}</td>
-              <td className="mn" style={{ color: row.shift_bonus>0?'var(--og)':'var(--tx3)' }}>+€{fmt(row.shift_bonus)}</td>
-              <td className="mn fw6" style={{ color:'var(--ac2)' }}>€{fmt(row.effective_rate)}</td>
-              <td className="mn">€{fmt(row.gross_pay)}</td>
-              <td className="mn" style={{ color: row.perf_bonus>0?'var(--gn)':'var(--tx3)' }}>+€{fmt(row.perf_bonus)}</td>
-              <td className="mn gn">€{fmt(row.net_pay)}</td>
-              <td><StatusBadge value={row.status} /></td>
+              <td className="mn tm">€{(row.base_rate||0).toFixed(2)}</td>
+              <td className="mn" style={{ color: row.amount_bonus>0?'var(--og)':'var(--tx3)' }}>+€{(row.amount_bonus||0).toFixed(2)}</td>
+              <td className="mn fw6" style={{ color:'var(--ac2)' }}>€{(row.amount_hourly||0).toFixed(2)}</td>
+              <td className="mn">€{(row.amount_total||0).toFixed(2)}</td>
+              <td className="mn" style={{ color: row.amount_kpi>0?'var(--gn)':'var(--tx3)' }}>+€{(row.amount_kpi||0).toFixed(2)}</td>
+              <td className="mn gn">€{(row.amount_total||0).toFixed(2)}</td>
+              <td><StatusBadge value={row.approval_status} /></td>
               <td>
-                {row.status === '待仓库审批' && canApproveWH
+                {row.approval_status === 'wh_pending' && canApproveWH
                   ? <button className="b bgn" style={{ fontSize:9 }} onClick={() => approve(row.id)}>{t('ts.wh_approve')}</button>
-                  : row.status === '待财务确认' && canApproveFin
+                  : row.approval_status === 'fin_pending' && canApproveFin
                   ? <button className="b bga" style={{ fontSize:9 }} onClick={() => approve(row.id)}>{t('ts.fin_approve')}</button>
                   : <span className="tm" style={{ fontSize:9 }}>—</span>
                 }

@@ -131,12 +131,18 @@ from backend.routers import employees as employees_v7
 from backend.routers import suppliers as suppliers_v7
 from backend.routers import warehouses as warehouses_v7
 from backend.routers import dashboard as dashboard_v7
+from backend.routers import timesheets as timesheets_v7
+from backend.routers import containers as containers_v7
+from backend.routers import clock as clock_v7
 
 app.include_router(auth_v7.router)
 app.include_router(employees_v7.router)
 app.include_router(suppliers_v7.router)
 app.include_router(warehouses_v7.router)
 app.include_router(dashboard_v7.router)
+app.include_router(timesheets_v7.router)
+app.include_router(containers_v7.router)
+app.include_router(clock_v7.router)
 
 # ── Static files + catch-all ─────────────────────────────────────────
 _REPO_ROOT = os.path.dirname(os.path.dirname(__file__))

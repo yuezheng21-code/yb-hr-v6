@@ -2,5 +2,8 @@ from backend.models.user import User
 from backend.models.employee import Employee
 from backend.models.supplier import Supplier
 from backend.models.warehouse import Warehouse
+from backend.models.timesheet import Timesheet
+from backend.models.container import ContainerRecord
+from backend.models.clock import ClockEvent
 
-__all__ = ["User", "Employee", "Supplier", "Warehouse"]
+__all__ = ["User", "Employee", "Supplier", "Warehouse", "Timesheet", "ContainerRecord", "ClockEvent"]

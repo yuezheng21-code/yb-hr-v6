@@ -24,25 +24,26 @@ export default function Containers({ token, user }) {
 
   const load = () => {
     setLoading(true);
-    api('/api/containers', { token }).then(setContainers).finally(() => setLoading(false));
+    api('/api/v1/containers', { token }).then(setContainers).finally(() => setLoading(false));
   };
 
   useEffect(() => {
     load();
-    api('/api/employees?status=在职', { token }).then(setEmps);
+    api('/api/v1/employees?status=active', { token }).then(setEmps);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addContainer = async () => {
     if (!form.container_no) { showToast('请填写柜号', 'err'); return; }
     try {
-      await api('/api/containers', { method:'POST', body:form, token });
+      const payload = { ...form, worker_ids: JSON.stringify(form.worker_ids) };
+      await api('/api/v1/containers', { method:'POST', body:payload, token });
       setAddModal(false); load(); showToast('卸柜记录已创建');
     } catch (e) { showToast(e.message, 'err'); }
   };
 
   const completeContainer = async () => {
     try {
-      await api(`/api/containers/${completeModal}/complete`, {
+      await api(`/api/v1/containers/${completeModal}/approve`, {
         method:'PUT', body:completeForm, token,
       });
       setCompleteModal(null); load(); showToast('已标记完成');
@@ -83,9 +84,9 @@ export default function Containers({ token, user }) {
               <td className="mn">{c.total_hours ? c.total_hours+'h' : '—'}</td>
               <td className="mn">{c.worker_count || 0}</td>
               <td>{c.video_recorded ? '✅' : '—'}</td>
-              <td><StatusBadge value={c.status} /></td>
+              <td><StatusBadge value={c.approval_status} /></td>
               <td>
-                {c.status === '进行中' && canEdit && (
+                {c.approval_status === 'pending' && canEdit && (
                   <button className="b bgn" style={{ fontSize:9 }}
                     onClick={() => { setCompleteModal(c.id); setCompleteForm({ end_time:'', video_recorded:true }); }}>
                     {t('ct.complete')}
