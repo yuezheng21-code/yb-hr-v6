@@ -76,7 +76,16 @@ export function pollHealth(onReady, onStatus) {
       const res = await fetch('/health');
       if (cancelled) return;
       if (res.ok) {
-        onReady();
+        const json = await res.json().catch(() => ({}));
+        // V7 backend always returns 200 but sets db_ready:false while the DB
+        // background-init thread is still running.  Only mark the frontend as
+        // ready once the database is actually up.
+        if (json.db_ready !== false) {
+          onReady();
+        } else {
+          onStatus(json.db_status || 'starting');
+          setTimeout(check, INTERVAL);
+        }
       } else if (res.status === 503) {
         const json = await res.json().catch(() => ({}));
         onStatus(json.status || 'initializing');

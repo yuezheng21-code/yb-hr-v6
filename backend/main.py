@@ -169,19 +169,15 @@ app.include_router(integrations_v7.router)
 # ── Static files + catch-all ─────────────────────────────────────────
 _REPO_ROOT = os.path.dirname(os.path.dirname(__file__))
 _DIST_DIR = os.path.join(_REPO_ROOT, "frontend", "dist")
-_LEGACY_DIR = os.path.join(_REPO_ROOT, "static")
 
-STATIC_DIR = _DIST_DIR if os.path.isdir(_DIST_DIR) else _LEGACY_DIR
-os.makedirs(STATIC_DIR, exist_ok=True)
-_ASSETS_DIR = os.path.join(STATIC_DIR, "assets")
-app.mount("/assets", StaticFiles(directory=_ASSETS_DIR if os.path.isdir(_ASSETS_DIR) else STATIC_DIR), name="assets")
-if os.path.isdir(_LEGACY_DIR):
-    app.mount("/static", StaticFiles(directory=_LEGACY_DIR), name="static")
+os.makedirs(_DIST_DIR, exist_ok=True)
+_ASSETS_DIR = os.path.join(_DIST_DIR, "assets")
+app.mount("/assets", StaticFiles(directory=_ASSETS_DIR if os.path.isdir(_ASSETS_DIR) else _DIST_DIR), name="assets")
 
 
 @app.get("/{full_path:path}")
 def catch_all(full_path: str):
-    index = os.path.join(STATIC_DIR, "index.html")
+    index = os.path.join(_DIST_DIR, "index.html")
     if os.path.exists(index):
         return FileResponse(index)
     return JSONResponse({"status": "ok", "version": "7.0.0"})
