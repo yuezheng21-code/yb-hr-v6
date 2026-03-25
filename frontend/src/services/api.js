@@ -110,6 +110,7 @@ export function pollHealth(onReady, onError) {
   let attempts = 0;
   const MAX = 120;
   const INTERVAL = 3000;
+  let timer;
 
   const check = async () => {
     try {
@@ -130,6 +131,6 @@ export function pollHealth(onReady, onError) {
     }
   };
 
-  let timer = setTimeout(check, 500);
+  timer = setTimeout(check, 500);
   return () => clearTimeout(timer);
 }
