@@ -25,5 +25,6 @@ export const NAV_ITEMS = [
   { key: 'logs',            icon: '📝', labelKey: 'nav.logs',             roles: ['admin','hr'] },
   { sep: true },
   { key: 'messages',        icon: '✉️', labelKey: 'nav.messages',         roles: ['admin','hr','wh','fin','mgr','sup','worker'] },
+  { key: 'integrations',    icon: '🔗', labelKey: 'nav.integrations',     roles: ['admin'] },
   { key: 'admin',           icon: '🔧', labelKey: 'nav.admin',            roles: ['admin'] },
 ];
