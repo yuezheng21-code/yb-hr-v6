@@ -17,7 +17,7 @@ _db_lock = threading.Lock()
 _db_ready = False
 _db_error: str = ""
 _db_status: str = "starting"
-_MAX_DB_ATTEMPTS = 30
+_MAX_DB_ATTEMPTS = 40  # 40 × (5s connect_timeout + 5s sleep) ≈ 400s max DB wait
 
 
 def _init_db_background():
@@ -32,13 +32,13 @@ def _init_db_background():
                 _db_status = "waiting_for_database"
             for attempt in range(_MAX_DB_ATTEMPTS):
                 try:
-                    conn = psycopg2.connect(url, connect_timeout=10)
+                    conn = psycopg2.connect(url, connect_timeout=5)
                     conn.close()
                     print(f"✅ Database reachable (attempt {attempt + 1})")
                     break
                 except Exception as exc:
                     print(f"⚠  DB not ready (attempt {attempt + 1}/{_MAX_DB_ATTEMPTS}): {exc}")
-                    time.sleep(8)
+                    time.sleep(5)
             else:
                 with _db_lock:
                     _db_error = "Database unavailable after attempts"
@@ -123,8 +123,9 @@ def health():
         "version": "7.0.0",
         "time": datetime.now().isoformat(),
     }
-    if not ready:
-        return JSONResponse(status_code=503, headers={"Retry-After": "5"}, content=body)
+    # Always return 200 so Railway marks the deployment healthy as soon as
+    # uvicorn is accepting connections.  The db_readiness_gate middleware
+    # still blocks /api/* calls with 503 + Retry-After until _db_ready is True.
     return body
 
 
