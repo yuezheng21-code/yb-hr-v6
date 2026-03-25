@@ -29,7 +29,8 @@ import Integrations from './pages/Integrations.jsx';
 const PATH_TO_KEY = {
   '/': 'dashboard', '/employees': 'employees', '/timesheets': 'timesheets',
   '/schedules': 'schedules', '/clock': 'clock', '/settlements': 'settlements',
-  '/containers': 'containers', '/quotations': 'quotations', '/referrals': 'referrals',
+  '/containers': 'containers', '/quotations': 'quotations', '/cost-calc': 'cost_calc',
+  '/referrals': 'referrals',
   '/commissions': 'commissions', '/suppliers': 'suppliers', '/warehouses': 'warehouses',
   '/logs': 'logs', '/dispatch': 'dispatch', '/talent': 'talent',
   '/recruit': 'recruit', '/messages': 'messages', '/integrations': 'integrations', '/admin': 'admin',
@@ -101,6 +102,7 @@ export default function App() {
         <Route path="/settlements" element={<ProtectedRoute><Settlements {...props} /></ProtectedRoute>} />
         <Route path="/containers" element={<ProtectedRoute><Containers {...props} /></ProtectedRoute>} />
         <Route path="/quotations" element={<ProtectedRoute><Quotations {...props} /></ProtectedRoute>} />
+        <Route path="/cost-calc" element={<ProtectedRoute><Quotations {...props} /></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute><Referrals {...props} /></ProtectedRoute>} />
         <Route path="/commissions" element={<ProtectedRoute><Commissions {...props} /></ProtectedRoute>} />
         <Route path="/suppliers" element={<ProtectedRoute><Suppliers {...props} /></ProtectedRoute>} />
