@@ -51,6 +51,10 @@ class LoginIn(BaseModel):
     password: str
 
 
+class PinLoginIn(BaseModel):
+    pin: str
+
+
 class ChangePasswordIn(BaseModel):
     old_password: str
     new_password: str

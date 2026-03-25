@@ -19,6 +19,7 @@ class User(Base):
     bound_supplier_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("suppliers.id"), nullable=True)
     bound_warehouse: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     bound_biz_line: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    pin: Mapped[Optional[str]] = mapped_column(String(4), nullable=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())
     last_login: Mapped[Optional[datetime]] = mapped_column(nullable=True)
