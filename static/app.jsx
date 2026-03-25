@@ -636,7 +636,7 @@ function Login({onLogin}) {
       <div style={{position:'absolute',top:16,right:16}}><LangSwitcher/></div>
       <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:24}}>
         <div className="sb-logo" style={{width:44,height:44,fontSize:20}}>渊</div>
-        <div><div style={{fontSize:18,fontWeight:700}}>{t('login.title')}</div><div style={{fontSize:10,color:'var(--tx3)',letterSpacing:2}}>V6 · Warehouse Management</div></div>
+        <div><div style={{fontSize:18,fontWeight:700}}>{t('login.title')}</div><div style={{fontSize:10,color:'var(--tx3)',letterSpacing:2}}>V7 · Warehouse Management</div></div>
       </div>
       <div className="tb" style={{marginBottom:20,width:'100%'}}>
         <button className={`tbn ${mode==='admin'?'on':''}`} style={{flex:1}} onClick={()=>setMode('admin')}>{t('login.admin')}</button>
@@ -2745,7 +2745,7 @@ function App() {
   const sidebar = <>
     <div className="sb-hd">
       <div className="sb-logo">渊</div>
-      <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V6 · LIVE</div></div>
+      <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V7 · LIVE</div></div>
     </div>
     <div className="nav">
       {navItems.map((n,i)=>n.sep?<div key={i} className="nsep"/>:<button key={n.k} className={`ni ${page===n.k?'on':''}`} onClick={()=>go(n.k)}><span className="ni-i">{n.i}</span><span>{t(n.labelKey)}</span></button>)}

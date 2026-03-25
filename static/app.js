@@ -1786,7 +1786,7 @@ function Login(_ref5) {
       color: 'var(--tx3)',
       letterSpacing: 2
     }
-  }, "V6 \xB7 Warehouse Management"))), /*#__PURE__*/React.createElement("div", {
+  }, "V7 \xB7 Warehouse Management"))), /*#__PURE__*/React.createElement("div", {
     className: "tb",
     style: {
       marginBottom: 20,
@@ -7371,7 +7371,7 @@ function App() {
     className: "sb-t"
   }, "\u6E0A\u535A+579"), /*#__PURE__*/React.createElement("div", {
     className: "sb-s"
-  }, "HR V6 \xB7 LIVE"))), /*#__PURE__*/React.createElement("div", {
+  }, "HR V7 \xB7 LIVE"))), /*#__PURE__*/React.createElement("div", {
     className: "nav"
   }, navItems.map(function (n, i) {
     return n.sep ? /*#__PURE__*/React.createElement("div", {

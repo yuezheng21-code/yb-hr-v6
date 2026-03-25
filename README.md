@@ -1,4 +1,4 @@
-# 渊博+579 HR V6
+# 渊博+579 HR V7
 
 完整的人力派遣管理系统 — FastAPI 后端 + React 前端，支持 Railway / Docker 一键部署。
 
@@ -35,7 +35,7 @@
 
 在 Railway → Variables 中设置：
 ```
-DB_PATH=/app/data/hr_v6.db    # 数据库路径（默认当前目录）
+DB_PATH=/app/data/hr_v7.db    # 数据库路径（默认当前目录）
 PORT=8000                      # 端口（Railway自动设置）
 ```
 
@@ -45,8 +45,8 @@ PORT=8000                      # 端口（Railway自动设置）
 
 ```bash
 # 构建并启动
-docker build -t hr-v6 .
-docker run -d -p 8000:8000 -v $(pwd)/data:/app/data hr-v6
+docker build -t hr-v7 .
+docker run -d -p 8000:8000 -v $(pwd)/data:/app/data hr-v7
 
 # 访问
 open http://localhost:8000
@@ -126,7 +126,7 @@ npm run build        # 输出到 frontend/dist/
 ## 项目结构
 
 ```
-hr-v6/
+hr-v7/
 ├── frontend/                    # ★ React + Vite 前端（主实现）
 │   ├── index.html               # HTML 入口（含完整 CSS 主题）
 │   ├── vite.config.js           # Vite 配置（/api 代理 → 后端 8000）

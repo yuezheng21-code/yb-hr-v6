@@ -1,5 +1,5 @@
 /**
- * Internationalization (i18n) for YB-HR-V6
+ * Internationalization (i18n) for YB-HR-V7
  * Supported languages: zh (Chinese), en (English), de (German), ar (Arabic), hu (Hungarian), vi (Vietnamese)
  */
 
