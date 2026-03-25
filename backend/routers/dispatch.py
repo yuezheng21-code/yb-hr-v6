@@ -350,3 +350,48 @@ def _talent_dict(t: TalentPool) -> dict:
         "created_at": t.created_at.isoformat() if t.created_at else None,
         "updated_at": t.updated_at.isoformat() if t.updated_at else None,
     }
+
+
+# ─── Compliance Check ─────────────────────────────────────────────────────────
+
+@dispatch_router.post("/compliance-check")
+def compliance_check(
+    body: dict = Body(...),
+    user: User = Depends(get_current_user),
+):
+    """
+    ArbZG compliance check for a given employee's timesheet list.
+
+    Body:
+    {
+        "timesheets": [
+            {"date": "YYYY-MM-DD", "hours": 8.5, "start_time": "07:00", "end_time": "15:30"},
+            ...
+        ],
+        "employee_id": 42,               // optional
+        "zeitkonto_balance": 35.0        // optional
+    }
+    """
+    from backend.services import compliance as cpl
+    if user.role not in {"admin", "hr", "mgr", "fin"}:
+        raise HTTPException(403, "Forbidden")
+    timesheets = body.get("timesheets", [])
+    if not isinstance(timesheets, list):
+        raise HTTPException(400, "timesheets must be a list")
+    employee_id = body.get("employee_id")
+    zeitkonto_balance = body.get("zeitkonto_balance")
+    result = cpl.audit_employee_timesheet(
+        timesheets=timesheets,
+        employee_id=employee_id,
+        zeitkonto_balance=zeitkonto_balance,
+    )
+    return result
+
+
+@dispatch_router.get("/arbzg-rules")
+def arbzg_rules(user: User = Depends(get_current_user)):
+    """Return current ArbZG thresholds and Zeitkonto limits."""
+    if user.role not in {"admin", "hr", "mgr", "fin"}:
+        raise HTTPException(403, "Forbidden")
+    from backend.services.compliance import ARBZG, ZEITKONTO
+    return {"arbzg": ARBZG, "zeitkonto": ZEITKONTO}

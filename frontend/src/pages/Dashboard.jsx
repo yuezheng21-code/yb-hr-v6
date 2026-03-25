@@ -13,6 +13,7 @@ export default function Dashboard({ token, user }) {
   const [margin, setMargin] = useState(null);
   const [referralSummary, setReferralSummary] = useState(null);
   const [commissionSummary, setCommissionSummary] = useState(null);
+  const [dispatchSummary, setDispatchSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const { t } = useLang();
 
@@ -23,8 +24,9 @@ export default function Dashboard({ token, user }) {
       api('/api/v1/dashboard/margin-analysis?months=' + MARGIN_ANALYSIS_MONTHS, { token }),
       api('/api/v1/dashboard/referral-summary', { token }),
       api('/api/v1/dashboard/commission-summary', { token }),
+      api('/api/v1/dashboard/dispatch-summary', { token }).catch(() => null),
     ])
-      .then(([s, c, m, r, com]) => { setStats(s); setCharts(c); setMargin(m); setReferralSummary(r); setCommissionSummary(com); })
+      .then(([s, c, m, r, com, dis]) => { setStats(s); setCharts(c); setMargin(m); setReferralSummary(r); setCommissionSummary(com); setDispatchSummary(dis); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [token]);
@@ -185,6 +187,62 @@ export default function Dashboard({ token, user }) {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Dispatch & Talent Summary */}
+      {dispatchSummary && (
+        <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>🚚 派遣需求 & 人才储备</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            {/* Demand stats */}
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--tx3)', marginBottom: 8, fontWeight: 600 }}>需求漏斗</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                {[
+                  ['open', '招募中', '#3b82f6'],
+                  ['recruiting', '招聘中', '#f59e0b'],
+                  ['filled', '已满员', '#10b981'],
+                  ['closed', '已关闭', '#94a3b8'],
+                ].map(([k, label, color]) => (
+                  dispatchSummary.demand_by_status?.[k] ? (
+                    <div key={k} style={{ background: color + '18', border: `1px solid ${color}44`, borderRadius: 6, padding: '4px 10px', textAlign: 'center' }}>
+                      <div style={{ fontWeight: 700, fontSize: 16, color }}>{dispatchSummary.demand_by_status[k]}</div>
+                      <div style={{ fontSize: 9, color: 'var(--tx3)' }}>{label}</div>
+                    </div>
+                  ) : null
+                ))}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--tx3)', display: 'flex', gap: 12 }}>
+                <span>需求人数 <span style={{ color: 'var(--ac)', fontWeight: 600 }}>{dispatchSummary.open_headcount}</span></span>
+                <span>已匹配 <span style={{ color: 'var(--gn)', fontWeight: 600 }}>{dispatchSummary.matched_count}</span></span>
+                <span>填满率 <span style={{ color: dispatchSummary.fill_rate >= 80 ? 'var(--gn)' : 'var(--og)', fontWeight: 600 }}>{dispatchSummary.fill_rate}%</span></span>
+              </div>
+            </div>
+            {/* Talent funnel */}
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--tx3)', marginBottom: 8, fontWeight: 600 }}>人才储备 (共 {dispatchSummary.talent_total} 人)</div>
+              <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                {[
+                  ['available', '待联系', '#10b981'],
+                  ['contacted', '已联系', '#3b82f6'],
+                  ['interviewing', '面试中', '#f59e0b'],
+                  ['hired', '已录用', '#8b5cf6'],
+                ].map(([k, label, color], idx, arr) => {
+                  const count = dispatchSummary.talent_by_status?.[k] || 0;
+                  return (
+                    <div key={k} style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{ background: color + '18', border: `1px solid ${color}44`, borderRadius: 6, padding: '4px 8px', textAlign: 'center', minWidth: 48 }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, color }}>{count}</div>
+                        <div style={{ fontSize: 9, color: 'var(--tx3)' }}>{label}</div>
+                      </div>
+                      {idx < arr.length - 1 && <span style={{ color: 'var(--tx3)', margin: '0 2px', fontSize: 12 }}>›</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

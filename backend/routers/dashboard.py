@@ -241,3 +241,45 @@ def commission_summary(user: User = Depends(get_current_user), db: Session = Dep
         "total_pending": round(float(total_pending), 2),
         "tier_breakdown": tier_counts,
     }
+
+
+@router.get("/dispatch-summary")
+def dispatch_summary(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Dispatch demand + talent funnel summary for dashboard."""
+    from backend.models.dispatch import DispatchDemand, TalentPool
+    if user.role not in {"admin", "hr", "mgr", "fin"}:
+        from fastapi import HTTPException
+        raise HTTPException(403, "Forbidden")
+
+    # Demand stats
+    demand_status = db.execute(
+        select(DispatchDemand.status, func.count(DispatchDemand.id).label("cnt"))
+        .group_by(DispatchDemand.status)
+    ).all()
+    by_status = {r.status: r.cnt for r in demand_status}
+    open_hc = db.scalar(
+        select(func.coalesce(func.sum(DispatchDemand.headcount), 0))
+        .where(DispatchDemand.status.in_(["open", "recruiting"]))
+    ) or 0
+    matched = db.scalar(
+        select(func.coalesce(func.sum(DispatchDemand.matched_count), 0))
+        .where(DispatchDemand.status.in_(["open", "recruiting", "filled"]))
+    ) or 0
+    fill_rate = round(matched / open_hc * 100, 1) if open_hc > 0 else 0.0
+
+    # Talent funnel
+    talent_status = db.execute(
+        select(TalentPool.pool_status, func.count(TalentPool.id).label("cnt"))
+        .group_by(TalentPool.pool_status)
+    ).all()
+    talent_by_status = {r.pool_status: r.cnt for r in talent_status}
+    total_talent = sum(r.cnt for r in talent_status)
+
+    return {
+        "demand_by_status": by_status,
+        "open_headcount": int(open_hc),
+        "matched_count": int(matched),
+        "fill_rate": fill_rate,
+        "talent_total": total_talent,
+        "talent_by_status": talent_by_status,
+    }
