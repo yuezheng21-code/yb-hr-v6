@@ -21,6 +21,7 @@ import WarehouseRates from './pages/WarehouseRates.jsx';
 import AuditLogs from './pages/AuditLogs.jsx';
 import Dispatch from './pages/Dispatch.jsx';
 import Talent from './pages/Talent.jsx';
+import Recruit from './pages/Recruit.jsx';
 import Messages from './pages/Messages.jsx';
 import Admin from './pages/Admin.jsx';
 import Integrations from './pages/Integrations.jsx';
@@ -31,6 +32,7 @@ function PageContent({ page, token, user }) {
   const props = { token, user };
   switch (page) {
     case 'dashboard':      return <Dashboard {...props} />;
+    case 'employees':      return <Attendance {...props} />;
     case 'attendance':     return <Attendance {...props} />;
     case 'timesheets':     return <Timesheets {...props} />;
     case 'schedules':      return <Schedules {...props} />;
@@ -41,11 +43,13 @@ function PageContent({ page, token, user }) {
     case 'referrals':      return <Referrals {...props} />;
     case 'commissions':    return <Commissions {...props} />;
     case 'suppliers':      return <Suppliers {...props} />;
+    case 'warehouses':     return <WarehouseRates {...props} />;
     case 'warehouse_rates':return <WarehouseRates {...props} />;
     case 'logs':           return <AuditLogs {...props} />;
     case 'cost_calc':      return <Commissions {...props} />;
     case 'dispatch':       return <Dispatch {...props} />;
     case 'talent':         return <Talent {...props} />;
+    case 'recruit':        return <Recruit {...props} />;
     case 'messages':       return <Messages {...props} />;
     case 'integrations':   return <Integrations {...props} />;
     case 'admin':          return <Admin {...props} />;
