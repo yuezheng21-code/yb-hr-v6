@@ -1,4 +1,4 @@
-# 渊博+579 HR V6
+# 渊博+579 HR V7
 
 完整的人力派遣管理系统 — FastAPI 后端 + React 前端，支持 Railway / Docker 一键部署。
 
@@ -35,7 +35,7 @@
 
 在 Railway → Variables 中设置：
 ```
-DB_PATH=/app/data/hr_v6.db    # 数据库路径（默认当前目录）
+DB_PATH=/app/data/hr_v7.db    # 数据库路径（默认当前目录）
 PORT=8000                      # 端口（Railway自动设置）
 ```
 
@@ -45,8 +45,8 @@ PORT=8000                      # 端口（Railway自动设置）
 
 ```bash
 # 构建并启动
-docker build -t hr-v6 .
-docker run -d -p 8000:8000 -v $(pwd)/data:/app/data hr-v6
+docker build -t hr-v7 .
+docker run -d -p 8000:8000 -v $(pwd)/data:/app/data hr-v7
 
 # 访问
 open http://localhost:8000
@@ -105,17 +105,25 @@ npm run build        # 输出到 frontend/dist/
 
 ## 默认账号
 
-| 用户名 | 密码 | 角色 | 权限 |
-|--------|------|------|------|
-| admin | admin123 | 管理员 | 全部 |
-| hr | hr123 | HR经理 | 员工/工时/Abmahnung/Werkvertrag |
-| wh_una | una123 | 仓库(UNA) | 仓库相关 |
-| finance | fin123 | 财务 | 工时审批/结算 |
-| mgr579 | 579pass | 579经理 | 579业务线 |
-| sup001 | sup123 | 供应商 | 仅自己的员工 |
-| worker | w123 | 工人 | 打卡（或用PIN）|
+### 管理后台（用户名 + 密码）
 
-工人PIN: 1001(张三) 1002(李四) 1003(王五) 1004(阮氏花)
+| 用户名 | 密码 | 角色 | 权限说明 |
+|--------|------|------|---------|
+| admin | admin123 | 管理员 | 全部功能 |
+| hr | hr123 | HR经理 | 员工/工时/报价/派遣管理 |
+| finance | fin123 | 财务 | 工时审批/月度结算 |
+| wh_una | una123 | 仓库管理(UNA) | UNA仓库相关操作 |
+| sup001 | sup123 | 供应商 | 仅查看自己名下员工 |
+| mgr | mgr123 | 运营经理 | 运营数据查看 |
+| worker01 | worker123 | 工人 | 打卡入口（也可用PIN登录）|
+
+### 工人打卡（PIN 登录）
+
+| PIN | 对应账号 | 姓名 |
+|-----|---------|------|
+| 1001 | worker01 | 张三 |
+
+> **提示**：登录页面底部显示所有测试账号，可直接复制使用。
 
 ---
 
@@ -126,7 +134,7 @@ npm run build        # 输出到 frontend/dist/
 ## 项目结构
 
 ```
-hr-v6/
+hr-v7/
 ├── frontend/                    # ★ React + Vite 前端（主实现）
 │   ├── index.html               # HTML 入口（含完整 CSS 主题）
 │   ├── vite.config.js           # Vite 配置（/api 代理 → 后端 8000）

@@ -22,7 +22,7 @@ USERS = [
     {"username": "wh_una",   "password": "una123",    "display_name": "UNA仓管李强",   "role": "wh",  "bound_warehouse": "UNA"},
     {"username": "sup001",   "password": "sup123",    "display_name": "德信负责人",    "role": "sup"},
     {"username": "mgr",      "password": "mgr123",    "display_name": "运营经理陈杰",  "role": "mgr"},
-    {"username": "worker01", "password": "worker123", "display_name": "张三",          "role": "worker"},
+    {"username": "worker01", "password": "worker123", "display_name": "张三",          "role": "worker", "pin": "1001"},
 ]
 
 SUPPLIERS = [
@@ -58,10 +58,13 @@ def run_seed(db: Session) -> None:
                 display_name=u["display_name"],
                 role=u["role"],
                 bound_warehouse=u.get("bound_warehouse"),
+                pin=u.get("pin"),
             )
             db.add(user)
         else:
             existing.is_active = True
+            if u.get("pin") and not existing.pin:
+                existing.pin = u["pin"]
 
     # Seed suppliers
     for s in SUPPLIERS:

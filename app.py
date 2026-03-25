@@ -1,5 +1,5 @@
 """
-渊博+579 HR V6 — 兼容入口
+渊博+579 HR V7 — 兼容入口
 主实现已迁移到 backend/。此文件仅作向后兼容保留，
 直接 re-export backend.main:app 以确保任何仍引用 app:app 的启动命令
 继续正常工作。

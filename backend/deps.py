@@ -1,5 +1,5 @@
 """
-渊博+579 HR V6 — Shared dependencies (token store, auth helpers, DB helpers)
+渊博+579 HR V7 — Shared dependencies (token store, auth helpers, DB helpers)
 """
 import hashlib, time, uuid
 from fastapi import HTTPException, Request

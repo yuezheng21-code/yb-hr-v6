@@ -1,5 +1,5 @@
 """
-渊博+579 HR V6 — Database Layer
+渊博+579 HR V7 — Database Layer
 自动检测 DATABASE_URL → PostgreSQL（生产/Railway）
 无 DATABASE_URL → SQLite（本地开发）
 """
@@ -21,7 +21,7 @@ def get_db():
         return conn
     else:
         import sqlite3
-        db_path = os.path.join(os.path.dirname(__file__), "hr_v6.db")
+        db_path = os.path.join(os.path.dirname(__file__), "hr_v7.db")
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA journal_mode=WAL")

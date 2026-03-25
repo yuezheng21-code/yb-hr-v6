@@ -46,8 +46,8 @@ var I18N = {
     'login.pin_btn': '打卡入口',
     'login.err_empty': '请填写用户名和密码',
     'login.err_pin': '请输入4位PIN',
-    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
-    'login.pin_hint': '测试PIN: 1001(张三) 1002(李四) 1003(王五)',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123 · mgr/mgr123 · worker01/worker123',
+    'login.pin_hint': '测试PIN: 1001 (worker01 张三)',
     'c.loading': '加载中...',
     'c.load_fail': '加载失败',
     'c.save': '保存',
@@ -274,8 +274,8 @@ var I18N = {
     'login.pin_btn': 'Clock In',
     'login.err_empty': 'Please enter username and password',
     'login.err_pin': 'Please enter 4-digit PIN',
-    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
-    'login.pin_hint': 'Test PIN: 1001(Zhang San) 1002(Li Si) 1003(Wang Wu)',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123 · mgr/mgr123 · worker01/worker123',
+    'login.pin_hint': 'Test PIN: 1001 (worker01 Zhang San)',
     'c.loading': 'Loading...',
     'c.load_fail': 'Load failed',
     'c.save': 'Save',
@@ -502,8 +502,8 @@ var I18N = {
     'login.pin_btn': 'Stempeluhr',
     'login.err_empty': 'Bitte Benutzername und Passwort eingeben',
     'login.err_pin': 'Bitte 4-stellige PIN eingeben',
-    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
-    'login.pin_hint': 'Test-PIN: 1001(Zhang San) 1002(Li Si) 1003(Wang Wu)',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123 · mgr/mgr123 · worker01/worker123',
+    'login.pin_hint': 'Test-PIN: 1001 (worker01 Zhang San)',
     'c.loading': 'Laden...',
     'c.load_fail': 'Ladefehler',
     'c.save': 'Speichern',
@@ -730,8 +730,8 @@ var I18N = {
     'login.pin_btn': 'تسجيل الحضور',
     'login.err_empty': 'يرجى إدخال اسم المستخدم وكلمة المرور',
     'login.err_pin': 'يرجى إدخال رمز مكون من 4 أرقام',
-    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123',
-    'login.pin_hint': 'رموز الاختبار: 1001 1002 1003',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · mgr/mgr123 · worker01/worker123',
+    'login.pin_hint': 'رموز الاختبار: 1001 (worker01)',
     'c.loading': 'جار التحميل...',
     'c.load_fail': 'فشل التحميل',
     'c.save': 'حفظ',
@@ -958,8 +958,8 @@ var I18N = {
     'login.pin_btn': 'Jelenléti rögzítés',
     'login.err_empty': 'Kérem adja meg a felhasználónevet és jelszót',
     'login.err_pin': 'Kérem adja meg a 4 jegyű PIN-t',
-    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123',
-    'login.pin_hint': 'Teszt PIN: 1001 1002 1003',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · mgr/mgr123 · worker01/worker123',
+    'login.pin_hint': 'Teszt PIN: 1001 (worker01)',
     'c.loading': 'Töltés...',
     'c.load_fail': 'Betöltési hiba',
     'c.save': 'Mentés',
@@ -1186,8 +1186,8 @@ var I18N = {
     'login.pin_btn': 'Chấm công',
     'login.err_empty': 'Vui lòng nhập tên đăng nhập và mật khẩu',
     'login.err_pin': 'Vui lòng nhập PIN 4 chữ số',
-    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123',
-    'login.pin_hint': 'PIN thử nghiệm: 1001 1002 1003',
+    'login.hint': 'admin/admin123 · hr/hr123 · finance/fin123 · mgr/mgr123 · worker01/worker123',
+    'login.pin_hint': 'PIN thử nghiệm: 1001 (worker01)',
     'c.loading': 'Đang tải...',
     'c.load_fail': 'Tải thất bại',
     'c.save': 'Lưu',
@@ -1786,7 +1786,7 @@ function Login(_ref5) {
       color: 'var(--tx3)',
       letterSpacing: 2
     }
-  }, "V6 \xB7 Warehouse Management"))), /*#__PURE__*/React.createElement("div", {
+  }, "V7 \xB7 Warehouse Management"))), /*#__PURE__*/React.createElement("div", {
     className: "tb",
     style: {
       marginBottom: 20,
@@ -7371,7 +7371,7 @@ function App() {
     className: "sb-t"
   }, "\u6E0A\u535A+579"), /*#__PURE__*/React.createElement("div", {
     className: "sb-s"
-  }, "HR V6 \xB7 LIVE"))), /*#__PURE__*/React.createElement("div", {
+  }, "HR V7 \xB7 LIVE"))), /*#__PURE__*/React.createElement("div", {
     className: "nav"
   }, navItems.map(function (n, i) {
     return n.sep ? /*#__PURE__*/React.createElement("div", {

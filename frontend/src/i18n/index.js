@@ -1,5 +1,5 @@
 /**
- * Internationalization (i18n) for YB-HR-V6
+ * Internationalization (i18n) for YB-HR-V7
  * Supported languages: zh (Chinese), en (English), de (German), ar (Arabic), hu (Hungarian), vi (Vietnamese)
  */
 
@@ -11,8 +11,8 @@ export const I18N = {
     'login.username':'用户名','login.password':'密码','login.btn':'登 录',
     'login.pin_label':'工人PIN（4位）','login.pin_btn':'打卡入口',
     'login.err_empty':'请填写用户名和密码','login.err_pin':'请输入4位PIN',
-    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
-    'login.pin_hint':'测试PIN: 1001(张三) 1002(李四) 1003(王五)',
+    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123 · mgr/mgr123 · worker01/worker123',
+    'login.pin_hint':'测试PIN: 1001 (worker01 张三)',
     'c.loading':'加载中...','c.load_fail':'加载失败','c.save':'保存','c.cancel':'取消',
     'c.edit':'编辑','c.add':'新增','c.submit':'提交','c.all':'全部','c.search':'搜索',
     'c.close':'关闭','c.confirm':'确认','c.logout':'退出登录','c.no_data':'暂无数据',
@@ -101,8 +101,8 @@ export const I18N = {
     'login.username':'Username','login.password':'Password','login.btn':'Sign In',
     'login.pin_label':'Worker PIN (4 digits)','login.pin_btn':'Clock In',
     'login.err_empty':'Please enter username and password','login.err_pin':'Please enter 4-digit PIN',
-    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
-    'login.pin_hint':'Test PIN: 1001(Zhang San) 1002(Li Si) 1003(Wang Wu)',
+    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123 · mgr/mgr123 · worker01/worker123',
+    'login.pin_hint':'Test PIN: 1001 (worker01 Zhang San)',
     'c.loading':'Loading...','c.load_fail':'Load failed','c.save':'Save','c.cancel':'Cancel',
     'c.edit':'Edit','c.add':'Add','c.submit':'Submit','c.all':'All','c.search':'Search',
     'c.close':'Close','c.confirm':'Confirm','c.logout':'Logout','c.no_data':'No data',
@@ -201,8 +201,8 @@ export const I18N = {
     'login.pin_label':'Arbeiter-PIN (4 Ziffern)','login.pin_btn':'Stempeluhr',
     'login.err_empty':'Bitte Benutzername und Passwort eingeben',
     'login.err_pin':'Bitte 4-stellige PIN eingeben',
-    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123',
-    'login.pin_hint':'Test-PIN: 1001(Zhang San) 1002(Li Si) 1003(Wang Wu)',
+    'login.hint':'admin/admin123 · hr/hr123 · finance/fin123 · wh_una/una123 · sup001/sup123 · mgr/mgr123 · worker01/worker123',
+    'login.pin_hint':'Test-PIN: 1001 (worker01 Zhang San)',
     'c.loading':'Laden...','c.load_fail':'Ladefehler','c.save':'Speichern',
     'c.cancel':'Abbrechen','c.edit':'Bearbeiten','c.add':'Hinzufügen',
     'c.submit':'Absenden','c.all':'Alle','c.search':'Suchen','c.close':'Schließen',
