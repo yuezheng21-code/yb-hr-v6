@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../services/api.js';
+import { api, downloadBlob } from '../services/api.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
@@ -94,6 +94,16 @@ export default function Commissions({ token, user }) {
     } catch (e) { showToast(e.message, 'err'); }
   };
 
+  const downloadXlsx = async () => {
+    try {
+      await downloadBlob(
+        `/api/v1/commissions/export/${calcPeriod}`,
+        token,
+        `commissions_${calcPeriod}.xlsx`,
+      );
+    } catch (e) { showToast(e.message, 'err'); }
+  };
+
   const calculatePeriod = async () => {
     const body = {};
     commissions.filter(c => ['active','pending'].includes(c.status)).forEach(c => {
@@ -153,6 +163,9 @@ export default function Commissions({ token, user }) {
       <div className="ab">
         <div />
         <div className="ml">
+          {canView && (
+            <button className="b bgh" onClick={downloadXlsx}>↓ Excel</button>
+          )}
           {canAdmin && (
             <button className="b bga" onClick={() => setCreateModal(true)}>+ 新建返佣协议</button>
           )}

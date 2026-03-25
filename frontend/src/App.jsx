@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useLang, LangSwitcher } from './context/LangContext.jsx';
+import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext.jsx';
-import { useToast } from './context/ToastContext.jsx';
-import { NAV_ITEMS } from './router/index.jsx';
-import { logout } from './services/auth.js';
+import { useLang } from './context/LangContext.jsx';
+import { AppShell } from './components/layout/index.js';
 import { pollHealth } from './services/api.js';
+import { logout } from './services/auth.js';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Attendance from './pages/Attendance.jsx';
@@ -26,73 +26,51 @@ import Messages from './pages/Messages.jsx';
 import Admin from './pages/Admin.jsx';
 import Integrations from './pages/Integrations.jsx';
 
-const ROLE_COLORS = { admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
+const PATH_TO_KEY = {
+  '/': 'dashboard', '/employees': 'employees', '/timesheets': 'timesheets',
+  '/schedules': 'schedules', '/clock': 'clock', '/settlements': 'settlements',
+  '/containers': 'containers', '/quotations': 'quotations', '/cost-calc': 'cost_calc',
+  '/referrals': 'referrals',
+  '/commissions': 'commissions', '/suppliers': 'suppliers', '/warehouses': 'warehouses',
+  '/logs': 'logs', '/dispatch': 'dispatch', '/talent': 'talent',
+  '/recruit': 'recruit', '/messages': 'messages', '/integrations': 'integrations', '/admin': 'admin',
+};
+const KEY_TO_PATH = Object.fromEntries(Object.entries(PATH_TO_KEY).map(([p, k]) => [k, p]));
 
-function PageContent({ page, token, user }) {
-  const props = { token, user };
-  switch (page) {
-    case 'dashboard':      return <Dashboard {...props} />;
-    case 'employees':      return <Attendance {...props} />;
-    case 'attendance':     return <Attendance {...props} />;
-    case 'timesheets':     return <Timesheets {...props} />;
-    case 'schedules':      return <Schedules {...props} />;
-    case 'clock':          return <Clock {...props} />;
-    case 'settlements':    return <Settlements {...props} />;
-    case 'containers':     return <Containers {...props} />;
-    case 'quotations':     return <Quotations {...props} />;
-    case 'referrals':      return <Referrals {...props} />;
-    case 'commissions':    return <Commissions {...props} />;
-    case 'suppliers':      return <Suppliers {...props} />;
-    case 'warehouses':     return <WarehouseRates {...props} />;
-    case 'warehouse_rates':return <WarehouseRates {...props} />;
-    case 'logs':           return <AuditLogs {...props} />;
-    case 'cost_calc':      return <Quotations {...props} />;
-    case 'dispatch':       return <Dispatch {...props} />;
-    case 'talent':         return <Talent {...props} />;
-    case 'recruit':        return <Recruit {...props} />;
-    case 'messages':       return <Messages {...props} />;
-    case 'integrations':   return <Integrations {...props} />;
-    case 'admin':          return <Admin {...props} />;
-    default:               return <Dashboard {...props} />;
-  }
+function ProtectedRoute({ children }) {
+  const { token, user } = useAuth();
+  if (!token || !user) return <Navigate to="/login" replace />;
+  return children;
 }
 
 export default function App() {
   const { token, user, setAuth, clearAuth } = useAuth();
   const { t } = useLang();
-  const [page, setPage] = useState('dashboard');
-  const [mobNav, setMobNav] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [srvReady, setSrvReady] = useState(false);
   const [srvStatus, setSrvStatus] = useState('');
+
+  const currentPage = PATH_TO_KEY[location.pathname] || 'dashboard';
+  const props = { token, user };
 
   useEffect(() => {
     return pollHealth(
       () => setSrvReady(true),
-      (status) => { setSrvStatus(status); clearAuth(); }
+      (status) => setSrvStatus(status)
     );
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onLogin = (tk, u) => {
     setAuth(tk, u);
-    setPage(u.role === 'worker' ? 'clock' : 'dashboard');
+    navigate(u.role === 'worker' ? '/clock' : '/');
   };
 
   const onLogout = async () => {
     await logout(token);
     clearAuth();
+    navigate('/login');
   };
-
-  const go = (key) => { setPage(key); setMobNav(false); };
-
-  const navItems = token && user
-    ? NAV_ITEMS.filter(n => !n.key || !n.roles || n.roles.includes(user.role))
-    : [];
-
-  const pageLabel = NAV_ITEMS.find(n => n.key === page)?.labelKey
-    ? t(NAV_ITEMS.find(n => n.key === page).labelKey)
-    : page;
-
-  const roleColor = user ? (ROLE_COLORS[user.role] || '#6a7498') : '#6a7498';
 
   if (!srvReady) {
     return (
@@ -108,58 +86,37 @@ export default function App() {
     return <Login onLogin={onLogin} />;
   }
 
-  const sidebar = (
-    <>
-      <div className="sb-hd">
-        <div className="sb-logo">渊</div>
-        <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V7 · LIVE</div></div>
-      </div>
-      <div className="nav">
-        {navItems.map((n, i) =>
-          n.sep
-            ? <div key={i} className="nsep" />
-            : <button key={n.key} className={`ni ${page === n.key ? 'on' : ''}`} onClick={() => go(n.key)}>
-                <span className="ni-i">{n.icon}</span>
-                <span>{t(n.labelKey)}</span>
-              </button>
-        )}
-      </div>
-      <div className="sb-ft">
-        <div className="sb-btn" style={{ cursor:'default',marginBottom:6 }}>
-          <div className="ua" style={{ background:roleColor }}>{user.display_name?.[0] || '?'}</div>
-          <div>
-            <div style={{ fontSize:10,fontWeight:600,color:'var(--tx)' }}>{user.display_name}</div>
-            <div style={{ fontSize:8,color:'var(--tx3)' }}>{user.role}</div>
-          </div>
-        </div>
-        <div style={{ padding:'4px 8px 8px' }}><LangSwitcher /></div>
-        <button className="sb-btn dg" onClick={onLogout}>🚪 {t('c.logout')}</button>
-      </div>
-    </>
-  );
-
   return (
-    <div className="app">
-      <div className={`sidebar ${mobNav ? 'open' : ''}`}>{sidebar}</div>
-      <div className={`mob-overlay ${mobNav ? 'show' : ''}`} onClick={() => setMobNav(false)} />
-      <div className="main">
-        <div className="mob-hdr">
-          <button className="mob-menu-btn" onClick={() => setMobNav(true)}>☰</button>
-          <h1 style={{ fontSize:14,fontWeight:700 }}>{pageLabel}</h1>
-        </div>
-        <div className="hdr">
-          <h1>{pageLabel}</h1>
-          <div className="hdr-r">
-            <div className="uc">
-              <div className="ua" style={{ background:roleColor }}>{user.display_name?.[0]}</div>
-              <div><div className="un">{user.display_name}</div><div className="ur">{user.role}</div></div>
-            </div>
-          </div>
-        </div>
-        <div className="ct">
-          <PageContent page={page} token={token} user={user} />
-        </div>
-      </div>
-    </div>
+    <AppShell
+      user={user}
+      currentPage={currentPage}
+      onNavigate={(key) => navigate(KEY_TO_PATH[key] || '/')}
+      onLogout={onLogout}
+    >
+      <Routes>
+        <Route path="/" element={<ProtectedRoute><Dashboard {...props} /></ProtectedRoute>} />
+        <Route path="/employees" element={<ProtectedRoute><Attendance {...props} /></ProtectedRoute>} />
+        <Route path="/timesheets" element={<ProtectedRoute><Timesheets {...props} /></ProtectedRoute>} />
+        <Route path="/schedules" element={<ProtectedRoute><Schedules {...props} /></ProtectedRoute>} />
+        <Route path="/clock" element={<ProtectedRoute><Clock {...props} /></ProtectedRoute>} />
+        <Route path="/settlements" element={<ProtectedRoute><Settlements {...props} /></ProtectedRoute>} />
+        <Route path="/containers" element={<ProtectedRoute><Containers {...props} /></ProtectedRoute>} />
+        <Route path="/quotations" element={<ProtectedRoute><Quotations {...props} /></ProtectedRoute>} />
+        <Route path="/cost-calc" element={<ProtectedRoute><Quotations {...props} /></ProtectedRoute>} />
+        <Route path="/referrals" element={<ProtectedRoute><Referrals {...props} /></ProtectedRoute>} />
+        <Route path="/commissions" element={<ProtectedRoute><Commissions {...props} /></ProtectedRoute>} />
+        <Route path="/suppliers" element={<ProtectedRoute><Suppliers {...props} /></ProtectedRoute>} />
+        <Route path="/warehouses" element={<ProtectedRoute><WarehouseRates {...props} /></ProtectedRoute>} />
+        <Route path="/logs" element={<ProtectedRoute><AuditLogs {...props} /></ProtectedRoute>} />
+        <Route path="/dispatch" element={<ProtectedRoute><Dispatch {...props} /></ProtectedRoute>} />
+        <Route path="/talent" element={<ProtectedRoute><Talent {...props} /></ProtectedRoute>} />
+        <Route path="/recruit" element={<ProtectedRoute><Recruit {...props} /></ProtectedRoute>} />
+        <Route path="/messages" element={<ProtectedRoute><Messages {...props} /></ProtectedRoute>} />
+        <Route path="/integrations" element={<ProtectedRoute><Integrations {...props} /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><Admin {...props} /></ProtectedRoute>} />
+        <Route path="/login" element={<Login onLogin={onLogin} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AppShell>
   );
 }

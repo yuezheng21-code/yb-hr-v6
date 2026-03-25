@@ -6,8 +6,10 @@ from __future__ import annotations
 from datetime import datetime, date
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
+import csv, io, re
 from backend.database import get_db
 from backend.models.timesheet import Timesheet
 from backend.models.employee import Employee
@@ -249,6 +251,54 @@ def zeitkonto_summary(
         })
 
     return result
+
+
+@router.get("/export")
+def export_timesheets(
+    status: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    warehouse_code: Optional[str] = Query(None),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Export timesheets as CSV. Accessible by admin/hr/fin."""
+    if user.role not in {"admin", "hr", "fin"}:
+        raise HTTPException(403, "Forbidden")
+
+    stmt = select(Timesheet).order_by(Timesheet.work_date.desc())
+    stmt = _apply_row_filter(stmt, user)
+    if status:
+        stmt = stmt.where(Timesheet.approval_status == status)
+    if date_from:
+        stmt = stmt.where(Timesheet.work_date >= date_from)
+    if date_to:
+        stmt = stmt.where(Timesheet.work_date <= date_to)
+    if warehouse_code:
+        stmt = stmt.where(Timesheet.warehouse_code == warehouse_code)
+
+    rows = db.scalars(stmt.limit(5000)).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["ts_no", "emp_no", "emp_name", "work_date", "warehouse_code",
+                     "settlement_type", "hours", "base_rate", "amount_bonus",
+                     "amount_total", "approval_status", "biz_line", "source_type"])
+    for r in rows:
+        writer.writerow([r.ts_no, r.emp_no, r.emp_name, r.work_date, r.warehouse_code,
+                         r.settlement_type, r.hours, r.base_rate, r.amount_bonus,
+                         r.amount_total, r.approval_status, r.biz_line, r.source_type])
+
+    output.seek(0)
+    # Build a safe filename using only alphanumeric chars and hyphens to prevent header injection
+    def _sanitize_filename(s: str) -> str:
+        return re.sub(r"[^a-zA-Z0-9\-]", "", (s or "all"))[:20]
+    filename = f"timesheets_{_sanitize_filename(date_from)}_{_sanitize_filename(date_to)}.csv"
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
 
 
 @router.get("/{ts_id}", response_model=TimesheetOut)

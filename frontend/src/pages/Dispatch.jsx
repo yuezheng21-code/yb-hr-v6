@@ -20,6 +20,10 @@ export default function Dispatch({ token, user }) {
   const [loading, setLoading] = useState(true);
   const [selId, setSelId] = useState(null);
   const [addModal, setAddModal] = useState(false);
+  const [complianceModal, setComplianceModal] = useState(false);
+  const [complianceInput, setComplianceInput] = useState('');
+  const [complianceResult, setComplianceResult] = useState(null);
+  const [complianceLoading, setComplianceLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
   const { t } = useLang();
@@ -72,6 +76,24 @@ export default function Dispatch({ token, user }) {
       await api(`/api/v1/dispatch/${id}`, { method: 'PUT', body: { status }, token });
       showToast('状态已更新'); load();
     } catch (e) { showToast(e.message, 'err'); }
+  };
+
+  const runComplianceCheck = async () => {
+    let timesheets;
+    try {
+      timesheets = JSON.parse(complianceInput);
+      if (!Array.isArray(timesheets)) throw new Error('must be array');
+    } catch {
+      showToast('请输入有效的工时JSON数组', 'err'); return;
+    }
+    setComplianceLoading(true);
+    try {
+      const result = await api('/api/v1/dispatch/compliance-check', {
+        method: 'POST', body: { timesheets }, token,
+      });
+      setComplianceResult(result);
+    } catch (e) { showToast(e.message, 'err'); }
+    finally { setComplianceLoading(false); }
   };
 
   const statsBar = stats ? [
@@ -190,6 +212,9 @@ export default function Dispatch({ token, user }) {
                       onClick={() => updateStatus(selD.id, 'closed')}>关闭</button>
                   </div>
                 )}
+                <button className="b bgs" onClick={() => { setComplianceResult(null); setComplianceInput(''); setComplianceModal(true); }}>
+                  ✔ ArbZG合规检查
+                </button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -249,6 +274,83 @@ export default function Dispatch({ token, user }) {
           </div>
         )}
       </div>
+
+      {/* Compliance Check Modal */}
+      {complianceModal && (
+        <Modal title="ArbZG 合规检查" onClose={() => setComplianceModal(false)}>
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 11, color: 'var(--tx3)', marginBottom: 6 }}>
+              输入员工工时记录 (JSON数组格式)，检查是否符合德国劳动时间法 (ArbZG)。
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--tx3)', marginBottom: 8, background: 'var(--bg3)', padding: '6px 10px', borderRadius: 6, fontFamily: 'monospace' }}>
+              示例: {`[{"date":"2025-03-01","hours":9.5},{"date":"2025-03-02","hours":8}]`}
+            </div>
+            <textarea
+              className="inp" rows={4}
+              placeholder='[{"date":"YYYY-MM-DD","hours":8.5},...]'
+              value={complianceInput}
+              onChange={e => setComplianceInput(e.target.value)}
+              style={{ fontFamily: 'monospace', fontSize: 11, width: '100%', boxSizing: 'border-box' }}
+            />
+          </div>
+
+          {complianceResult && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                {[
+                  ['工作天数', complianceResult.total_days, 'var(--cy)'],
+                  ['总工时', `${complianceResult.total_hours}h`, 'var(--ac)'],
+                  ['违规数', complianceResult.summary?.violation_count || 0, complianceResult.compliant ? 'var(--gn)' : '#ef4444'],
+                  ['警告数', complianceResult.summary?.warning_count || 0, '#f59e0b'],
+                ].map(([label, val, color]) => (
+                  <div key={label} style={{ background: 'var(--bg3)', borderRadius: 6, padding: '6px 12px', textAlign: 'center', minWidth: 70 }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, color }}>{val}</div>
+                    <div style={{ fontSize: 9, color: 'var(--tx3)' }}>{label}</div>
+                  </div>
+                ))}
+                <div style={{
+                  marginLeft: 'auto', alignSelf: 'center',
+                  padding: '4px 14px', borderRadius: 6, fontWeight: 700, fontSize: 12,
+                  background: complianceResult.compliant ? '#10b98120' : '#ef444420',
+                  color: complianceResult.compliant ? '#10b981' : '#ef4444',
+                  border: `1px solid ${complianceResult.compliant ? '#10b981' : '#ef4444'}44`,
+                }}>
+                  {complianceResult.compliant ? '✓ 合规' : '✗ 存在违规'}
+                </div>
+              </div>
+
+              {complianceResult.violations?.length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#ef4444', marginBottom: 4 }}>违规项</div>
+                  {complianceResult.violations.map((v, i) => (
+                    <div key={i} style={{ fontSize: 11, color: '#ef4444', background: '#ef444410', borderRadius: 4, padding: '4px 8px', marginBottom: 3 }}>
+                      {v.message}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {complianceResult.warnings?.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#f59e0b', marginBottom: 4 }}>警告项</div>
+                  {complianceResult.warnings.map((w, i) => (
+                    <div key={i} style={{ fontSize: 11, color: '#f59e0b', background: '#f59e0b10', borderRadius: 4, padding: '4px 8px', marginBottom: 3 }}>
+                      {w.message}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+            <button className="b bgs" onClick={() => setComplianceModal(false)}>关闭</button>
+            <button className="b bga" onClick={runComplianceCheck} disabled={complianceLoading}>
+              {complianceLoading ? '检查中…' : '运行检查'}
+            </button>
+          </div>
+        </Modal>
+      )}
 
       {/* Add modal */}
       {addModal && (

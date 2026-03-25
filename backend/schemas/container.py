@@ -52,5 +52,7 @@ class ContainerOut(ContainerBase):
     wh_approved_at: Optional[datetime]
     video_recorded: bool
     created_at: datetime
+    total_hours: Optional[float] = None
+    worker_count: Optional[int] = None
 
     model_config = {"from_attributes": True}

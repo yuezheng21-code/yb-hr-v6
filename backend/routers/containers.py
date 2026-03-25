@@ -4,6 +4,7 @@
 """
 from __future__ import annotations
 import json
+import logging
 from datetime import datetime, date
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -20,6 +21,22 @@ from backend.services.settlement_calc import compute_hours
 from backend.services.sequence import next_sequence_no, make_prefix
 
 router = APIRouter(prefix="/api/v1/containers", tags=["containers"])
+_logger = logging.getLogger(__name__)
+
+
+def _enrich(cn: ContainerRecord) -> dict:
+    """Convert a ContainerRecord ORM object to a dict with computed total_hours and worker_count."""
+    d = ContainerOut.model_validate(cn).model_dump()
+    if cn.start_time and cn.end_time:
+        d["total_hours"] = compute_hours(cn.start_time, cn.end_time)
+    worker_ids = []
+    if cn.worker_ids:
+        try:
+            worker_ids = json.loads(cn.worker_ids)
+        except json.JSONDecodeError:
+            _logger.warning("ContainerRecord id=%s has malformed worker_ids JSON", cn.id)
+    d["worker_count"] = len(worker_ids)
+    return d
 
 
 def _next_cn_no(db: Session) -> str:
@@ -30,7 +47,7 @@ def _next_ts_no(db: Session) -> str:
     return next_sequence_no(db, Timesheet, Timesheet.ts_no, make_prefix("TS"))
 
 
-@router.get("", response_model=list[ContainerOut])
+@router.get("")
 def list_containers(
     warehouse_code: Optional[str] = Query(None),
     date_from: Optional[str] = Query(None),
@@ -48,7 +65,7 @@ def list_containers(
         stmt = stmt.where(ContainerRecord.work_date >= date_from)
     if date_to:
         stmt = stmt.where(ContainerRecord.work_date <= date_to)
-    return db.scalars(stmt.offset(skip).limit(limit)).all()
+    return [_enrich(cn) for cn in db.scalars(stmt.offset(skip).limit(limit)).all()]
 
 
 @router.post("", response_model=ContainerOut, status_code=201)
@@ -66,12 +83,12 @@ def create_container(
     return cn
 
 
-@router.get("/{cn_id}", response_model=ContainerOut)
+@router.get("/{cn_id}")
 def get_container(cn_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     cn = db.get(ContainerRecord, cn_id)
     if cn is None:
         raise HTTPException(404, "Container record not found")
-    return cn
+    return _enrich(cn)
 
 
 @router.put("/{cn_id}", response_model=ContainerOut)
