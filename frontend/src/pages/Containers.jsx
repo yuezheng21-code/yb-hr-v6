@@ -13,8 +13,12 @@ function parseWorkerCount(worker_ids) {
 
 function computeHours(start, end) {
   if (!start || !end) return null;
-  const [sh, sm] = start.split(':').map(Number);
-  const [eh, em] = end.split(':').map(Number);
+  const startParts = start.split(':').map(Number);
+  const endParts = end.split(':').map(Number);
+  if (startParts.length < 2 || endParts.length < 2) return null;
+  const [sh, sm] = startParts;
+  const [eh, em] = endParts;
+  if ([sh, sm, eh, em].some(isNaN)) return null;
   let mins = (eh * 60 + em) - (sh * 60 + sm);
   if (mins <= 0) mins += 24 * 60;
   return (mins / 60).toFixed(1);

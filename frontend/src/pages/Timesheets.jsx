@@ -187,7 +187,7 @@ export default function Timesheets({ token, user }) {
         >
           <div className="fr">
             <div className="fg"><label className="fl">{t('ts.f_emp')}</label>
-              <select className="fsl" value={form.employee_id} onChange={e => setForm({ ...form, employee_id: +e.target.value })}>
+              <select className="fsl" value={form.employee_id} onChange={e => setForm({ ...form, employee_id: e.target.value ? +e.target.value : '' })}>
                 <option value="">—选择员工—</option>
                 {emps.map(e => <option key={e.id} value={e.id}>{e.name}（{e.emp_no || e.id}）</option>)}
               </select>

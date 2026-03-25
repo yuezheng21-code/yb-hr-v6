@@ -290,7 +290,9 @@ def export_timesheets(
                          r.amount_total, r.approval_status, r.biz_line, r.source_type])
 
     output.seek(0)
-    filename = f"timesheets_{date_from or 'all'}_{date_to or 'all'}.csv"
+    safe_from = (date_from or 'all').replace('/', '-').replace('\\', '')[:20]
+    safe_to = (date_to or 'all').replace('/', '-').replace('\\', '')[:20]
+    filename = f"timesheets_{safe_from}_{safe_to}.csv"
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
