@@ -56,12 +56,35 @@ open http://localhost:8000
 
 ## 本地开发
 
+### 后端
+
 ```bash
 pip install -r requirements.txt
 python -c "import backend.database as d; d.init_db(); d.seed_data()"  # 初始化数据库 + 插入示例数据
 uvicorn backend.main:app --reload --port 8000
-# 访问 http://localhost:8000
+# 后端运行在 http://localhost:8000
 ```
+
+### 前端（React + Vite，推荐开发时使用）
+
+```bash
+cd frontend
+npm install          # 仅第一次需要
+npm run dev          # 启动开发服务器 → http://localhost:5173
+```
+
+> **联调说明**：`vite.config.js` 已配置 `/api` 和 `/health` 代理到 `http://localhost:8000`，
+> 前端开发时无需修改后端跨域配置，直接联调即可。
+
+### 前端生产构建
+
+```bash
+cd frontend
+npm run build        # 输出到 frontend/dist/
+```
+
+> **legacy 说明**：`static/` 目录保留为历史参考，不再作为主实现。
+> 主前端实现位于 `frontend/`。
 
 ---
 
@@ -89,6 +112,42 @@ uvicorn backend.main:app --reload --port 8000
 
 ```
 hr-v6/
+├── frontend/                    # ★ React + Vite 前端（主实现）
+│   ├── index.html               # HTML 入口（含完整 CSS 主题）
+│   ├── vite.config.js           # Vite 配置（/api 代理 → 后端 8000）
+│   ├── package.json
+│   └── src/
+│       ├── main.jsx             # React 根，挂载所有 Provider
+│       ├── App.jsx              # 主布局：侧边栏 + 路由渲染 + 健康检测
+│       ├── router/
+│       │   └── index.jsx        # NAV_ITEMS 路由表（含角色权限）
+│       ├── services/
+│       │   ├── api.js           # 统一 fetch 客户端（401 守卫、健康轮询）
+│       │   └── auth.js          # 登录/PIN/登出/localStorage 持久化
+│       ├── context/
+│       │   ├── AuthContext.jsx
+│       │   ├── LangContext.jsx  # 多语言（zh/en/de/ar）+ LangSwitcher
+│       │   └── ToastContext.jsx # Toast 通知（2500ms）
+│       ├── i18n/index.js        # I18N 翻译字符串
+│       ├── components/
+│       │   ├── Modal.jsx
+│       │   ├── Spinner.jsx
+│       │   └── StatusBadge.jsx
+│       └── pages/
+│           ├── Login.jsx        # 管理员账号 + 工人PIN 双入口
+│           ├── Dashboard.jsx    # KPI 卡片 + 7日工时图
+│           ├── Attendance.jsx   # 员工花名册（CRUD）
+│           ├── Timesheets.jsx   # 工时记录（三级审批）
+│           ├── Schedules.jsx    # Zeitkonto + Freizeitausgleich
+│           ├── Clock.jsx        # 工人打卡
+│           ├── Settlements.jsx  # 月度结算
+│           ├── Containers.jsx   # 卸柜记录
+│           ├── Quotations.jsx   # Werkvertrag 项目（8阶段）
+│           ├── Referrals.jsx    # Abmahnung 警告 + 德文信件
+│           ├── Commissions.jsx  # 职级薪酬 + 成本测算
+│           ├── Suppliers.jsx
+│           ├── WarehouseRates.jsx
+│           └── AuditLogs.jsx
 ├── backend/
 │   ├── __init__.py
 │   ├── main.py         # FastAPI 主入口，lifespan、中间件、挂载所有路由
@@ -110,8 +169,8 @@ hr-v6/
 │       └── logs.py         # 审计日志
 ├── app.py              # 兼容入口（re-exports backend.main:app）
 ├── database.py         # 兼容入口（re-exports backend.database）
-├── static/
-│   └── index.html      # React 前端（单文件，连接后端 API）
+├── static/             # ⚠ legacy — 单文件 React（保留备用，不再主动维护）
+│   └── index.html
 ├── uploads/            # 文件上传目录
 │   └── .gitkeep
 ├── requirements.txt
