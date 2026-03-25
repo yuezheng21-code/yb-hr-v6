@@ -1,6 +1,10 @@
 """
 渊博579 HR V7 — Clock Router (punch in/out)
 /api/v1/clock
+
+Note: Employee linkage uses display_name matching as a bridge until a dedicated
+user.employee_id FK is added. Workers are expected to have an Employee record
+whose name matches user.display_name.
 """
 from __future__ import annotations
 from datetime import date, datetime
@@ -17,6 +21,23 @@ from backend.middleware.auth import get_current_user
 router = APIRouter(prefix="/api/v1/clock", tags=["clock"])
 
 
+def _resolve_employee(user: User, db: Session) -> Employee:
+    """
+    Resolve the Employee record for the current user.
+    Strategy (in order):
+      1. Match employee.name == user.display_name
+      2. If none found, raise 404 — do NOT silently fall back to a random employee.
+    """
+    emp = db.scalar(select(Employee).where(Employee.name == user.display_name, Employee.status == "active"))
+    if emp is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No active employee found for user '{user.display_name}'. "
+                   "Please ask an admin to link your account to an employee record.",
+        )
+    return emp
+
+
 @router.get("/today")
 def today_clocks(
     user: User = Depends(get_current_user),
@@ -24,8 +45,10 @@ def today_clocks(
 ):
     """Get today's clock events for the current user's linked employee."""
     today = date.today()
+    emp = _resolve_employee(user, db)
     events = db.scalars(
         select(ClockEvent)
+        .where(ClockEvent.employee_id == emp.id)
         .where(ClockEvent.work_date == today)
         .order_by(ClockEvent.id)
     ).all()
@@ -38,17 +61,12 @@ def clock_punch(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Punch in or out."""
+    """Punch in or out for the current user's linked employee."""
     today = date.today()
     now_str = datetime.utcnow().strftime("%H:%M:%S")
+    emp = _resolve_employee(user, db)
 
-    # Clock punch falls back to the first employee in the database.
-    # Full employee-to-user linkage will be implemented in a future phase.
-    emp = db.scalar(select(Employee).limit(1))
-    if emp is None:
-        raise HTTPException(404, "No employee found")
-
-    # Determine clock type if not provided
+    # Auto-detect punch direction if not specified
     if clock_type is None:
         last_event = db.scalar(
             select(ClockEvent)
@@ -68,4 +86,4 @@ def clock_punch(
     )
     db.add(event)
     db.commit()
-    return {"clock_type": clock_type, "clock_time": now_str}
+    return {"clock_type": clock_type, "clock_time": now_str, "emp_name": emp.name}

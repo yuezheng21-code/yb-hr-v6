@@ -17,26 +17,17 @@ from backend.models.user import User
 from backend.schemas.container import ContainerCreate, ContainerUpdate, ContainerOut, ContainerApproveIn
 from backend.middleware.auth import get_current_user
 from backend.services.settlement_calc import compute_hours
-from backend.routers.timesheets import _next_ts_no
+from backend.services.sequence import next_sequence_no, make_prefix
 
 router = APIRouter(prefix="/api/v1/containers", tags=["containers"])
 
 
 def _next_cn_no(db: Session) -> str:
-    year = datetime.utcnow().year
-    month = datetime.utcnow().month
-    prefix = f"CN-{year}{month:02d}-"
-    max_no = db.scalar(
-        select(func.max(ContainerRecord.cn_no)).where(ContainerRecord.cn_no.like(f"{prefix}%"))
-    )
-    if max_no:
-        try:
-            seq = int(max_no.split("-")[-1]) + 1
-        except (ValueError, IndexError):
-            seq = 1
-    else:
-        seq = 1
-    return f"{prefix}{seq:04d}"
+    return next_sequence_no(db, ContainerRecord, ContainerRecord.cn_no, make_prefix("CN"))
+
+
+def _next_ts_no(db: Session) -> str:
+    return next_sequence_no(db, Timesheet, Timesheet.ts_no, make_prefix("TS"))
 
 
 @router.get("", response_model=list[ContainerOut])

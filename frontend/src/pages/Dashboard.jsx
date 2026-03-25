@@ -37,9 +37,14 @@ export default function Dashboard({ token }) {
         ))}
       </div>
       <div className="cd">
-        <div className="ct-t">📊 渊博579 HR V7.0</div>
-        <div style={{ color: 'var(--tx3)', fontSize: 12 }}>
-          系统已升级到 V7.0。工时、装卸柜、结算等功能正在升级中，将在后续版本中提供。
+        <div className="ct-t">🚀 渊博579 HR V7.0 — Phase 2 在线</div>
+        <div style={{ color: 'var(--tx3)', fontSize: 12, lineHeight: 1.8 }}>
+          ✅ 员工管理、供应商管理、仓库配置<br/>
+          ✅ 工时记录 (CRUD + 仓库/财务审批流)<br/>
+          ✅ 装卸柜记录 (CRUD + 拆分到工时)<br/>
+          ✅ 打卡系统 (上班/下班打卡)<br/>
+          ✅ 结算引擎 (hourly / piece / hourly_kpi / container + 夜班/周末/节假日补贴)<br/>
+          🔜 月度结算、报价、推荐返佣 (Phase 3-5)
         </div>
       </div>
     </div>

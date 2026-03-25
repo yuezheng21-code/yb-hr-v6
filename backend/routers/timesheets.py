@@ -15,25 +15,13 @@ from backend.models.user import User
 from backend.schemas.timesheet import TimesheetCreate, TimesheetUpdate, TimesheetOut, TimesheetRejectIn
 from backend.middleware.auth import get_current_user
 from backend.services.settlement_calc import calc_settlement, calc_shift_bonus_rate, compute_hours
+from backend.services.sequence import next_sequence_no, make_prefix
 
 router = APIRouter(prefix="/api/v1/timesheets", tags=["timesheets"])
 
 
 def _next_ts_no(db: Session) -> str:
-    year = datetime.utcnow().year
-    month = datetime.utcnow().month
-    prefix = f"TS-{year}{month:02d}-"
-    max_no = db.scalar(
-        select(func.max(Timesheet.ts_no)).where(Timesheet.ts_no.like(f"{prefix}%"))
-    )
-    if max_no:
-        try:
-            seq = int(max_no.split("-")[-1]) + 1
-        except (ValueError, IndexError):
-            seq = 1
-    else:
-        seq = 1
-    return f"{prefix}{seq:04d}"
+    return next_sequence_no(db, Timesheet, Timesheet.ts_no, make_prefix("TS"))
 
 
 def _apply_row_filter(stmt, user: User):
@@ -117,15 +105,17 @@ def create_timesheet(
     if emp is None:
         raise HTTPException(404, "Employee not found")
 
+    data = body.model_dump()
+    effective_rate = data.pop("base_rate", 0.0) or (emp.hourly_rate or 0.0)
     ts = Timesheet(
-        **body.model_dump(),
+        **data,
         ts_no=_next_ts_no(db),
         emp_no=emp.emp_no,
         emp_name=emp.name,
         source_type=emp.source_type,
         supplier_id=emp.supplier_id,
         biz_line=emp.biz_line,
-        base_rate=body.base_rate if body.base_rate > 0 else (emp.hourly_rate or 0.0),
+        base_rate=effective_rate,
         approval_status="draft",
     )
     _compute_and_set_amounts(ts, emp)
@@ -148,15 +138,17 @@ def batch_create_timesheets(
         emp = db.get(Employee, body.employee_id)
         if emp is None:
             continue
+        bdata = body.model_dump()
+        b_rate = bdata.pop("base_rate", 0.0) or (emp.hourly_rate or 0.0)
         ts = Timesheet(
-            **body.model_dump(),
+            **bdata,
             ts_no=_next_ts_no(db),
             emp_no=emp.emp_no,
             emp_name=emp.name,
             source_type=emp.source_type,
             supplier_id=emp.supplier_id,
             biz_line=emp.biz_line,
-            base_rate=body.base_rate if body.base_rate > 0 else (emp.hourly_rate or 0.0),
+            base_rate=b_rate,
             approval_status="draft",
         )
         _compute_and_set_amounts(ts, emp)
