@@ -8,10 +8,12 @@ from backend.models.clock import ClockEvent
 from backend.models.settlement import EmployeeSettlement, SupplierSettlement, ProjectSettlement
 from backend.models.referral import ReferralRecord
 from backend.models.commission import CommissionRecord, CommissionMonthly
+from backend.models.quotation import Quotation, CostCalculation  # noqa: F401
 
 __all__ = [
     "User", "Employee", "Supplier", "Warehouse",
     "Timesheet", "ContainerRecord", "ClockEvent",
     "EmployeeSettlement", "SupplierSettlement", "ProjectSettlement",
     "ReferralRecord", "CommissionRecord", "CommissionMonthly",
+    "Quotation", "CostCalculation",
 ]
