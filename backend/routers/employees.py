@@ -1,108 +1,147 @@
 """
-Employees router
+渊博579 HR V7 — Employees Router
 """
-from fastapi import APIRouter, HTTPException, Depends, Body
-import backend.database as database
-from backend.deps import get_user, rows, one, auditlog
+from __future__ import annotations
+import re
+from datetime import datetime
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import select, func
+from backend.database import get_db
+from backend.models.employee import Employee
+from backend.models.user import User
+from backend.schemas.employee import EmployeeCreate, EmployeeUpdate, EmployeeOut
+from backend.middleware.auth import get_current_user
 
-router = APIRouter(prefix="/api/employees", tags=["employees"])
+router = APIRouter(prefix="/api/v1/employees", tags=["employees"])
+
+_SENSITIVE = {"tax_id", "social_security_no", "iban"}
+_ALLOWED_ROLES_SENSITIVE = {"admin", "hr", "fin"}
 
 
-@router.get("")
+def _strip_sensitive(emp_dict: dict, role: str) -> dict:
+    if role not in _ALLOWED_ROLES_SENSITIVE:
+        for f in _SENSITIVE:
+            emp_dict[f] = None
+    return emp_dict
+
+
+def _next_emp_no(db: Session) -> str:
+    year = datetime.utcnow().year
+    prefix = f"YB-{year}-"
+    max_no = db.scalar(
+        select(func.max(Employee.emp_no)).where(Employee.emp_no.like(f"{prefix}%"))
+    )
+    if max_no:
+        try:
+            seq = int(max_no.split("-")[-1]) + 1
+        except (ValueError, IndexError):
+            seq = 1
+    else:
+        seq = 1
+    return f"{prefix}{seq:03d}"
+
+
+def _apply_row_filter(stmt, user: User):
+    if user.role == "sup":
+        stmt = stmt.where(Employee.supplier_id == user.bound_supplier_id)
+    elif user.role == "wh":
+        stmt = stmt.where(Employee.primary_warehouse == user.bound_warehouse)
+    elif user.role == "worker":
+        stmt = stmt.where(Employee.id == -1)
+    return stmt
+
+
+@router.get("", response_model=list[EmployeeOut])
 def list_employees(
-    u: dict = Depends(get_user),
-    search: str = "",
-    status: str = "",
-    warehouse: str = "",
-    biz: str = "",
-    source: str = "",
+    status: Optional[str] = Query(None),
+    biz_line: Optional[str] = Query(None),
+    source_type: Optional[str] = Query(None),
+    q: Optional[str] = Query(None),
+    skip: int = 0,
+    limit: int = 100,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    db = database.get_db()
-    conds = ["1=1"]
-    params = []
-    if u.get("supplier_id"):
-        conds.append("supplier_id=?")
-        params.append(u["supplier_id"])
-    if u.get("biz_line") and u["role"] not in ("admin", "hr", "fin"):
-        conds.append("biz_line=?")
-        params.append(u["biz_line"])
-    if u.get("warehouse_code") and u["role"] == "wh":
-        conds.append("warehouse_code=?")
-        params.append(u["warehouse_code"])
-    if search:
-        conds.append("(name LIKE ? OR id LIKE ? OR phone LIKE ?)")
-        params += [f"%{search}%"] * 3
+    stmt = select(Employee)
+    stmt = _apply_row_filter(stmt, user)
     if status:
-        conds.append("status=?")
-        params.append(status)
-    if warehouse:
-        conds.append("warehouse_code=?")
-        params.append(warehouse)
-    if biz:
-        conds.append("biz_line=?")
-        params.append(biz)
-    if source:
-        conds.append("source=?")
-        params.append(source)
-    result = rows(db, f"SELECT * FROM employees WHERE {' AND '.join(conds)} ORDER BY id", params)
-    db.close()
+        stmt = stmt.where(Employee.status == status)
+    if biz_line:
+        stmt = stmt.where(Employee.biz_line == biz_line)
+    if source_type:
+        stmt = stmt.where(Employee.source_type == source_type)
+    if q:
+        stmt = stmt.where(
+            Employee.name.ilike(f"%{q}%") | Employee.emp_no.ilike(f"%{q}%") | Employee.phone.ilike(f"%{q}%")
+        )
+    emps = db.scalars(stmt.offset(skip).limit(limit)).all()
+    result = []
+    for emp in emps:
+        d = EmployeeOut.model_validate(emp).model_dump()
+        result.append(_strip_sensitive(d, user.role))
     return result
 
 
-@router.post("")
-def create_employee(data: dict = Body(...), u: dict = Depends(get_user)):
-    if u["role"] not in ("admin", "hr", "mgr"):
-        raise HTTPException(403)
-    db = database.get_db()
-    biz = data.get("biz_line", "渊博")
-    prefix = "YB" if biz == "渊博" else "W5"
-    existing = [r["id"] for r in rows(db, f"SELECT id FROM employees WHERE id LIKE '{prefix}-%'")]
-    nums = [
-        int(x.split("-")[1])
-        for x in existing
-        if len(x.split("-")) > 1 and x.split("-")[1].isdigit()
-    ]
-    emp_id = f"{prefix}-{max(nums, default=0) + 1:03d}"
-    data["id"] = emp_id
-    cols = ",".join(data.keys())
-    phs = ",".join(["?"] * len(data))
-    database.execute(db, f"INSERT INTO employees({cols}) VALUES({phs})", list(data.values()))
-    database.execute(
-        db,
-        (
-            "INSERT INTO zeitkonto(employee_id,employee_name) VALUES(?,?) ON CONFLICT(employee_id) DO NOTHING"
-            if database.DATABASE_URL
-            else "INSERT OR IGNORE INTO zeitkonto(employee_id,employee_name) VALUES(?,?)"
-        ),
-        (emp_id, data.get("name", "")),
-    )
-    auditlog(db, u, "CREATE", "employees", emp_id, data.get("name", ""))
-    database.commit(db)
-    db.close()
-    return {"id": emp_id}
+@router.post("", response_model=EmployeeOut, status_code=201)
+def create_employee(
+    body: EmployeeCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if user.role not in {"admin", "hr"}:
+        raise HTTPException(403, "Forbidden")
+    emp = Employee(**body.model_dump(), emp_no=_next_emp_no(db))
+    db.add(emp)
+    db.commit()
+    db.refresh(emp)
+    return EmployeeOut.model_validate(emp)
 
 
-@router.put("/{emp_id}")
-def update_employee(emp_id: str, data: dict = Body(...), u: dict = Depends(get_user)):
-    if u["role"] not in ("admin", "hr", "mgr"):
-        raise HTTPException(403)
-    data.pop("id", None)
-    db = database.get_db()
-    sets = ",".join(f"{k}=?" for k in data)
-    database.execute(db, f"UPDATE employees SET {sets} WHERE id=?", list(data.values()) + [emp_id])
-    auditlog(db, u, "UPDATE", "employees", emp_id)
-    database.commit(db)
-    db.close()
-    return {"ok": True}
+@router.get("/{emp_id}", response_model=EmployeeOut)
+def get_employee(
+    emp_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    emp = db.get(Employee, emp_id)
+    if emp is None:
+        raise HTTPException(404, "Employee not found")
+    d = EmployeeOut.model_validate(emp).model_dump()
+    return _strip_sensitive(d, user.role)
 
 
-@router.delete("/{emp_id}")
-def delete_employee(emp_id: str, u: dict = Depends(get_user)):
-    if u["role"] != "admin":
-        raise HTTPException(403)
-    db = database.get_db()
-    database.execute(db, "UPDATE employees SET status='离职' WHERE id=?", (emp_id,))
-    auditlog(db, u, "DEACTIVATE", "employees", emp_id)
-    database.commit(db)
-    db.close()
-    return {"ok": True}
+@router.put("/{emp_id}", response_model=EmployeeOut)
+def update_employee(
+    emp_id: int,
+    body: EmployeeUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if user.role not in {"admin", "hr"}:
+        raise HTTPException(403, "Forbidden")
+    emp = db.get(Employee, emp_id)
+    if emp is None:
+        raise HTTPException(404, "Employee not found")
+    for k, v in body.model_dump(exclude_unset=True).items():
+        setattr(emp, k, v)
+    emp.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(emp)
+    return EmployeeOut.model_validate(emp)
+
+
+@router.delete("/{emp_id}", status_code=204)
+def delete_employee(
+    emp_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if user.role != "admin":
+        raise HTTPException(403, "Forbidden")
+    emp = db.get(Employee, emp_id)
+    if emp is None:
+        raise HTTPException(404, "Employee not found")
+    emp.status = "inactive"
+    db.commit()

@@ -1,63 +1,61 @@
 """
-Auth router: login, PIN login, logout
+渊博579 HR V7 — Auth Router
+POST /api/v1/auth/login  — Login (username + password)
+GET  /api/v1/auth/me     — Current user info
+PUT  /api/v1/auth/password — Change password
+POST /api/v1/auth/refresh  — (placeholder)
 """
-import bcrypt as _bcrypt
-from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel
-import backend.database as database
-from backend.deps import TOKENS, make_token, one
+from __future__ import annotations
+from datetime import datetime
+import bcrypt
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from backend.database import get_db
+from backend.models.user import User
+from backend.schemas.user import LoginIn, TokenOut, UserOut, ChangePasswordIn
+from backend.middleware.auth import create_access_token, get_current_user
 
-router = APIRouter(prefix="/api/auth", tags=["auth"])
-
-
-class LoginReq(BaseModel):
-    username: str
-    password: str
-
-
-class PinReq(BaseModel):
-    pin: str
+router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
-@router.post("/login")
-def login(req: LoginReq):
-    db = database.get_db()
-    u = one(db, "SELECT * FROM users WHERE username=? AND active=1", (req.username,))
-    db.close()
-    if not u or not _bcrypt.checkpw(
-        req.password.encode(),
-        u["password_hash"].encode() if isinstance(u["password_hash"], str) else u["password_hash"],
-    ):
-        raise HTTPException(401, "用户名或密码错误")
-    token = make_token(u["username"], u["role"])
-    user_info = {k: u[k] for k in ["username", "display_name", "role", "biz_line", "warehouse_code", "supplier_id"]}
-    TOKENS[token] = user_info
-    return {"token": token, "user": user_info}
+@router.post("/login", response_model=TokenOut)
+def login(body: LoginIn, db: Session = Depends(get_db)):
+    user = db.scalar(select(User).where(User.username == body.username))
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=401, detail="用户名或密码错误")
+    if not bcrypt.checkpw(body.password.encode(), user.password_hash.encode()):
+        raise HTTPException(status_code=401, detail="用户名或密码错误")
+    user.last_login = datetime.utcnow()
+    db.commit()
+    token = create_access_token({"sub": str(user.id), "role": user.role})
+    return TokenOut(access_token=token, user=UserOut.model_validate(user))
 
 
-@router.post("/pin")
-def pin_login(req: PinReq):
-    db = database.get_db()
-    emp = one(db, "SELECT * FROM employees WHERE pin=? AND status='在职'", (req.pin,))
-    db.close()
-    if not emp:
-        raise HTTPException(401, "PIN错误或员工不在职")
-    token = make_token(f"w_{emp['id']}", "worker")
-    user_info = {
-        "username": f"w_{emp['id']}",
-        "display_name": emp["name"],
-        "role": "worker",
-        "biz_line": emp["biz_line"],
-        "warehouse_code": emp["warehouse_code"],
-        "supplier_id": emp["supplier_id"],
-        "_emp_id": emp["id"],
-    }
-    TOKENS[token] = user_info
-    return {"token": token, "user": user_info}
+@router.get("/me", response_model=UserOut)
+def me(user: User = Depends(get_current_user)):
+    return UserOut.model_validate(user)
+
+
+@router.put("/password")
+def change_password(
+    body: ChangePasswordIn,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not bcrypt.checkpw(body.old_password.encode(), user.password_hash.encode()):
+        raise HTTPException(status_code=400, detail="旧密码错误")
+    user.password_hash = bcrypt.hashpw(body.new_password.encode(), bcrypt.gensalt()).decode()
+    db.commit()
+    return {"message": "密码已修改"}
+
+
+@router.post("/refresh")
+def refresh_token(user: User = Depends(get_current_user)):
+    token = create_access_token({"sub": str(user.id), "role": user.role})
+    return {"access_token": token, "token_type": "bearer"}
 
 
 @router.post("/logout")
-def logout(request: Request):
-    token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    TOKENS.pop(token, None)
-    return {"ok": True}
+def logout():
+    return {"message": "ok"}
