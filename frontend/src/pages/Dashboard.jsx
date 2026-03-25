@@ -10,6 +10,8 @@ export default function Dashboard({ token, user }) {
   const [stats, setStats] = useState(null);
   const [charts, setCharts] = useState(null);
   const [margin, setMargin] = useState(null);
+  const [referralSummary, setReferralSummary] = useState(null);
+  const [commissionSummary, setCommissionSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const { t } = useLang();
 
@@ -18,8 +20,10 @@ export default function Dashboard({ token, user }) {
       api('/api/v1/dashboard/stats', { token }),
       api('/api/v1/dashboard/charts', { token }),
       api('/api/v1/dashboard/margin-analysis?months=' + MARGIN_ANALYSIS_MONTHS, { token }),
+      api('/api/v1/dashboard/referral-summary', { token }),
+      api('/api/v1/dashboard/commission-summary', { token }),
     ])
-      .then(([s, c, m]) => { setStats(s); setCharts(c); setMargin(m); })
+      .then(([s, c, m, r, com]) => { setStats(s); setCharts(c); setMargin(m); setReferralSummary(r); setCommissionSummary(com); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [token]);
@@ -120,6 +124,66 @@ export default function Dashboard({ token, user }) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Referral & Commission Summary */}
+      {(referralSummary || commissionSummary) && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {referralSummary && (
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>🎁 员工推荐奖励</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {[
+                  ['总推荐数', referralSummary.total, 'var(--cy)'],
+                  ['进行中', referralSummary.active, 'var(--og)'],
+                  ['已完成', referralSummary.completed, 'var(--gn)'],
+                  ['本月新增', referralSummary.this_month, 'var(--pp)'],
+                ].map(([label, val, color], i) => (
+                  <div key={i} style={{ textAlign: 'center', padding: '8px 4px', background: 'var(--bg3)', borderRadius: 6 }}>
+                    <div style={{ fontWeight: 700, fontSize: 18, color }}>{val}</div>
+                    <div style={{ fontSize: 10, color: 'var(--tx3)', marginTop: 2 }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--tx3)' }}>
+                <span>已付 <span style={{ color: 'var(--gn)', fontWeight: 600 }}>€{referralSummary.total_paid.toFixed(0)}</span></span>
+                <span>待付 <span style={{ color: 'var(--og)', fontWeight: 600 }}>€{referralSummary.total_pending.toFixed(0)}</span></span>
+              </div>
+            </div>
+          )}
+          {commissionSummary && (
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>💰 合作伙伴返佣</div>
+              <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 10 }}>
+                {[
+                  ['总协议', commissionSummary.total, 'var(--cy)'],
+                  ['生效中', commissionSummary.active, 'var(--gn)'],
+                ].map(([label, val, color], i) => (
+                  <div key={i} style={{ textAlign: 'center' }}>
+                    <div style={{ fontWeight: 700, fontSize: 22, color }}>{val}</div>
+                    <div style={{ fontSize: 10, color: 'var(--tx3)' }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
+                {Object.entries(commissionSummary.tier_breakdown).map(([tier, count]) => {
+                  const colors = { bronze: '#cd7f32', silver: '#a0a0b0', gold: '#f5a623', platinum: '#6b7de8' };
+                  const c = colors[tier] || '#6a7498';
+                  return count > 0 ? (
+                    <span key={tier} style={{ background: c + '20', color: c, border: `1px solid ${c}44`,
+                      padding: '1px 7px', borderRadius: 3, fontSize: 10, fontWeight: 700 }}>
+                      {tier.charAt(0).toUpperCase() + tier.slice(1)} ×{count}
+                    </span>
+                  ) : null;
+                })}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--tx3)' }}>
+                <span>已付 <span style={{ color: 'var(--gn)', fontWeight: 600 }}>€{commissionSummary.total_paid.toFixed(0)}</span></span>
+                <span>待付 <span style={{ color: 'var(--og)', fontWeight: 600 }}>€{commissionSummary.total_pending.toFixed(0)}</span></span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

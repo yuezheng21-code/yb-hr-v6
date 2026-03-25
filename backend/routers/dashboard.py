@@ -13,6 +13,8 @@ from backend.models.supplier import Supplier
 from backend.models.warehouse import Warehouse
 from backend.models.timesheet import Timesheet
 from backend.models.settlement import ProjectSettlement
+from backend.models.referral import ReferralRecord
+from backend.models.commission import CommissionRecord, CommissionMonthly
 from backend.middleware.auth import get_current_user
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
@@ -175,4 +177,67 @@ def margin_analysis(
         "by_period": by_period,
         "by_warehouse": by_warehouse_list,
         "has_data": len(rows) > 0,
+    }
+
+
+@router.get("/referral-summary")
+def referral_summary(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Referral program summary for dashboard."""
+    total = db.scalar(select(func.count(ReferralRecord.id))) or 0
+    active = db.scalar(
+        select(func.count(ReferralRecord.id)).where(
+            ReferralRecord.status.not_in(["cancelled", "completed", "submitted"])
+        )
+    ) or 0
+    completed = db.scalar(
+        select(func.count(ReferralRecord.id)).where(ReferralRecord.status == "completed")
+    ) or 0
+    total_paid = db.scalar(select(func.coalesce(func.sum(ReferralRecord.reward_total_paid), 0.0))) or 0.0
+    total_pending = db.scalar(select(func.coalesce(func.sum(ReferralRecord.reward_total_pending), 0.0))) or 0.0
+
+    now = datetime.utcnow()
+    first_day = now.replace(day=1)
+    this_month = db.scalar(
+        select(func.count(ReferralRecord.id)).where(
+            ReferralRecord.submitted_at >= first_day,
+            ReferralRecord.status != "cancelled",
+        )
+    ) or 0
+
+    return {
+        "total": total,
+        "active": active,
+        "completed": completed,
+        "this_month": this_month,
+        "total_paid": round(float(total_paid), 2),
+        "total_pending": round(float(total_pending), 2),
+    }
+
+
+@router.get("/commission-summary")
+def commission_summary(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Commission agreements summary for dashboard."""
+    total = db.scalar(select(func.count(CommissionRecord.id))) or 0
+    active = db.scalar(
+        select(func.count(CommissionRecord.id)).where(CommissionRecord.status == "active")
+    ) or 0
+    total_paid = db.scalar(select(func.coalesce(func.sum(CommissionRecord.total_paid), 0.0))) or 0.0
+    total_pending = db.scalar(select(func.coalesce(func.sum(CommissionRecord.total_pending), 0.0))) or 0.0
+
+    tier_counts = {}
+    for tier in ["bronze", "silver", "gold", "platinum"]:
+        count = db.scalar(
+            select(func.count(CommissionRecord.id)).where(
+                CommissionRecord.status == "active",
+                CommissionRecord.tier == tier,
+            )
+        ) or 0
+        tier_counts[tier] = count
+
+    return {
+        "total": total,
+        "active": active,
+        "total_paid": round(float(total_paid), 2),
+        "total_pending": round(float(total_pending), 2),
+        "tier_breakdown": tier_counts,
     }

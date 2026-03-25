@@ -154,3 +154,64 @@ def export_project_settlements_xlsx(rows: list, period: str) -> bytes:
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
+
+
+def export_commissions_xlsx(rows: list, monthly_map: dict, period: str) -> bytes:
+    """Export commission agreements with monthly details to Excel.
+    rows: list of CommissionRecord ORM objects
+    monthly_map: {commission_id: [CommissionMonthly]} dict
+    """
+    from openpyxl import Workbook
+    wb = Workbook()
+
+    # Sheet 1: Commission agreements summary
+    ws1 = wb.active
+    ws1.title = f"返佣协议_{period}"
+    headers1 = [
+        "协议编号", "推荐人", "类型", "客户名称", "仓库",
+        "层级", "返佣率(%)", "生效日期", "到期日期",
+        "已付(€)", "待付(€)", "状态",
+    ]
+    _make_wb_title(ws1, f"渊博579 返佣协议汇总 — {period}", len(headers1))
+    _add_header_row(ws1, headers1)
+    for row_idx, r in enumerate(rows, start=3):
+        ws1.cell(row=row_idx, column=1, value=r.commission_no)
+        ws1.cell(row=row_idx, column=2, value=r.referrer_name)
+        ws1.cell(row=row_idx, column=3, value="个人" if r.referrer_type == "individual" else "机构")
+        ws1.cell(row=row_idx, column=4, value=r.client_name)
+        ws1.cell(row=row_idx, column=5, value=r.client_warehouse or "")
+        ws1.cell(row=row_idx, column=6, value=r.tier.upper())
+        ws1.cell(row=row_idx, column=7, value=round(r.commission_rate, 1))
+        ws1.cell(row=row_idx, column=8, value=r.validity_start.strftime('%Y-%m-%d') if r.validity_start else "")
+        ws1.cell(row=row_idx, column=9, value=r.validity_end.strftime('%Y-%m-%d') if r.validity_end else "")
+        ws1.cell(row=row_idx, column=10, value=round(r.total_paid, 2))
+        ws1.cell(row=row_idx, column=11, value=round(r.total_pending, 2))
+        ws1.cell(row=row_idx, column=12, value=r.status)
+    _auto_col_width(ws1)
+
+    # Sheet 2: Monthly details for the requested period
+    ws2 = wb.create_sheet(title=f"月度明细_{period}")
+    headers2 = [
+        "协议编号", "推荐人", "客户名称", "月份",
+        "发票额(€)", "返佣率(%)", "返佣额(€)", "付款状态", "付款日期",
+    ]
+    _make_wb_title(ws2, f"渊博579 返佣月度明细 — {period}", len(headers2))
+    _add_header_row(ws2, headers2)
+    row_idx = 3
+    for r in rows:
+        for m in monthly_map.get(r.id, []):
+            ws2.cell(row=row_idx, column=1, value=r.commission_no)
+            ws2.cell(row=row_idx, column=2, value=r.referrer_name)
+            ws2.cell(row=row_idx, column=3, value=r.client_name)
+            ws2.cell(row=row_idx, column=4, value=m.period)
+            ws2.cell(row=row_idx, column=5, value=round(m.client_invoice_amount, 2))
+            ws2.cell(row=row_idx, column=6, value=round(m.commission_rate, 1))
+            ws2.cell(row=row_idx, column=7, value=round(m.commission_amount, 2))
+            ws2.cell(row=row_idx, column=8, value=m.payment_status)
+            ws2.cell(row=row_idx, column=9, value=m.payment_date.strftime('%Y-%m-%d') if m.payment_date else "")
+            row_idx += 1
+    _auto_col_width(ws2)
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()

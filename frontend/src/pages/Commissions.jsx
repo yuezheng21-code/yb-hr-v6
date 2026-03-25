@@ -94,6 +94,20 @@ export default function Commissions({ token, user }) {
     } catch (e) { showToast(e.message, 'err'); }
   };
 
+  const downloadXlsx = async () => {
+    try {
+      const res = await fetch(`/api/v1/commissions/export/${calcPeriod}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `commissions_${calcPeriod}.xlsx`;
+      a.click();
+    } catch (e) { showToast(e.message, 'err'); }
+  };
+
   const calculatePeriod = async () => {
     const body = {};
     commissions.filter(c => ['active','pending'].includes(c.status)).forEach(c => {
@@ -153,6 +167,9 @@ export default function Commissions({ token, user }) {
       <div className="ab">
         <div />
         <div className="ml">
+          {canView && (
+            <button className="b bgh" onClick={downloadXlsx}>↓ Excel</button>
+          )}
           {canAdmin && (
             <button className="b bga" onClick={() => setCreateModal(true)}>+ 新建返佣协议</button>
           )}

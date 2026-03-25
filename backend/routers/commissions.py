@@ -13,8 +13,9 @@ from backend.models.commission import CommissionRecord, CommissionMonthly
 from backend.models.user import User
 from backend.schemas.commission import CommissionRecordOut, CommissionMonthlyOut, CommissionCreate
 from backend.middleware.auth import get_current_user
+from fastapi.responses import StreamingResponse
 from backend.services.sequence import next_sequence_no, make_prefix
-from backend.services import commission_engine
+from backend.services import commission_engine, export_service
 
 router = APIRouter(prefix="/api/v1/commissions", tags=["commissions"])
 
@@ -204,6 +205,41 @@ def mark_monthly_paid(
     db.commit()
     db.refresh(cm)
     return cm
+
+
+@router.get("/export/{period}")
+def export_commissions(
+    period: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Export commission agreements and monthly details to Excel."""
+    if user.role not in {"admin", "fin"}:
+        raise HTTPException(403, "Forbidden")
+
+    records = db.scalars(
+        select(CommissionRecord).order_by(CommissionRecord.referrer_name)
+    ).all()
+
+    monthly_map = {}
+    for rec in records:
+        monthly = db.scalars(
+            select(CommissionMonthly)
+            .where(
+                CommissionMonthly.commission_id == rec.id,
+                CommissionMonthly.period == period,
+            )
+        ).all()
+        if monthly:
+            monthly_map[rec.id] = monthly
+
+    xlsx_bytes = export_service.export_commissions_xlsx(records, monthly_map, period)
+    filename = f"commissions_{period}.xlsx"
+    return StreamingResponse(
+        iter([xlsx_bytes]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
 @router.get("/{commission_id}", response_model=CommissionRecordOut)
