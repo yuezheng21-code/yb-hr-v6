@@ -1,8 +1,9 @@
 """
 渊博579 HR V7 — Warehouses Router
+Supports lookup by both integer ID and warehouse code string.
 """
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -13,6 +14,15 @@ from backend.schemas.warehouse import WarehouseCreate, WarehouseUpdate, Warehous
 from backend.middleware.auth import get_current_user
 
 router = APIRouter(prefix="/api/v1/warehouses", tags=["warehouses"])
+
+
+def _get_by_id_or_code(db: Session, id_or_code: str) -> Optional[Warehouse]:
+    """Resolve warehouse by integer ID or string code."""
+    try:
+        wh_id = int(id_or_code)
+        return db.get(Warehouse, wh_id)
+    except ValueError:
+        return db.scalar(select(Warehouse).where(Warehouse.code == id_or_code.upper()))
 
 
 @router.get("", response_model=list[WarehouseOut])
@@ -44,22 +54,30 @@ def create_warehouse(
     return wh
 
 
-@router.get("/{wh_id}", response_model=WarehouseOut)
-def get_warehouse(wh_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    wh = db.get(Warehouse, wh_id)
+@router.get("/{wh_ref}", response_model=WarehouseOut)
+def get_warehouse(
+    wh_ref: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Look up a warehouse by integer ID or warehouse code (e.g. 'UNA')."""
+    wh = _get_by_id_or_code(db, wh_ref)
     if wh is None:
         raise HTTPException(404, "Warehouse not found")
     return wh
 
 
-@router.put("/{wh_id}", response_model=WarehouseOut)
+@router.put("/{wh_ref}", response_model=WarehouseOut)
 def update_warehouse(
-    wh_id: int, body: WarehouseUpdate,
-    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+    wh_ref: str,
+    body: WarehouseUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
+    """Update a warehouse identified by integer ID or warehouse code."""
     if user.role != "admin":
         raise HTTPException(403, "Forbidden")
-    wh = db.get(Warehouse, wh_id)
+    wh = _get_by_id_or_code(db, wh_ref)
     if wh is None:
         raise HTTPException(404, "Warehouse not found")
     for k, v in body.model_dump(exclude_unset=True).items():

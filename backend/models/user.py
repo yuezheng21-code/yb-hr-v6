@@ -20,5 +20,5 @@ class User(Base):
     bound_warehouse: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     bound_biz_line: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())
     last_login: Mapped[Optional[datetime]] = mapped_column(nullable=True)

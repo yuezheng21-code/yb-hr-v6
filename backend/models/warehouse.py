@@ -26,4 +26,4 @@ class Warehouse(Base):
     rate_45hc: Mapped[Optional[float]] = mapped_column(Float)
     status: Mapped[str] = mapped_column(String(20), default="active")
     notes: Mapped[Optional[str]] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())

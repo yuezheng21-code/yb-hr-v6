@@ -2,7 +2,7 @@
 渊博579 HR V7 — JWT Auth Middleware
 """
 from __future__ import annotations
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Optional
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -19,7 +19,7 @@ ROLES = {"admin", "hr", "fin", "wh", "sup", "mgr", "worker"}
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=cfg.ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=cfg.ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode["exp"] = expire
     return jwt.encode(to_encode, cfg.JWT_SECRET, algorithm=cfg.JWT_ALGORITHM)
 

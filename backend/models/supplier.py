@@ -24,4 +24,4 @@ class Supplier(Base):
     status: Mapped[str] = mapped_column(String(20), default="active")
     rating: Mapped[Optional[str]] = mapped_column(String(5))
     notes: Mapped[Optional[str]] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())
