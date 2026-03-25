@@ -18,6 +18,18 @@ from backend.middleware.auth import get_current_user
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 
 
+def _past_months(n: int) -> list[str]:
+    """Return the last n month strings (YYYY-MM), oldest first."""
+    now = datetime.utcnow().replace(day=1)
+    result = []
+    for i in range(n - 1, -1, -1):
+        m = now
+        for _ in range(i):
+            m = (m - timedelta(days=1)).replace(day=1)
+        result.append(m.strftime("%Y-%m"))
+    return result
+
+
 @router.get("/stats")
 def dashboard_stats(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     active_employees = db.scalar(select(func.count(Employee.id)).where(Employee.status == "active")) or 0
@@ -53,13 +65,7 @@ def dashboard_stats(user: User = Depends(get_current_user), db: Session = Depend
 @router.get("/charts")
 def dashboard_charts(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Chart data: monthly hours/amount trends + warehouse & biz_line distributions."""
-    now = datetime.utcnow()
-    months = []
-    for i in range(5, -1, -1):
-        m = now.replace(day=1)
-        for _ in range(i):
-            m = (m - timedelta(days=1)).replace(day=1)
-        months.append(m.strftime("%Y-%m"))
+    months = _past_months(6)
 
     monthly_hours = []
     monthly_amount = []
@@ -84,7 +90,7 @@ def dashboard_charts(user: User = Depends(get_current_user), db: Session = Depen
         monthly_hours.append({"label": period[5:7] + "/" + period[2:4], "value": round(float(hours), 1)})
         monthly_amount.append({"label": period[5:7] + "/" + period[2:4], "value": round(float(amount), 2)})
 
-    first_day = now.replace(day=1).date()
+    first_day = datetime.utcnow().replace(day=1).date()
     wh_rows = db.execute(
         select(Timesheet.warehouse_code, func.coalesce(func.sum(Timesheet.hours), 0.0).label("hours"))
         .where(Timesheet.approval_status == "booked", Timesheet.work_date >= first_day)
@@ -117,13 +123,7 @@ def margin_analysis(
     db: Session = Depends(get_db),
 ):
     """Gross margin analysis from project settlements for the past N months."""
-    now = datetime.utcnow()
-    periods = []
-    for i in range(months - 1, -1, -1):
-        m = now.replace(day=1)
-        for _ in range(i):
-            m = (m - timedelta(days=1)).replace(day=1)
-        periods.append(m.strftime("%Y-%m"))
+    periods = _past_months(months)
 
     rows = db.scalars(
         select(ProjectSettlement)

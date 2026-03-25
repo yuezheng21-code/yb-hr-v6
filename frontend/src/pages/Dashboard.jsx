@@ -4,6 +4,8 @@ import { useLang } from '../context/LangContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { StatCard, Chart } from '../components/common/index.js';
 
+const MARGIN_MONTHS = 3;
+
 export default function Dashboard({ token, user }) {
   const [stats, setStats] = useState(null);
   const [charts, setCharts] = useState(null);
@@ -15,7 +17,7 @@ export default function Dashboard({ token, user }) {
     Promise.all([
       api('/api/v1/dashboard/stats', { token }),
       api('/api/v1/dashboard/charts', { token }),
-      api('/api/v1/dashboard/margin-analysis?months=3', { token }),
+      api('/api/v1/dashboard/margin-analysis?months=' + MARGIN_MONTHS, { token }),
     ])
       .then(([s, c, m]) => { setStats(s); setCharts(c); setMargin(m); })
       .catch(() => {})
@@ -76,7 +78,7 @@ export default function Dashboard({ token, user }) {
 
         {margin?.has_data ? (
           <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>📈 毛利分析 (近3月)</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>📈 毛利分析 (近{MARGIN_MONTHS}月)</div>
             {margin.by_period.map((p, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--bd)', fontSize: 11 }}>
                 <span style={{ color: 'var(--tx3)' }}>{p.period}</span>
