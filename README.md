@@ -83,8 +83,23 @@ cd frontend
 npm run build        # 输出到 frontend/dist/
 ```
 
+> **生产部署**：Dockerfile 会自动执行 `npm ci && npm run build`，
+> `backend/main.py` 优先挂载 `frontend/dist/`（Vite构建产物）作为静态资源，
+> 若不存在则回退到 `static/`（legacy）。
+
 > **legacy 说明**：`static/` 目录保留为历史参考，不再作为主实现。
 > 主前端实现位于 `frontend/`。
+
+### 导出功能
+
+工时记录和月度结算支持 CSV 导出：
+
+| 端点 | 说明 |
+|---|---|
+| `GET /api/timesheets/export` | 导出工时记录（支持 status/date_from/date_to/warehouse 筛选） |
+| `GET /api/settlement/monthly/export?month=YYYY-MM` | 导出指定月份结算汇总 |
+
+前端"工时记录"和"月度结算"页面均有 **↓ CSV** 按钮。
 
 ---
 

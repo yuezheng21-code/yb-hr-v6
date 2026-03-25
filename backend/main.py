@@ -158,9 +158,16 @@ app.include_router(clock.router)
 app.include_router(logs.router)
 
 # ── Static files + catch-all ─────────────────────────────────────────
-STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+_REPO_ROOT = os.path.dirname(os.path.dirname(__file__))
+_DIST_DIR = os.path.join(_REPO_ROOT, "frontend", "dist")
+_LEGACY_DIR = os.path.join(_REPO_ROOT, "static")
+
+# Prefer the Vite-built frontend (frontend/dist) when it exists; fall back to legacy static/
+STATIC_DIR = _DIST_DIR if os.path.isdir(_DIST_DIR) else _LEGACY_DIR
 os.makedirs(STATIC_DIR, exist_ok=True)
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+_ASSETS_DIR = os.path.join(STATIC_DIR, "assets")
+app.mount("/assets", StaticFiles(directory=_ASSETS_DIR if os.path.isdir(_ASSETS_DIR) else STATIC_DIR), name="assets")
+app.mount("/static", StaticFiles(directory=_LEGACY_DIR), name="static")
 
 
 @app.get("/{full_path:path}")

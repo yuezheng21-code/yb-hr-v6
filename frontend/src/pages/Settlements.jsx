@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { api } from '../services/api.js';
+import { api, downloadCsv } from '../services/api.js';
 import { useLang } from '../context/LangContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { StatusBadge, fmtE } from '../components/StatusBadge.jsx';
 
@@ -9,6 +10,7 @@ export default function Settlements({ token }) {
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const { t } = useLang();
+  const showToast = useToast();
 
   useEffect(() => {
     setLoading(true);
@@ -21,6 +23,12 @@ export default function Settlements({ token }) {
     <div>
       <div className="ab">
         <input type="month" className="fs" value={month} onChange={e => setMonth(e.target.value)} />
+        <div className="ml">
+          <button className="b bgh" onClick={() =>
+            downloadCsv(`/api/settlement/monthly/export?month=${month}`, token, `settlement_${month}.csv`)
+              .catch(e => showToast(e.message, 'err'))
+          }>↓ CSV</button>
+        </div>
       </div>
 
       {data && (

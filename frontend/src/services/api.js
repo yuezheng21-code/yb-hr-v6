@@ -41,6 +41,32 @@ export function resetSessionGuard() {
   _sessionExpired = false;
 }
 
+/**
+ * Trigger a CSV file download from the backend export endpoint.
+ * Uses fetch with Authorization header and creates a blob URL.
+ * @param {string} path    - e.g. '/api/timesheets/export?status=已入账'
+ * @param {string} token   - Bearer token
+ * @param {string} filename - suggested file name for download
+ */
+export async function downloadCsv(path, token, filename) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(path, { method: 'GET', headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Download failed' }));
+    throw new Error(err.detail || res.statusText);
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename || 'export.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 /** Poll /health until the server is ready. Returns a cleanup function. */
 export function pollHealth(onReady, onStatus) {
   let cancelled = false;

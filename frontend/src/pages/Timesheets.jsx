@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../services/api.js';
+import { api, downloadCsv } from '../services/api.js';
 import { useLang } from '../context/LangContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
@@ -82,6 +82,12 @@ export default function Timesheets({ token, user }) {
               {t('ts.batch')} ({pending.length})
             </button>
           )}
+          <button className="b bgh" onClick={() => {
+            const qs = filterStatus ? `?status=${encodeURIComponent(filterStatus)}` : '';
+            downloadCsv(`/api/timesheets/export${qs}`, token,
+              `timesheets${filterStatus ? '_' + filterStatus : ''}.csv`)
+              .catch(e => showToast(e.message, 'err'));
+          }}>↓ CSV</button>
           <button className="b bga" onClick={() => setAddModal(true)}>{t('ts.add')}</button>
         </div>
       </div>

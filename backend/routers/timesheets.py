@@ -1,9 +1,12 @@
 """
 Timesheets router
 """
+import csv
+import io
 import uuid
 from datetime import date, datetime
 from fastapi import APIRouter, HTTPException, Depends, Body
+from fastapi.responses import StreamingResponse
 import backend.database as database
 from backend.deps import get_user, rows, one, auditlog
 
@@ -56,6 +59,70 @@ def list_timesheets(
     )
     db.close()
     return result
+
+
+@router.get("/export")
+def export_timesheets(
+    u: dict = Depends(get_user),
+    date_from: str = "",
+    date_to: str = "",
+    status: str = "",
+    warehouse: str = "",
+    employee_id: str = "",
+):
+    """Export filtered timesheets as a UTF-8 CSV download."""
+    db = database.get_db()
+    conds = ["1=1"]
+    params = []
+    if u.get("supplier_id"):
+        conds.append("supplier_id=?")
+        params.append(u["supplier_id"])
+    if u.get("warehouse_code") and u["role"] == "wh":
+        conds.append("warehouse_code=?")
+        params.append(u["warehouse_code"])
+    if u.get("biz_line") and u["role"] not in ("admin", "hr", "fin"):
+        conds.append("biz_line=?")
+        params.append(u["biz_line"])
+    if u.get("_emp_id"):
+        conds.append("employee_id=?")
+        params.append(u["_emp_id"])
+    if date_from:
+        conds.append("work_date>=?")
+        params.append(date_from)
+    if date_to:
+        conds.append("work_date<=?")
+        params.append(date_to)
+    if status:
+        conds.append("status=?")
+        params.append(status)
+    if warehouse:
+        conds.append("warehouse_code=?")
+        params.append(warehouse)
+    if employee_id:
+        conds.append("employee_id=?")
+        params.append(employee_id)
+    result = rows(
+        db,
+        f"SELECT * FROM timesheets WHERE {' AND '.join(conds)} ORDER BY work_date DESC,id DESC LIMIT 5000",
+        params,
+    )
+    db.close()
+
+    fields = ["id", "employee_name", "grade", "warehouse_code", "biz_line", "source",
+              "work_date", "shift", "start_time", "end_time", "hours",
+              "base_rate", "shift_bonus", "effective_rate", "gross_pay",
+              "perf_bonus", "ssi_deduct", "tax_deduct", "net_pay", "status"]
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(result)
+
+    filename = f"timesheets_{date_from or date.today().strftime('%Y%m%d')}_{date_to or date.today().strftime('%Y%m%d')}.csv"
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post("")
