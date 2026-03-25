@@ -290,13 +290,14 @@ def export_timesheets(
                          r.amount_total, r.approval_status, r.biz_line, r.source_type])
 
     output.seek(0)
-    safe_from = (date_from or 'all').replace('/', '-').replace('\\', '')[:20]
-    safe_to = (date_to or 'all').replace('/', '-').replace('\\', '')[:20]
-    filename = f"timesheets_{safe_from}_{safe_to}.csv"
+    # Build a safe filename using only alphanumeric chars and hyphens to prevent header injection
+    import re as _re
+    _safe = lambda s: _re.sub(r"[^a-zA-Z0-9\-]", "", (s or "all"))[:20]
+    filename = f"timesheets_{_safe(date_from)}_{_safe(date_to)}.csv"
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
 
 

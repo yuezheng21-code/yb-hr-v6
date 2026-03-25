@@ -32,7 +32,7 @@ def _enrich(cn: ContainerRecord) -> dict:
         try:
             worker_ids = json.loads(cn.worker_ids)
         except json.JSONDecodeError:
-            pass  # malformed JSON; treat as empty worker list
+            print(f"Warning: ContainerRecord id={cn.id} has malformed worker_ids JSON")
     d["worker_count"] = len(worker_ids)
     return d
 

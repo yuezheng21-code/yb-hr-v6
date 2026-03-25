@@ -21,7 +21,7 @@ function computeHours(start, end) {
   if ([sh, sm, eh, em].some(isNaN)) return null;
   let mins = (eh * 60 + em) - (sh * 60 + sm);
   if (mins <= 0) mins += 24 * 60;
-  return (mins / 60).toFixed(1);
+  return parseFloat((mins / 60).toFixed(1));
 }
 
 export default function Containers({ token, user }) {
