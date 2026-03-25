@@ -106,7 +106,7 @@ def export_supplier_settlements_xlsx(rows: list, period: str) -> bytes:
         ws.cell(row=row_idx, column=7, value=round(r.total_hours, 2))
         ws.cell(row=row_idx, column=8, value=round(r.total_amount, 2))
         ws.cell(row=row_idx, column=9, value=r.invoice_no or "")
-        ws.cell(row=row_idx, column=10, value=str(r.invoice_date) if r.invoice_date else "")
+        ws.cell(row=row_idx, column=10, value=r.invoice_date.strftime('%Y-%m-%d') if r.invoice_date else "")
         ws.cell(row=row_idx, column=11, value=round(r.invoice_amount, 2))
         ws.cell(row=row_idx, column=12, value=r.status)
 

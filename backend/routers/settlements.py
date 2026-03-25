@@ -34,7 +34,12 @@ router = APIRouter(prefix="/api/v1/settlements", tags=["settlements"])
 
 def _period_range(period: str) -> Tuple[date, date]:
     """Return (date_from, date_to_exclusive) for a period string like '2026-03'."""
-    year, month = int(period[:4]), int(period[5:7])
+    try:
+        year, month = int(period[:4]), int(period[5:7])
+        if not (1 <= month <= 12):
+            raise ValueError
+    except (ValueError, IndexError):
+        raise HTTPException(400, f"Invalid period format '{period}'. Expected YYYY-MM.")
     date_from = date(year, month, 1)
     if month == 12:
         date_to = date(year + 1, 1, 1)
@@ -267,7 +272,10 @@ def mark_employee_paid(
     if es.status != "confirmed":
         raise HTTPException(400, "Only confirmed settlements can be marked paid")
     es.status = "paid"
-    es.paid_at = date.fromisoformat(paid_at) if paid_at else date.today()
+    try:
+        es.paid_at = date.fromisoformat(paid_at) if paid_at else date.today()
+    except ValueError:
+        raise HTTPException(400, f"Invalid date format '{paid_at}'. Expected YYYY-MM-DD.")
     db.commit()
     db.refresh(es)
     return es
@@ -423,7 +431,10 @@ def update_supplier_invoice(
         raise HTTPException(404, "Settlement not found")
     ss.invoice_no = invoice_no
     if invoice_date:
-        ss.invoice_date = date.fromisoformat(invoice_date)
+        try:
+            ss.invoice_date = date.fromisoformat(invoice_date)
+        except ValueError:
+            raise HTTPException(400, f"Invalid date format '{invoice_date}'. Expected YYYY-MM-DD.")
     if invoice_amount is not None:
         ss.invoice_amount = invoice_amount
     ss.status = "invoiced"
