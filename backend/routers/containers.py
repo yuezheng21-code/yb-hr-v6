@@ -4,6 +4,7 @@
 """
 from __future__ import annotations
 import json
+import logging
 from datetime import datetime, date
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -20,6 +21,7 @@ from backend.services.settlement_calc import compute_hours
 from backend.services.sequence import next_sequence_no, make_prefix
 
 router = APIRouter(prefix="/api/v1/containers", tags=["containers"])
+_logger = logging.getLogger(__name__)
 
 
 def _enrich(cn: ContainerRecord) -> dict:
@@ -32,7 +34,7 @@ def _enrich(cn: ContainerRecord) -> dict:
         try:
             worker_ids = json.loads(cn.worker_ids)
         except json.JSONDecodeError:
-            print(f"Warning: ContainerRecord id={cn.id} has malformed worker_ids JSON")
+            _logger.warning("ContainerRecord id=%s has malformed worker_ids JSON", cn.id)
     d["worker_count"] = len(worker_ids)
     return d
 

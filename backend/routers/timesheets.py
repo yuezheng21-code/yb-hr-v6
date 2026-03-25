@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
-import csv, io
+import csv, io, re
 from backend.database import get_db
 from backend.models.timesheet import Timesheet
 from backend.models.employee import Employee
@@ -291,8 +291,8 @@ def export_timesheets(
 
     output.seek(0)
     # Build a safe filename using only alphanumeric chars and hyphens to prevent header injection
-    import re as _re
-    _safe = lambda s: _re.sub(r"[^a-zA-Z0-9\-]", "", (s or "all"))[:20]
+    def _safe(s: str) -> str:
+        return re.sub(r"[^a-zA-Z0-9\-]", "", (s or "all"))[:20]
     filename = f"timesheets_{_safe(date_from)}_{_safe(date_to)}.csv"
     return StreamingResponse(
         iter([output.getvalue()]),

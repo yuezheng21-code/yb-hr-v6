@@ -19,14 +19,14 @@ router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 
 
 def _past_months(n: int) -> list[str]:
-    """Return the last n month strings (YYYY-MM), oldest first."""
-    now = datetime.utcnow().replace(day=1)
+    """Return the last n month strings (YYYY-MM), oldest first (O(n) arithmetic)."""
+    now = datetime.utcnow()
+    cur_year, cur_month = now.year, now.month
     result = []
     for i in range(n - 1, -1, -1):
-        m = now
-        for _ in range(i):
-            m = (m - timedelta(days=1)).replace(day=1)
-        result.append(m.strftime("%Y-%m"))
+        total_months = cur_year * 12 + cur_month - 1 - i
+        y, m = divmod(total_months, 12)
+        result.append(f"{y:04d}-{m+1:02d}")
     return result
 
 
