@@ -51,7 +51,7 @@ export default function Login({ onLogin }) {
           <div className="sb-logo" style={{ width:44,height:44,fontSize:20 }}>渊</div>
           <div>
             <div style={{ fontSize:18,fontWeight:700 }}>{t('login.title')}</div>
-            <div style={{ fontSize:10,color:'var(--tx3)',letterSpacing:2 }}>V6 · Warehouse Management</div>
+            <div style={{ fontSize:10,color:'var(--tx3)',letterSpacing:2 }}>V7 · HR Dispatch System</div>
           </div>
         </div>
 

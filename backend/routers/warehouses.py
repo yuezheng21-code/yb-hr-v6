@@ -1,174 +1,87 @@
 """
-Warehouses, suppliers, grades, KPI levels, cost calc, salary lookup router
+渊博579 HR V7 — Warehouses Router
+Supports lookup by both integer ID and warehouse code string.
 """
-from fastapi import APIRouter, HTTPException, Depends, Body
-import backend.database as database
-from backend.deps import get_user, rows, one, auditlog
+from __future__ import annotations
+from typing import Optional, Union
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from backend.database import get_db
+from backend.models.warehouse import Warehouse
+from backend.models.user import User
+from backend.schemas.warehouse import WarehouseCreate, WarehouseUpdate, WarehouseOut
+from backend.middleware.auth import get_current_user
 
-router = APIRouter(tags=["warehouses"])
-
-_SUPPLIER_FIELDS = {"name", "biz_line", "contact_name", "phone", "email", "tax_handle", "rating", "status", "notes"}
-
-# ── Warehouses ───────────────────────────────────────────────────────
-
-@router.get("/api/warehouses")
-def list_warehouses(u: dict = Depends(get_user)):
-    db = database.get_db()
-    result = rows(db, "SELECT * FROM warehouses WHERE active=1 ORDER BY code")
-    db.close()
-    return result
+router = APIRouter(prefix="/api/v1/warehouses", tags=["warehouses"])
 
 
-@router.put("/api/warehouses/{code}")
-def update_warehouse(code: str, data: dict = Body(...), u: dict = Depends(get_user)):
-    if u["role"] not in ("admin", "mgr"):
-        raise HTTPException(403)
-    db = database.get_db()
-    data.pop("code", None)
-    sets = ",".join(f"{k}=?" for k in data)
-    database.execute(db, f"UPDATE warehouses SET {sets} WHERE code=?", list(data.values()) + [code])
-    database.commit(db)
-    db.close()
-    return {"ok": True}
+def _get_by_id_or_code(db: Session, id_or_code: str) -> Optional[Warehouse]:
+    """Resolve warehouse by integer ID or string code."""
+    try:
+        wh_id = int(id_or_code)
+        return db.get(Warehouse, wh_id)
+    except ValueError:
+        return db.scalar(select(Warehouse).where(Warehouse.code == id_or_code.upper()))
 
 
-@router.get("/api/warehouses/{code}/rates")
-def warehouse_rates(code: str, u: dict = Depends(get_user)):
-    db = database.get_db()
-    wh = one(db, "SELECT * FROM warehouses WHERE code=?", (code,))
-    db.close()
-    if not wh:
-        raise HTTPException(404)
-    return dict(wh)
-
-
-# ── Suppliers ────────────────────────────────────────────────────────
-
-@router.get("/api/suppliers")
-def list_suppliers(u: dict = Depends(get_user)):
-    db = database.get_db()
-    result = rows(db, "SELECT * FROM suppliers ORDER BY name")
-    db.close()
-    return result
-
-
-@router.post("/api/suppliers")
-def create_supplier(data: dict = Body(...), u: dict = Depends(get_user)):
-    if u["role"] not in ("admin", "hr"):
-        raise HTTPException(403)
-    safe = {k: v for k, v in data.items() if k in _SUPPLIER_FIELDS}
-    if not safe.get("name"):
-        raise HTTPException(400, "name is required")
-    db = database.get_db()
-    existing = [r["id"] for r in rows(db, "SELECT id FROM suppliers WHERE id LIKE 'SUP-%'")]
-    nums = [
-        int(x.split("-")[1])
-        for x in existing
-        if len(x.split("-")) > 1 and x.split("-")[1].isdigit()
-    ]
-    sup_id = f"SUP-{max(nums, default=0) + 1:03d}"
-    safe["id"] = sup_id
-    cols = ",".join(safe.keys())
-    phs = ",".join(["?"] * len(safe))
-    database.execute(db, f"INSERT INTO suppliers({cols}) VALUES({phs})", list(safe.values()))
-    auditlog(db, u, "CREATE", "suppliers", sup_id, safe.get("name", ""))
-    database.commit(db)
-    db.close()
-    return {"id": sup_id}
-
-
-@router.put("/api/suppliers/{sup_id}")
-def update_supplier(sup_id: str, data: dict = Body(...), u: dict = Depends(get_user)):
-    if u["role"] not in ("admin", "hr"):
-        raise HTTPException(403)
-    safe = {k: v for k, v in data.items() if k in _SUPPLIER_FIELDS}
-    if not safe:
-        raise HTTPException(400, "no valid fields to update")
-    db = database.get_db()
-    sets = ",".join(f"{k}=?" for k in safe)
-    database.execute(db, f"UPDATE suppliers SET {sets} WHERE id=?", list(safe.values()) + [sup_id])
-    auditlog(db, u, "UPDATE", "suppliers", sup_id)
-    database.commit(db)
-    db.close()
-    return {"ok": True}
-
-
-@router.delete("/api/suppliers/{sup_id}")
-def deactivate_supplier(sup_id: str, u: dict = Depends(get_user)):
-    if u["role"] != "admin":
-        raise HTTPException(403)
-    db = database.get_db()
-    database.execute(db, "UPDATE suppliers SET status='停止合作' WHERE id=?", (sup_id,))
-    auditlog(db, u, "DEACTIVATE", "suppliers", sup_id)
-    database.commit(db)
-    db.close()
-    return {"ok": True}
-
-
-# ── Grades / KPI ─────────────────────────────────────────────────────
-
-@router.get("/api/grades")
-def get_grades(u: dict = Depends(get_user)):
-    db = database.get_db()
-    result = rows(db, "SELECT * FROM grade_salaries ORDER BY grade")
-    db.close()
-    return result
-
-
-@router.get("/api/kpi-levels")
-def get_kpi(u: dict = Depends(get_user)):
-    db = database.get_db()
-    result = rows(db, "SELECT * FROM kpi_levels ORDER BY level")
-    db.close()
-    return result
-
-
-# ── Cost Calc / Salary Lookup ─────────────────────────────────────────
-
-@router.post("/api/cost-calc")
-def cost_calc(data: dict = Body(...), u: dict = Depends(get_user)):
-    br = float(data.get("brutto_rate", 14.0))
-    wh = float(data.get("weekly_hours", 40.0))
-    mh = round(wh * 4.333, 1)
-    gross = round(br * mh, 2)
-    ssi_emp = round(gross * 0.2065, 2)
-    hol = round(gross * 0.0833, 2)
-    mgmt = round(gross * 0.05, 2)
-    total = round(gross + ssi_emp + hol + mgmt, 2)
-    true_h = round(total / mh, 2) if mh > 0 else 0
-    is_mj = data.get("emp_type") == "Minijob" or gross <= 538
-    e_ssi = round(gross * 0.205, 2) if not is_mj else 0
-    e_tax = round(gross * 0.08, 2) if not is_mj else 0
-    return {
-        "brutto_rate": br,
-        "weekly_hours": wh,
-        "monthly_hours": mh,
-        "gross_monthly": gross,
-        "employer_ssi": ssi_emp,
-        "holiday_provision": hol,
-        "mgmt_cost": mgmt,
-        "total_employer_cost": total,
-        "true_hourly_cost": true_h,
-        "employee_ssi": e_ssi,
-        "income_tax": e_tax,
-        "net_pay": round(gross - e_ssi - e_tax, 2),
-        "is_minijob": is_mj,
-    }
-
-
-@router.get("/api/salary-lookup")
-def salary_lookup(
-    employee_id: str,
-    warehouse_code: str,
-    shift: str = "白班",
-    hours: float = 8.0,
-    u: dict = Depends(get_user),
+@router.get("", response_model=list[WarehouseOut])
+def list_warehouses(
+    status: Optional[str] = Query(None),
+    biz_line: Optional[str] = Query(None),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    db = database.get_db()
-    emp = one(db, "SELECT * FROM employees WHERE id=?", (employee_id,))
-    if not emp:
-        raise HTTPException(404)
-    pay = database.calc_timesheet_pay(db, dict(emp), warehouse_code, shift, hours)
-    wh = one(db, "SELECT name FROM warehouses WHERE code=?", (warehouse_code,))
-    db.close()
-    return {**pay, "employee_name": emp["name"], "warehouse_name": wh["name"] if wh else warehouse_code}
+    stmt = select(Warehouse)
+    if status:
+        stmt = stmt.where(Warehouse.status == status)
+    if biz_line:
+        stmt = stmt.where(Warehouse.biz_line == biz_line)
+    return db.scalars(stmt).all()
+
+
+@router.post("", response_model=WarehouseOut, status_code=201)
+def create_warehouse(
+    body: WarehouseCreate,
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    if user.role != "admin":
+        raise HTTPException(403, "Forbidden")
+    wh = Warehouse(**body.model_dump())
+    db.add(wh)
+    db.commit()
+    db.refresh(wh)
+    return wh
+
+
+@router.get("/{wh_ref}", response_model=WarehouseOut)
+def get_warehouse(
+    wh_ref: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Look up a warehouse by integer ID or warehouse code (e.g. 'UNA')."""
+    wh = _get_by_id_or_code(db, wh_ref)
+    if wh is None:
+        raise HTTPException(404, "Warehouse not found")
+    return wh
+
+
+@router.put("/{wh_ref}", response_model=WarehouseOut)
+def update_warehouse(
+    wh_ref: str,
+    body: WarehouseUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update a warehouse identified by integer ID or warehouse code."""
+    if user.role != "admin":
+        raise HTTPException(403, "Forbidden")
+    wh = _get_by_id_or_code(db, wh_ref)
+    if wh is None:
+        raise HTTPException(404, "Warehouse not found")
+    for k, v in body.model_dump(exclude_unset=True).items():
+        setattr(wh, k, v)
+    db.commit()
+    db.refresh(wh)
+    return wh

@@ -19,6 +19,11 @@ import Commissions from './pages/Commissions.jsx';
 import Suppliers from './pages/Suppliers.jsx';
 import WarehouseRates from './pages/WarehouseRates.jsx';
 import AuditLogs from './pages/AuditLogs.jsx';
+import Dispatch from './pages/Dispatch.jsx';
+import Talent from './pages/Talent.jsx';
+import Messages from './pages/Messages.jsx';
+import Admin from './pages/Admin.jsx';
+import Integrations from './pages/Integrations.jsx';
 
 const ROLE_COLORS = { admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
 
@@ -39,6 +44,11 @@ function PageContent({ page, token, user }) {
     case 'warehouse_rates':return <WarehouseRates {...props} />;
     case 'logs':           return <AuditLogs {...props} />;
     case 'cost_calc':      return <Commissions {...props} />;
+    case 'dispatch':       return <Dispatch {...props} />;
+    case 'talent':         return <Talent {...props} />;
+    case 'messages':       return <Messages {...props} />;
+    case 'integrations':   return <Integrations {...props} />;
+    case 'admin':          return <Admin {...props} />;
     default:               return <Dashboard {...props} />;
   }
 }
@@ -98,7 +108,7 @@ export default function App() {
     <>
       <div className="sb-hd">
         <div className="sb-logo">渊</div>
-        <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V6 · LIVE</div></div>
+        <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V7 · LIVE</div></div>
       </div>
       <div className="nav">
         {navItems.map((n, i) =>

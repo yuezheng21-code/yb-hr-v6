@@ -1,16 +1,16 @@
 /**
- * Unified API client for YB-HR-V6 backend.
- * Handles auth tokens, 401 session expiry, and JSON error parsing.
+ * Unified API client for YB-HR-V7 backend.
  */
 
 let _sessionExpired = false;
 
-/**
- * Make an authenticated API request.
- * @param {string} path  - URL path (e.g. '/api/employees')
- * @param {object} opts  - { method, body, token }
- * @returns {Promise<any>} Parsed JSON response
- */
+function clearAllAuthKeys() {
+  localStorage.removeItem('hr7_token');
+  localStorage.removeItem('hr7_user');
+  localStorage.removeItem('hr6_token');
+  localStorage.removeItem('hr6_user');
+}
+
 export async function api(path, { method = 'GET', body, token } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = 'Bearer ' + token;
@@ -24,8 +24,7 @@ export async function api(path, { method = 'GET', body, token } = {}) {
   if (!res.ok) {
     if (res.status === 401 && token && !_sessionExpired) {
       _sessionExpired = true;
-      localStorage.removeItem('hr6_token');
-      localStorage.removeItem('hr6_user');
+      clearAllAuthKeys();
       window.location.reload();
       return;
     }
@@ -81,8 +80,7 @@ export function pollHealth(onReady, onStatus) {
       } else if (res.status === 503) {
         const json = await res.json().catch(() => ({}));
         onStatus(json.status || 'initializing');
-        localStorage.removeItem('hr6_token');
-        localStorage.removeItem('hr6_user');
+        clearAllAuthKeys();
         setTimeout(check, INTERVAL);
       } else {
         onReady();

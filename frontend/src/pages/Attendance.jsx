@@ -13,7 +13,7 @@ export default function Attendance({ token, user }) {
   const [emps, setEmps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('在职');
+  const [filterStatus, setFilterStatus] = useState('active');
   const [editModal, setEditModal] = useState(null);
   const [form, setForm] = useState({});
   const { t } = useLang();
@@ -23,7 +23,7 @@ export default function Attendance({ token, user }) {
 
   const load = useCallback(() => {
     setLoading(true);
-    api(`/api/employees?search=${encodeURIComponent(search)}&status=${encodeURIComponent(filterStatus)}`, { token })
+    api(`/api/v1/employees?search=${encodeURIComponent(search)}&status=${encodeURIComponent(filterStatus)}`, { token })
       .then(setEmps)
       .finally(() => setLoading(false));
   }, [token, search, filterStatus]);
@@ -39,9 +39,9 @@ export default function Attendance({ token, user }) {
   const save = async () => {
     try {
       if (editModal === 'new') {
-        await api('/api/employees', { method:'POST', body:form, token });
+        await api('/api/v1/employees', { method:'POST', body:form, token });
       } else {
-        await api(`/api/employees/${editModal}`, { method:'PUT', body:form, token });
+        await api(`/api/v1/employees/${editModal}`, { method:'PUT', body:form, token });
       }
       setEditModal(null);
       load();
@@ -56,7 +56,7 @@ export default function Attendance({ token, user }) {
       <div className="ab">
         <input className="si" placeholder={t('emp.search')} value={search}
           onChange={e => setSearch(e.target.value)} />
-        {[['','c.all'],['在职','emp.status_active'],['离职','emp.status_left']].map(([s, tk]) => (
+        {[['','c.all'],['active','emp.status_active'],['inactive','emp.status_left']].map(([s, tk]) => (
           <button key={s} className={`fb ${filterStatus===s?'on':''}`} onClick={() => setFilterStatus(s)}>
             {t(tk)}
           </button>

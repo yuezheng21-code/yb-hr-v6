@@ -21,7 +21,7 @@ export default function Suppliers({ token, user }) {
 
   const load = () => {
     setLoading(true);
-    api('/api/suppliers', { token }).then(setSuppliers).finally(() => setLoading(false));
+    api('/api/v1/suppliers', { token }).then(setSuppliers).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -39,9 +39,9 @@ export default function Suppliers({ token, user }) {
   const save = async () => {
     try {
       if (editModal === 'new') {
-        await api('/api/suppliers', { method:'POST', body:form, token });
+        await api('/api/v1/suppliers', { method:'POST', body:form, token });
       } else {
-        await api(`/api/suppliers/${editModal}`, { method:'PUT', body:form, token });
+        await api(`/api/v1/suppliers/${editModal}`, { method:'PUT', body:form, token });
       }
       setEditModal(null); load(); showToast(editModal === 'new' ? '供应商已创建' : '供应商已更新');
     } catch (e) { showToast(e.message, 'err'); }
@@ -50,7 +50,7 @@ export default function Suppliers({ token, user }) {
   const del = async (id) => {
     if (!confirm('确认删除该供应商？')) return;
     try {
-      await api(`/api/suppliers/${id}`, { method:'DELETE', token });
+      await api(`/api/v1/suppliers/${id}`, { method:'DELETE', token });
       load(); showToast('已删除');
     } catch (e) { showToast(e.message, 'err'); }
   };

@@ -13,7 +13,7 @@ export default function WarehouseRates({ token }) {
   const { t } = useLang();
 
   useEffect(() => {
-    api('/api/warehouses', { token }).then(whs => {
+    api('/api/v1/warehouses', { token }).then(whs => {
       setWarehouses(whs);
     }).finally(() => setLoading(false));
   }, [token]);
@@ -21,15 +21,16 @@ export default function WarehouseRates({ token }) {
   const selectWH = async (code) => {
     setSelWH(code);
     setEditing(false);
-    const r = await api(`/api/warehouses/${code}/rates`, { token }).catch(() => null);
+    // V7 does not have a separate /rates endpoint — fetch warehouse details directly
+    const r = await api(`/api/v1/warehouses/${code}`, { token }).catch(() => null);
     setRates(r);
     setForm(r || {});
   };
 
   const saveRates = async () => {
-    await api(`/api/warehouses/${selWH}`, { method:'PUT', body:form, token });
+    await api(`/api/v1/warehouses/${selWH}`, { method:'PUT', body:form, token });
     setEditing(false);
-    const r = await api(`/api/warehouses/${selWH}/rates`, { token }).catch(() => null);
+    const r = await api(`/api/v1/warehouses/${selWH}`, { token }).catch(() => null);
     setRates(r);
   };
 

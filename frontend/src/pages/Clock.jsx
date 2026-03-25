@@ -13,15 +13,15 @@ export default function Clock({ token, user }) {
   }, []);
 
   useEffect(() => {
-    api('/api/clock/today', { token }).then(setLogs).catch(() => {});
+    api('/api/v1/clock/today', { token }).then(setLogs).catch(() => {});
   }, [token]);
 
   const last = logs[logs.length - 1];
   const isIn = last?.clock_type === 'in';
 
   const punch = async (type) => {
-    await api('/api/clock', { method:'POST', body:{ clock_type:type }, token });
-    const r = await api('/api/clock/today', { token });
+    await api('/api/v1/clock', { method:'POST', body:{ clock_type:type }, token });
+    const r = await api('/api/v1/clock/today', { token });
     setLogs(r);
   };
 

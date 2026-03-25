@@ -1,226 +1,303 @@
 """
-Timesheets router
+渊博579 HR V7 — Timesheets Router
+/api/v1/timesheets
 """
-import csv
-import io
-import uuid
-from datetime import date, datetime
-from fastapi import APIRouter, HTTPException, Depends, Body
-from fastapi.responses import StreamingResponse
-import backend.database as database
-from backend.deps import get_user, rows, one, auditlog
+from __future__ import annotations
+from datetime import datetime, date
+from typing import Optional, List
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
+from sqlalchemy.orm import Session
+from sqlalchemy import select, func
+from backend.database import get_db
+from backend.models.timesheet import Timesheet
+from backend.models.employee import Employee
+from backend.models.user import User
+from backend.schemas.timesheet import TimesheetCreate, TimesheetUpdate, TimesheetOut, TimesheetRejectIn
+from backend.middleware.auth import get_current_user
+from backend.services.settlement_calc import calc_settlement, calc_shift_bonus_rate, compute_hours
+from backend.services.sequence import next_sequence_no, make_prefix
 
-router = APIRouter(prefix="/api/timesheets", tags=["timesheets"])
+router = APIRouter(prefix="/api/v1/timesheets", tags=["timesheets"])
 
 
-@router.get("")
+def _next_ts_no(db: Session) -> str:
+    return next_sequence_no(db, Timesheet, Timesheet.ts_no, make_prefix("TS"))
+
+
+def _apply_row_filter(stmt, user: User):
+    """Row-level security: filter timesheets based on user role."""
+    if user.role == "sup":
+        stmt = stmt.where(Timesheet.supplier_id == user.bound_supplier_id)
+    elif user.role == "wh":
+        stmt = stmt.where(Timesheet.warehouse_code == user.bound_warehouse)
+    elif user.role == "worker":
+        # workers can only see their own timesheets — return empty until employee linkage is built
+        stmt = stmt.where(Timesheet.id == -1)
+    return stmt
+
+
+def _compute_and_set_amounts(ts: Timesheet, emp: Employee, is_holiday: bool = False) -> None:
+    """Recalculate hours and amounts for a timesheet row."""
+    if ts.start_time and ts.end_time:
+        computed_hours = compute_hours(ts.start_time, ts.end_time, ts.break_minutes)
+        if ts.hours == 0.0:
+            ts.hours = computed_hours
+
+    shift_bonus_rate = calc_shift_bonus_rate(
+        ts.work_date,
+        ts.start_time or "08:00",
+        ts.end_time or "16:00",
+        is_holiday=is_holiday,
+    )
+
+    amounts = calc_settlement(
+        settlement_type=ts.settlement_type,
+        hours=ts.hours,
+        base_rate=ts.base_rate,
+        kpi_ratio=ts.kpi_ratio,
+        pieces=ts.pieces,
+        piece_rate=ts.piece_rate,
+        shift_bonus_rate=shift_bonus_rate,
+    )
+    for k, v in amounts.items():
+        setattr(ts, k, v)
+
+
+@router.get("", response_model=list[TimesheetOut])
 def list_timesheets(
-    u: dict = Depends(get_user),
-    date_from: str = "",
-    date_to: str = "",
-    status: str = "",
-    warehouse: str = "",
-    employee_id: str = "",
+    status: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    warehouse_code: Optional[str] = Query(None),
+    employee_id: Optional[int] = Query(None),
+    biz_line: Optional[str] = Query(None),
+    skip: int = 0, limit: int = 200,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    db = database.get_db()
-    conds = ["1=1"]
-    params = []
-    if u.get("supplier_id"):
-        conds.append("supplier_id=?")
-        params.append(u["supplier_id"])
-    if u.get("warehouse_code") and u["role"] == "wh":
-        conds.append("warehouse_code=?")
-        params.append(u["warehouse_code"])
-    if u.get("biz_line") and u["role"] not in ("admin", "hr", "fin"):
-        conds.append("biz_line=?")
-        params.append(u["biz_line"])
-    if u.get("_emp_id"):
-        conds.append("employee_id=?")
-        params.append(u["_emp_id"])
-    if date_from:
-        conds.append("work_date>=?")
-        params.append(date_from)
-    if date_to:
-        conds.append("work_date<=?")
-        params.append(date_to)
+    stmt = select(Timesheet).order_by(Timesheet.work_date.desc(), Timesheet.id.desc())
+    stmt = _apply_row_filter(stmt, user)
     if status:
-        conds.append("status=?")
-        params.append(status)
-    if warehouse:
-        conds.append("warehouse_code=?")
-        params.append(warehouse)
+        stmt = stmt.where(Timesheet.approval_status == status)
+    if date_from:
+        stmt = stmt.where(Timesheet.work_date >= date_from)
+    if date_to:
+        stmt = stmt.where(Timesheet.work_date <= date_to)
+    if warehouse_code:
+        stmt = stmt.where(Timesheet.warehouse_code == warehouse_code)
     if employee_id:
-        conds.append("employee_id=?")
-        params.append(employee_id)
-    result = rows(
-        db,
-        f"SELECT * FROM timesheets WHERE {' AND '.join(conds)} ORDER BY work_date DESC,id DESC LIMIT 500",
-        params,
-    )
-    db.close()
-    return result
+        stmt = stmt.where(Timesheet.employee_id == employee_id)
+    if biz_line:
+        stmt = stmt.where(Timesheet.biz_line == biz_line)
+    return db.scalars(stmt.offset(skip).limit(limit)).all()
 
 
-@router.get("/export")
-def export_timesheets(
-    u: dict = Depends(get_user),
-    date_from: str = "",
-    date_to: str = "",
-    status: str = "",
-    warehouse: str = "",
-    employee_id: str = "",
+@router.post("", response_model=TimesheetOut, status_code=201)
+def create_timesheet(
+    body: TimesheetCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    """Export filtered timesheets as a UTF-8 CSV download."""
-    db = database.get_db()
-    conds = ["1=1"]
-    params = []
-    if u.get("supplier_id"):
-        conds.append("supplier_id=?")
-        params.append(u["supplier_id"])
-    if u.get("warehouse_code") and u["role"] == "wh":
-        conds.append("warehouse_code=?")
-        params.append(u["warehouse_code"])
-    if u.get("biz_line") and u["role"] not in ("admin", "hr", "fin"):
-        conds.append("biz_line=?")
-        params.append(u["biz_line"])
-    if u.get("_emp_id"):
-        conds.append("employee_id=?")
-        params.append(u["_emp_id"])
-    if date_from:
-        conds.append("work_date>=?")
-        params.append(date_from)
-    if date_to:
-        conds.append("work_date<=?")
-        params.append(date_to)
-    if status:
-        conds.append("status=?")
-        params.append(status)
-    if warehouse:
-        conds.append("warehouse_code=?")
-        params.append(warehouse)
-    if employee_id:
-        conds.append("employee_id=?")
-        params.append(employee_id)
-    result = rows(
-        db,
-        f"SELECT * FROM timesheets WHERE {' AND '.join(conds)} ORDER BY work_date DESC,id DESC LIMIT 5000",
-        params,
+    if user.role not in {"admin", "hr", "wh", "mgr"}:
+        raise HTTPException(403, "Forbidden")
+
+    emp = db.get(Employee, body.employee_id)
+    if emp is None:
+        raise HTTPException(404, "Employee not found")
+
+    data = body.model_dump()
+    effective_rate = data.pop("base_rate", 0.0) or (emp.hourly_rate or 0.0)
+    ts = Timesheet(
+        **data,
+        ts_no=_next_ts_no(db),
+        emp_no=emp.emp_no,
+        emp_name=emp.name,
+        source_type=emp.source_type,
+        supplier_id=emp.supplier_id,
+        biz_line=emp.biz_line,
+        base_rate=effective_rate,
+        approval_status="draft",
     )
-    db.close()
-
-    fields = ["id", "employee_name", "grade", "warehouse_code", "biz_line", "source",
-              "work_date", "shift", "start_time", "end_time", "hours",
-              "base_rate", "shift_bonus", "effective_rate", "gross_pay",
-              "perf_bonus", "ssi_deduct", "tax_deduct", "net_pay", "status"]
-    buf = io.StringIO()
-    writer = csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore")
-    writer.writeheader()
-    writer.writerows(result)
-
-    filename = f"timesheets_{date_from or date.today().strftime('%Y%m%d')}_{date_to or date.today().strftime('%Y%m%d')}.csv"
-    return StreamingResponse(
-        iter([buf.getvalue()]),
-        media_type="text/csv; charset=utf-8",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
+    _compute_and_set_amounts(ts, emp)
+    db.add(ts)
+    db.commit()
+    db.refresh(ts)
+    return ts
 
 
-@router.post("")
-def create_timesheet(data: dict = Body(...), u: dict = Depends(get_user)):
-    db = database.get_db()
-    emp = one(db, "SELECT * FROM employees WHERE id=?", (data.get("employee_id", ""),))
-    if not emp:
-        raise HTTPException(404, "员工不存在")
-    sh = int(data.get("start_time", "08:00").split(":")[0])
-    eh = int(data.get("end_time", "16:00").split(":")[0])
-    hrs = max(0, eh - sh)
-    wh_code = data.get("warehouse_code") or emp["warehouse_code"]
-    shift = data.get("shift", "白班")
-    pay = database.calc_timesheet_pay(db, dict(emp), wh_code, shift, hrs)
-    ts_id = f"WT-{date.today().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
-    database.execute(
-        db,
-        """INSERT INTO timesheets(id,employee_id,employee_name,source,supplier_id,biz_line,
-        work_date,warehouse_code,shift,start_time,end_time,hours,position,settlement_type,grade,
-        base_rate,shift_bonus,effective_rate,gross_pay,perf_bonus,ssi_deduct,tax_deduct,net_pay,status)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-        (
-            ts_id,
-            emp["id"],
-            emp["name"],
-            emp["source"],
-            emp["supplier_id"],
-            emp["biz_line"],
-            data.get("work_date", str(date.today())),
-            wh_code,
-            shift,
-            data.get("start_time", "08:00"),
-            data.get("end_time", "16:00"),
-            hrs,
-            emp["position"],
-            emp["settlement_type"],
-            emp["grade"],
-            pay["base_rate"],
-            pay["shift_bonus"],
-            pay["effective_rate"],
-            pay["gross_pay"],
-            pay["perf_bonus"],
-            pay["ssi_deduct"],
-            pay["tax_deduct"],
-            pay["net_pay"],
-            "待仓库审批",
-        ),
-    )
-    overtime = max(0, hrs - float(emp.get("contract_hours") or 8))
-    if overtime > 0:
-        database.execute(
-            db,
-            "UPDATE zeitkonto SET plus_hours=ROUND(CAST(plus_hours+? AS NUMERIC),1) WHERE employee_id=?",
-            (overtime, emp["id"]),
+@router.post("/batch", status_code=201)
+def batch_create_timesheets(
+    items: List[TimesheetCreate] = Body(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if user.role not in {"admin", "hr"}:
+        raise HTTPException(403, "Forbidden")
+    created = []
+    for body in items:
+        emp = db.get(Employee, body.employee_id)
+        if emp is None:
+            continue
+        bdata = body.model_dump()
+        b_rate = bdata.pop("base_rate", 0.0) or (emp.hourly_rate or 0.0)
+        ts = Timesheet(
+            **bdata,
+            ts_no=_next_ts_no(db),
+            emp_no=emp.emp_no,
+            emp_name=emp.name,
+            source_type=emp.source_type,
+            supplier_id=emp.supplier_id,
+            biz_line=emp.biz_line,
+            base_rate=b_rate,
+            approval_status="draft",
         )
-    auditlog(db, u, "CREATE", "timesheets", ts_id, f"{emp['name']} {hrs}h")
-    database.commit(db)
-    db.close()
-    return {"id": ts_id, "hours": hrs, "gross_pay": pay["gross_pay"]}
+        _compute_and_set_amounts(ts, emp)
+        db.add(ts)
+        created.append(ts)
+    db.commit()
+    return {"created": len(created)}
 
 
-def _approve_one(ts_id: str, u: dict):
-    """Shared approval logic used by single and batch approve."""
-    db = database.get_db()
-    ts = one(db, "SELECT * FROM timesheets WHERE id=?", (ts_id,))
-    if not ts:
-        raise HTTPException(404)
-    now = datetime.now().isoformat()
-    if ts["status"] == "待仓库审批" and u["role"] in ("admin", "wh", "mgr"):
-        database.execute(
-            db,
-            "UPDATE timesheets SET status='待财务确认',wh_approver=?,wh_approved_at=? WHERE id=?",
-            (u["display_name"], now, ts_id),
-        )
-    elif ts["status"] == "待财务确认" and u["role"] in ("admin", "fin"):
-        database.execute(
-            db,
-            "UPDATE timesheets SET status='已入账',fin_approver=?,fin_approved_at=? WHERE id=?",
-            (u["display_name"], now, ts_id),
-        )
+@router.post("/batch-approve")
+def batch_approve(
+    ids: List[int] = Body(..., embed=True),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if user.role not in {"admin", "wh", "fin", "mgr"}:
+        raise HTTPException(403, "Forbidden")
+    count = 0
+    for ts_id in ids:
+        ts = db.get(Timesheet, ts_id)
+        if ts is None:
+            continue
+        now = datetime.utcnow()
+        if ts.approval_status == "wh_pending" and user.role in {"admin", "wh", "mgr"}:
+            ts.approval_status = "fin_pending"
+            ts.wh_approver = user.display_name
+            ts.wh_approved_at = now
+            count += 1
+        elif ts.approval_status == "fin_pending" and user.role in {"admin", "fin"}:
+            ts.approval_status = "booked"
+            ts.fin_approver = user.display_name
+            ts.fin_approved_at = now
+            count += 1
+    db.commit()
+    return {"approved": count}
+
+
+@router.get("/{ts_id}", response_model=TimesheetOut)
+def get_timesheet(ts_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    ts = db.get(Timesheet, ts_id)
+    if ts is None:
+        raise HTTPException(404, "Timesheet not found")
+    return ts
+
+
+@router.put("/{ts_id}", response_model=TimesheetOut)
+def update_timesheet(
+    ts_id: int, body: TimesheetUpdate,
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    ts = db.get(Timesheet, ts_id)
+    if ts is None:
+        raise HTTPException(404, "Timesheet not found")
+    if ts.approval_status not in {"draft", "rejected"}:
+        raise HTTPException(400, "Only draft/rejected timesheets can be edited")
+    if user.role not in {"admin", "hr", "wh", "mgr"}:
+        raise HTTPException(403, "Forbidden")
+    for k, v in body.model_dump(exclude_unset=True).items():
+        setattr(ts, k, v)
+    emp = db.get(Employee, ts.employee_id)
+    if emp:
+        _compute_and_set_amounts(ts, emp)
+    ts.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(ts)
+    return ts
+
+
+@router.put("/{ts_id}/submit", response_model=TimesheetOut)
+def submit_timesheet(
+    ts_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Submit a draft timesheet for warehouse approval."""
+    ts = db.get(Timesheet, ts_id)
+    if ts is None:
+        raise HTTPException(404, "Timesheet not found")
+    if ts.approval_status != "draft":
+        raise HTTPException(400, "Only draft timesheets can be submitted")
+    ts.approval_status = "wh_pending"
+    ts.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(ts)
+    return ts
+
+
+@router.put("/{ts_id}/approve", response_model=TimesheetOut)
+def approve_timesheet(
+    ts_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Approval flow: wh_pending → wh approves → fin_pending → fin approves → booked
+    wh role: approves wh_pending
+    fin role: approves fin_pending
+    admin: can approve any step
+    """
+    ts = db.get(Timesheet, ts_id)
+    if ts is None:
+        raise HTTPException(404, "Timesheet not found")
+
+    now = datetime.utcnow()
+    if ts.approval_status == "wh_pending":
+        if user.role not in {"admin", "wh", "mgr"}:
+            raise HTTPException(403, "Only warehouse manager can approve at this step")
+        ts.approval_status = "fin_pending"
+        ts.wh_approver = user.display_name
+        ts.wh_approved_at = now
+    elif ts.approval_status == "fin_pending":
+        if user.role not in {"admin", "fin"}:
+            raise HTTPException(403, "Only finance can approve at this step")
+        ts.approval_status = "booked"
+        ts.fin_approver = user.display_name
+        ts.fin_approved_at = now
+    elif ts.approval_status == "draft":
+        # Admin can fast-track
+        if user.role != "admin":
+            raise HTTPException(400, "Submit first before approving")
+        ts.approval_status = "booked"
+        ts.wh_approver = user.display_name
+        ts.wh_approved_at = now
+        ts.fin_approver = user.display_name
+        ts.fin_approved_at = now
     else:
-        raise HTTPException(400, "状态错误或无权限")
-    auditlog(db, u, "APPROVE", "timesheets", ts_id)
-    database.commit(db)
-    db.close()
-    return {"ok": True}
+        raise HTTPException(400, f"Cannot approve from status '{ts.approval_status}'")
+
+    ts.updated_at = now
+    db.commit()
+    db.refresh(ts)
+    return ts
 
 
-@router.put("/batch-approve")
-def batch_approve(data: dict = Body(...), u: dict = Depends(get_user)):
-    for ts_id in data.get("ids", []):
-        try:
-            _approve_one(ts_id, u)
-        except Exception:
-            pass
-    return {"ok": True}
-
-
-@router.put("/{ts_id}/approve")
-def approve_timesheet(ts_id: str, u: dict = Depends(get_user)):
-    return _approve_one(ts_id, u)
+@router.put("/{ts_id}/reject", response_model=TimesheetOut)
+def reject_timesheet(
+    ts_id: int, body: TimesheetRejectIn,
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    ts = db.get(Timesheet, ts_id)
+    if ts is None:
+        raise HTTPException(404, "Timesheet not found")
+    if ts.approval_status not in {"wh_pending", "fin_pending"}:
+        raise HTTPException(400, "Can only reject pending timesheets")
+    if user.role not in {"admin", "wh", "fin", "mgr"}:
+        raise HTTPException(403, "Forbidden")
+    ts.approval_status = "rejected"
+    ts.reject_reason = body.reason
+    ts.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(ts)
+    return ts

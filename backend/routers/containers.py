@@ -1,81 +1,184 @@
 """
-Containers router
+渊博579 HR V7 — Container Records Router
+/api/v1/containers
 """
+from __future__ import annotations
 import json
-import uuid
-from datetime import date, datetime
-from fastapi import APIRouter, HTTPException, Depends, Body
-import backend.database as database
-from backend.deps import get_user, rows, one
+from datetime import datetime, date
+from typing import Optional, List
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import select, func
+from backend.database import get_db
+from backend.models.container import ContainerRecord
+from backend.models.timesheet import Timesheet
+from backend.models.employee import Employee
+from backend.models.user import User
+from backend.schemas.container import ContainerCreate, ContainerUpdate, ContainerOut, ContainerApproveIn
+from backend.middleware.auth import get_current_user
+from backend.services.settlement_calc import compute_hours
+from backend.services.sequence import next_sequence_no, make_prefix
 
-router = APIRouter(prefix="/api/containers", tags=["containers"])
-
-
-@router.get("")
-def list_containers(u: dict = Depends(get_user)):
-    db = database.get_db()
-    conds = ["1=1"]
-    params = []
-    if u.get("warehouse_code") and u["role"] == "wh":
-        conds.append("warehouse_code=?")
-        params.append(u["warehouse_code"])
-    result = rows(
-        db,
-        f"SELECT * FROM containers WHERE {' AND '.join(conds)} ORDER BY work_date DESC,id DESC LIMIT 200",
-        params,
-    )
-    db.close()
-    return result
+router = APIRouter(prefix="/api/v1/containers", tags=["containers"])
 
 
-@router.post("")
-def create_container(data: dict = Body(...), u: dict = Depends(get_user)):
-    db = database.get_db()
-    ct_id = f"CT-{date.today().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
-    workers = data.get("worker_ids", [])
-    database.execute(
-        db,
-        """INSERT INTO containers(id,container_no,container_type,load_type,warehouse_code,biz_line,
-        work_date,start_time,seal_no,worker_ids,worker_count,client_revenue,team_pay,split_method,status,notes)
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-        (
-            ct_id,
-            data.get("container_no", ""),
-            data.get("container_type", "40GP"),
-            data.get("load_type", "卸"),
-            data.get("warehouse_code", ""),
-            data.get("biz_line", "渊博"),
-            data.get("work_date", str(date.today())),
-            data.get("start_time", "08:00"),
-            data.get("seal_no", ""),
-            json.dumps(workers),
-            len(workers),
-            data.get("client_revenue", 0),
-            data.get("team_pay", 0),
-            "平均",
-            "进行中",
-            data.get("notes", ""),
-        ),
-    )
-    database.commit(db)
-    db.close()
-    return {"id": ct_id}
+def _next_cn_no(db: Session) -> str:
+    return next_sequence_no(db, ContainerRecord, ContainerRecord.cn_no, make_prefix("CN"))
 
 
-@router.put("/{ct_id}/complete")
-def complete_container(ct_id: str, data: dict = Body(...), u: dict = Depends(get_user)):
-    db = database.get_db()
-    ct = one(db, "SELECT * FROM containers WHERE id=?", (ct_id,))
-    if not ct:
-        raise HTTPException(404)
-    end_time = data.get("end_time", datetime.now().strftime("%H:%M"))
-    sh = int((ct["start_time"] or "08:00").split(":")[0])
-    dur = max(0, int(end_time.split(":")[0]) - sh)
-    database.execute(
-        db,
-        "UPDATE containers SET end_time=?,duration_hours=?,status='已完成',video_recorded=?,wh_approved=1,wh_approver=? WHERE id=?",
-        (end_time, dur, data.get("video_recorded", 1), u["display_name"], ct_id),
-    )
-    database.commit(db)
-    db.close()
-    return {"ok": True, "duration_hours": dur}
+def _next_ts_no(db: Session) -> str:
+    return next_sequence_no(db, Timesheet, Timesheet.ts_no, make_prefix("TS"))
+
+
+@router.get("", response_model=list[ContainerOut])
+def list_containers(
+    warehouse_code: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    skip: int = 0, limit: int = 200,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    stmt = select(ContainerRecord).order_by(ContainerRecord.work_date.desc(), ContainerRecord.id.desc())
+    if user.role == "wh":
+        stmt = stmt.where(ContainerRecord.warehouse_code == user.bound_warehouse)
+    if warehouse_code:
+        stmt = stmt.where(ContainerRecord.warehouse_code == warehouse_code)
+    if date_from:
+        stmt = stmt.where(ContainerRecord.work_date >= date_from)
+    if date_to:
+        stmt = stmt.where(ContainerRecord.work_date <= date_to)
+    return db.scalars(stmt.offset(skip).limit(limit)).all()
+
+
+@router.post("", response_model=ContainerOut, status_code=201)
+def create_container(
+    body: ContainerCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if user.role not in {"admin", "hr", "wh", "mgr"}:
+        raise HTTPException(403, "Forbidden")
+    cn = ContainerRecord(**body.model_dump(), cn_no=_next_cn_no(db))
+    db.add(cn)
+    db.commit()
+    db.refresh(cn)
+    return cn
+
+
+@router.get("/{cn_id}", response_model=ContainerOut)
+def get_container(cn_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    cn = db.get(ContainerRecord, cn_id)
+    if cn is None:
+        raise HTTPException(404, "Container record not found")
+    return cn
+
+
+@router.put("/{cn_id}", response_model=ContainerOut)
+def update_container(
+    cn_id: int, body: ContainerUpdate,
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    if user.role not in {"admin", "hr", "wh", "mgr"}:
+        raise HTTPException(403, "Forbidden")
+    cn = db.get(ContainerRecord, cn_id)
+    if cn is None:
+        raise HTTPException(404, "Container record not found")
+    if cn.is_split_to_timesheet:
+        raise HTTPException(400, "Container already split to timesheets; cannot edit")
+    for k, v in body.model_dump(exclude_unset=True).items():
+        setattr(cn, k, v)
+    db.commit()
+    db.refresh(cn)
+    return cn
+
+
+@router.put("/{cn_id}/approve", response_model=ContainerOut)
+def approve_container(
+    cn_id: int, body: ContainerApproveIn,
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    """Warehouse approval: mark video recorded + approve."""
+    if user.role not in {"admin", "wh", "mgr"}:
+        raise HTTPException(403, "Forbidden")
+    cn = db.get(ContainerRecord, cn_id)
+    if cn is None:
+        raise HTTPException(404, "Container record not found")
+    if body.end_time:
+        cn.end_time = body.end_time
+    cn.video_recorded = body.video_recorded
+    cn.approval_status = "wh_approved"
+    cn.wh_approver = user.display_name
+    cn.wh_approved_at = datetime.utcnow()
+    db.commit()
+    db.refresh(cn)
+    return cn
+
+
+@router.post("/{cn_id}/split")
+def split_to_timesheets(
+    cn_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Split a container record into individual timesheet rows for each worker.
+    Uses split_method: equal (equal share) / hours (proportional to hours) / coefficient
+    """
+    if user.role not in {"admin", "hr", "wh", "mgr"}:
+        raise HTTPException(403, "Forbidden")
+    cn = db.get(ContainerRecord, cn_id)
+    if cn is None:
+        raise HTTPException(404, "Container record not found")
+    if cn.is_split_to_timesheet:
+        raise HTTPException(400, "Already split")
+
+    worker_ids: List[int] = []
+    if cn.worker_ids:
+        try:
+            worker_ids = json.loads(cn.worker_ids)
+        except Exception:
+            pass
+
+    if not worker_ids:
+        raise HTTPException(400, "No workers assigned to this container")
+
+    group_size = len(worker_ids)
+    per_worker_pay = round(cn.group_pay / group_size, 2) if group_size > 0 else 0.0
+
+    created_ts = []
+    for emp_id in worker_ids:
+        emp = db.get(Employee, emp_id)
+        if emp is None:
+            continue
+
+        ts_no = _next_ts_no(db)
+        ts = Timesheet(
+            ts_no=ts_no,
+            employee_id=emp.id,
+            emp_no=emp.emp_no,
+            emp_name=emp.name,
+            source_type=emp.source_type,
+            supplier_id=emp.supplier_id,
+            biz_line=cn.biz_line,
+            work_date=cn.work_date,
+            warehouse_code=cn.warehouse_code,
+            start_time=cn.start_time,
+            end_time=cn.end_time,
+            hours=compute_hours(cn.start_time or "08:00", cn.end_time or "16:00") if cn.end_time else 0.0,
+            settlement_type="container",
+            base_rate=per_worker_pay,
+            container_no=cn.container_no,
+            container_type=cn.container_type,
+            load_type=cn.load_type,
+            group_no=cn.group_no,
+            amount_hourly=per_worker_pay,
+            amount_total=per_worker_pay,
+            approval_status="wh_pending",
+        )
+        db.add(ts)
+        created_ts.append(ts_no)
+
+    cn.is_split_to_timesheet = True
+    db.commit()
+    return {"created_timesheets": len(created_ts), "ts_nos": created_ts}
