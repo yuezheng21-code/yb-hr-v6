@@ -2,16 +2,45 @@
 渊博579 HR V7 — Configuration
 """
 import os
+import secrets as _secrets
+import logging
 from typing import Any
+
+logger = logging.getLogger("yb_hr")
 
 # ── Database ─────────────────────────────────────────────────────────
 DATABASE_URL: str = os.environ.get("DATABASE_URL", "")
 PORT: int = int(os.environ.get("PORT", 8000))
 
 # ── JWT ──────────────────────────────────────────────────────────────
-JWT_SECRET: str = os.environ.get("JWT_SECRET", "yb579-hr-v7-secret-change-in-prod")
+JWT_SECRET: str = os.environ.get("JWT_SECRET", "")
+if not JWT_SECRET:
+    # No secret configured: generate a random one per process start.
+    # This is safe for single-instance dev environments but means all
+    # existing tokens are invalidated on every restart.  Set JWT_SECRET
+    # to a persistent value in production to preserve sessions.
+    JWT_SECRET = _secrets.token_hex(32)
+    logger.warning(
+        "⚠  JWT_SECRET is not set. A random secret has been generated for this "
+        "process run — all sessions will be invalidated on restart. "
+        "Set the JWT_SECRET environment variable to a stable random secret "
+        "before deploying to production (e.g. `openssl rand -hex 32`)."
+    )
 JWT_ALGORITHM: str = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", 480))  # 8 hours
+
+# ── CORS ─────────────────────────────────────────────────────────────
+# Set CORS_ORIGINS to a comma-separated list of allowed origins in production.
+# Example: CORS_ORIGINS=https://your-app.railway.app,https://your-domain.com
+# Leave unset only in local development (defaults to wildcard "*").
+_cors_env = os.environ.get("CORS_ORIGINS", "").strip()
+CORS_ORIGINS: list[str] = [o.strip() for o in _cors_env.split(",") if o.strip()] if _cors_env else ["*"]
+
+if CORS_ORIGINS == ["*"]:
+    logger.warning(
+        "⚠  CORS_ORIGINS is set to '*' (all origins). "
+        "Set the CORS_ORIGINS environment variable to restrict access in production."
+    )
 
 # ── Business constants ────────────────────────────────────────────────
 P1_HOURLY = 13.90  # € MiLoG floor + buffer

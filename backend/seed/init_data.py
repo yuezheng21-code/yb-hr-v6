@@ -1,8 +1,14 @@
 """
 渊博579 HR V7 — Seed Data
 7 users + 5 suppliers + 10 warehouses
+
+Environment variables (all optional):
+  ADMIN_PASSWORD    Override initial admin password (default: admin123)
+  FORCE_RESEED      Set to "1" to reset all seed user passwords on startup
+                    (only for development/test environments)
 """
 from __future__ import annotations
+import os
 import bcrypt
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -15,14 +21,17 @@ def _hash(pw: str) -> str:
     return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
 
 
+# Allow overriding the initial admin password via env var.
+_ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
+
 USERS = [
-    {"username": "admin",    "password": "admin123",  "display_name": "系统管理员",   "role": "admin"},
-    {"username": "hr",       "password": "hr123",     "display_name": "HR王芳",        "role": "hr"},
-    {"username": "finance",  "password": "fin123",    "display_name": "财务李梅",      "role": "fin"},
-    {"username": "wh_una",   "password": "una123",    "display_name": "UNA仓管李强",   "role": "wh",  "bound_warehouse": "UNA"},
-    {"username": "sup001",   "password": "sup123",    "display_name": "德信负责人",    "role": "sup"},
-    {"username": "mgr",      "password": "mgr123",    "display_name": "运营经理陈杰",  "role": "mgr"},
-    {"username": "worker01", "password": "worker123", "display_name": "张三",          "role": "worker", "pin": "1001"},
+    {"username": "admin",    "password": _ADMIN_PASSWORD, "display_name": "系统管理员",  "role": "admin"},
+    {"username": "hr",       "password": "hr123",          "display_name": "HR王芳",       "role": "hr"},
+    {"username": "finance",  "password": "fin123",         "display_name": "财务李梅",     "role": "fin"},
+    {"username": "wh_una",   "password": "una123",         "display_name": "UNA仓管李强",  "role": "wh",  "bound_warehouse": "UNA"},
+    {"username": "sup001",   "password": "sup123",         "display_name": "德信负责人",   "role": "sup"},
+    {"username": "mgr",      "password": "mgr123",         "display_name": "运营经理陈杰", "role": "mgr"},
+    {"username": "worker01", "password": "worker123",      "display_name": "张三",         "role": "worker", "pin": "1001"},
 ]
 
 SUPPLIERS = [
@@ -48,12 +57,16 @@ WAREHOUSES = [
 
 
 def run_seed(db: Session) -> None:
-    # Seed users — always reset password_hash and is_active so that the
-    # credentials listed in the guide always work (mirrors V6 behaviour).
+    # Seed users.
+    # In production: only create users that don't exist yet; never overwrite
+    # passwords so that administrator-changed credentials are preserved across
+    # restarts.  Set FORCE_RESEED=1 to restore the legacy "always reset"
+    # behaviour (development/test environments only).
+    force_reseed = os.environ.get("FORCE_RESEED", "").strip() == "1"
     for u in USERS:
-        pw_hash = _hash(u["password"])
         existing = db.scalar(select(User).where(User.username == u["username"]))
         if existing is None:
+            pw_hash = _hash(u["password"])
             user = User(
                 username=u["username"],
                 password_hash=pw_hash,
@@ -64,8 +77,9 @@ def run_seed(db: Session) -> None:
             )
             db.add(user)
         else:
-            existing.password_hash = pw_hash
-            existing.is_active = True
+            if force_reseed:
+                existing.password_hash = _hash(u["password"])
+                existing.is_active = True
             if u.get("pin") and not existing.pin:
                 existing.pin = u["pin"]
 
