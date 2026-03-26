@@ -152,7 +152,7 @@ export default function Timesheets({ token, user }) {
               <td><StatusBadge value={row.approval_status} /></td>
               <td>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'nowrap' }}>
-                  {row.approval_status === 'draft' && canApproveWH && (
+                  {row.approval_status === 'draft' && canCreate && (
                     <button className="b bgn" style={{ fontSize: 9 }} onClick={() => submit(row.id)}>提交</button>
                   )}
                   {row.approval_status === 'wh_pending' && canApproveWH && (
