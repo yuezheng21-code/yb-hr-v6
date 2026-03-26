@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import backend.database as database
+from backend.config import CORS_ORIGINS
 
 # ── Startup readiness flag ────────────────────────────────────────────
 _db_lock = threading.Lock()
@@ -90,7 +91,7 @@ async def lifespan(application: FastAPI):
 app = FastAPI(title="渊博579 HR V7", version="7.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

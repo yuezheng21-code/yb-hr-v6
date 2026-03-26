@@ -31,13 +31,24 @@
 
 5. 点击 **Settings → Domains** → **Generate Domain** 获取访问地址
 
-### 环境变量（可选）
+### 环境变量
 
 在 Railway → Variables 中设置：
-```
-DB_PATH=/app/data/hr_v7.db    # 数据库路径（默认当前目录）
-PORT=8000                      # 端口（Railway自动设置）
-```
+
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `DATABASE_URL` | PostgreSQL 连接串（Railway 自动注入） | 空（使用 SQLite） |
+| `PORT` | 服务端口（Railway 自动设置） | `8000` |
+| `JWT_SECRET` | **生产必须设置** — JWT 签名密钥，请使用32位以上随机字符串 | ⚠️ 内置弱密钥 |
+| `ADMIN_PASSWORD` | 首次部署时 admin 账号的初始密码 | `admin123` |
+| `CORS_ORIGINS` | 允许的前端域名，逗号分隔。例：`https://app.example.com` | `*`（全放行，仅开发用） |
+| `FORCE_RESEED` | 设为 `1` 则每次启动重置所有默认账号密码（**仅测试环境**） | 空 |
+
+> **生产部署清单：**
+> 1. 设置强随机 `JWT_SECRET`（例：`openssl rand -hex 32`）
+> 2. 设置 `ADMIN_PASSWORD` 为安全密码，首次登录后立即在管理后台修改
+> 3. 设置 `CORS_ORIGINS` 为您的实际域名
+> 4. 确保 `DATABASE_URL` 指向 PostgreSQL（不要在生产使用 SQLite）
 
 ---
 
