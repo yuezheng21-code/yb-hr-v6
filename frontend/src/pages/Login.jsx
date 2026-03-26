@@ -21,9 +21,12 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '' }) {
       'starting':             t('c.starting'),
       'connecting':           t('c.connecting'),
       'timeout':              t('c.srv_timeout'),
+      'error':                t('c.srv_error'),
     };
     return map[raw] || raw;
   };
+
+  const isSrvError = srvStatus === 'error' || srvStatus === 'timeout';
 
   const doLogin = async () => {
     if (!username || !password) { setErr(t('login.err_empty')); return; }
@@ -68,13 +71,13 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '' }) {
           </div>
         </div>
 
-        {!srvReady && (
-          <div style={{ marginBottom:16,padding:'8px 12px',background:'var(--og)15',border:'1px solid var(--og)40',borderRadius:'var(--R2)',display:'flex',alignItems:'center',gap:8 }}>
-            <span style={{ animation:'spin 1s linear infinite',display:'inline-block',fontSize:14 }}>⟳</span>
+        {(!srvReady || isSrvError) && (
+          <div style={{ marginBottom:16,padding:'8px 12px',background: isSrvError ? 'var(--rd)15' : 'var(--og)15',border:`1px solid ${isSrvError ? 'var(--rd)40' : 'var(--og)40'}`,borderRadius:'var(--R2)',display:'flex',alignItems:'center',gap:8 }}>
+            <span style={{ animation: isSrvError ? 'none' : 'spin 1s linear infinite',display:'inline-block',fontSize:14 }}>{isSrvError ? '⚠' : '⟳'}</span>
             <div>
-              <div style={{ fontSize:11,color:'var(--og)',fontWeight:600 }}>{t('c.starting')}</div>
-              {srvStatus && <div style={{ fontSize:10,color:'var(--tx3)' }}>{statusLabel(srvStatus)}</div>}
-              <div style={{ fontSize:9,color:'var(--tx3)',marginTop:2,opacity:.8 }}>{t('c.first_run_hint')}</div>
+              <div style={{ fontSize:11,color: isSrvError ? 'var(--rd)' : 'var(--og)',fontWeight:600 }}>{isSrvError ? t('c.srv_error') : t('c.starting')}</div>
+              {srvStatus && !isSrvError && <div style={{ fontSize:10,color:'var(--tx3)' }}>{statusLabel(srvStatus)}</div>}
+              {!isSrvError && <div style={{ fontSize:9,color:'var(--tx3)',marginTop:2,opacity:.8 }}>{t('c.first_run_hint')}</div>}
             </div>
           </div>
         )}

@@ -77,11 +77,15 @@ export default function App() {
   }
 
   if (!srvReady) {
+    const isErr = srvStatus === 'error' || srvStatus === 'timeout';
     return (
       <div style={{ position:'fixed',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'var(--bg)',gap:16 }}>
-        <div style={{ width:32,height:32,border:'3px solid var(--bd)',borderTopColor:'var(--ac)',borderRadius:'50%',animation:'spin 1s linear infinite' }}/>
-        <div style={{ fontSize:12,color:'var(--tx3)' }}>{t('c.starting')}</div>
-        {srvStatus && <div style={{ fontSize:10,color:'var(--tx3)',opacity:.6 }}>{srvStatus}</div>}
+        {isErr
+          ? <div style={{ fontSize:24 }}>⚠</div>
+          : <div style={{ width:32,height:32,border:'3px solid var(--bd)',borderTopColor:'var(--ac)',borderRadius:'50%',animation:'spin 1s linear infinite' }}/>
+        }
+        <div style={{ fontSize:12,color:'var(--tx3)' }}>{isErr ? t('c.srv_error') : t('c.starting')}</div>
+        {srvStatus && !isErr && <div style={{ fontSize:10,color:'var(--tx3)',opacity:.6 }}>{srvStatus}</div>}
       </div>
     );
   }
