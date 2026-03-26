@@ -120,7 +120,7 @@ export default function App() {
         <Route path="/messages" element={<ProtectedRoute><Messages {...props} /></ProtectedRoute>} />
         <Route path="/integrations" element={<ProtectedRoute><Integrations {...props} /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><Admin {...props} /></ProtectedRoute>} />
-        <Route path="/login" element={<Login onLogin={onLogin} srvReady={srvReady} srvStatus={srvStatus} srvErrDetail={srvErrDetail} />} />
+        <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppShell>

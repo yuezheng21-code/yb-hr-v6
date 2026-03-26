@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLang, LangSwitcher } from '../context/LangContext.jsx';
 import { Spinner } from '../components/Spinner.jsx';
-import { loginAdmin, loginPin, persistSession } from '../services/auth.js';
+import { loginAdmin, loginPin } from '../services/auth.js';
 
 export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErrDetail = '' }) {
   const [mode, setMode] = useState('admin');
@@ -33,7 +33,6 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErr
     setLoading(true); setErr('');
     try {
       const r = await loginAdmin(username, password);
-      persistSession(r.token, r.user);
       onLogin(r.token, r.user);
     } catch (e) {
       setErr(e.message);
@@ -47,7 +46,6 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErr
     setLoading(true); setErr('');
     try {
       const r = await loginPin(pin);
-      persistSession(r.token, r.user);
       onLogin(r.token, r.user);
     } catch (e) {
       setErr(e.message);
