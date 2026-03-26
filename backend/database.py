@@ -148,8 +148,18 @@ def _migrate_schema() -> None:
         _add_column_if_missing(conn, "timesheets", "emp_grade", "VARCHAR(5)")
         # employees.tax_mode — tax-handling mode (我方报税 / 供应商报税)
         _add_column_if_missing(conn, "employees", "tax_mode", "VARCHAR(50)")
+        # employees.referrer_emp_id — self-referential FK for referral tracking
+        _add_column_if_missing(conn, "employees", "referrer_emp_id", "INTEGER")
         # suppliers.tax_handle — supplier tax-handling mode
         _add_column_if_missing(conn, "suppliers", "tax_handle", "VARCHAR(50)")
+        # users.pin — 4-digit PIN for worker clock-in login
+        _add_column_if_missing(conn, "users", "pin", "VARCHAR(4)")
+        # users.lang — user interface language preference
+        _add_column_if_missing(conn, "users", "lang", "VARCHAR(5) DEFAULT 'zh'")
+        # users.avatar_color — avatar display colour
+        _add_column_if_missing(conn, "users", "avatar_color", "VARCHAR(20) DEFAULT '#4f6ef7'")
+        # users.bound_biz_line — restrict user to a specific business line
+        _add_column_if_missing(conn, "users", "bound_biz_line", "VARCHAR(10)")
 
         print("✅ Schema migration complete")
 
