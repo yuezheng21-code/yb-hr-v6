@@ -1,8 +1,12 @@
 FROM python:3.11.8-slim
 WORKDIR /app
 
-# Install Node.js for building the Vite frontend
-RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm && rm -rf /var/lib/apt/lists/*
+# Install Node.js 20.x (LTS) via NodeSource — ensures Vite 5 compatibility
+# regardless of which Debian release the python:slim image uses.
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gnupg && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
