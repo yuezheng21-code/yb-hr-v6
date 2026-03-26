@@ -273,7 +273,7 @@ export default function Commissions({ token, user }) {
         >
           <div className="sr" style={{ marginBottom:12 }}>
             {[
-              ['层级', <TierBadge tier={detailRecord.tier} />, null],
+              [<TierBadge tier={detailRecord.tier} />, '层级', null],
               [`${detailRecord.commission_rate}%`, '当前返佣率', 'var(--gn)'],
               [`€${fmtE(detailRecord.total_paid)}`, '已付', 'var(--ac)'],
               [`€${fmtE(detailRecord.total_pending)}`, '待付', 'var(--og)'],

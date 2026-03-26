@@ -53,16 +53,27 @@ def check_eligibility(referrer: Employee) -> Tuple[bool, str]:
 def check_cooldown(db: Session, referee_name: str, referee_phone: Optional[str]) -> Tuple[bool, str]:
     """
     Check if the referee was already referred in the past 6 months.
+    Matches by name, or by phone when provided (to catch name-spelling variations).
     """
     cutoff = datetime.utcnow() - timedelta(days=180)
-    stmt = select(ReferralRecord).where(
+    name_stmt = select(ReferralRecord).where(
         ReferralRecord.referee_name == referee_name,
         ReferralRecord.submitted_at >= cutoff,
         ReferralRecord.status.not_in(["cancelled"]),
     )
-    existing = db.scalar(stmt)
+    existing = db.scalar(name_stmt)
     if existing:
         return False, f"被推荐人 {referee_name} 6个月内已被推荐 ({existing.referral_no})"
+    # Also check by phone to catch re-submissions with different name spelling
+    if referee_phone:
+        phone_stmt = select(ReferralRecord).where(
+            ReferralRecord.referee_phone == referee_phone,
+            ReferralRecord.submitted_at >= cutoff,
+            ReferralRecord.status.not_in(["cancelled"]),
+        )
+        existing_phone = db.scalar(phone_stmt)
+        if existing_phone:
+            return False, f"该联系电话 {referee_phone} 6个月内已有推荐记录 ({existing_phone.referral_no})"
     return True, "ok"
 
 
