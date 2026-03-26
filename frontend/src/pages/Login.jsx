@@ -3,7 +3,7 @@ import { useLang, LangSwitcher } from '../context/LangContext.jsx';
 import { Spinner } from '../components/Spinner.jsx';
 import { loginAdmin, loginPin, persistSession } from '../services/auth.js';
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, srvReady = true, srvStatus = '' }) {
   const [mode, setMode] = useState('admin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -54,6 +54,16 @@ export default function Login({ onLogin }) {
             <div style={{ fontSize:10,color:'var(--tx3)',letterSpacing:2 }}>V7 · HR Dispatch System</div>
           </div>
         </div>
+
+        {!srvReady && (
+          <div style={{ marginBottom:16,padding:'8px 12px',background:'var(--og)15',border:'1px solid var(--og)40',borderRadius:'var(--R2)',display:'flex',alignItems:'center',gap:8 }}>
+            <span style={{ animation:'spin 1s linear infinite',display:'inline-block',fontSize:14 }}>⟳</span>
+            <div>
+              <div style={{ fontSize:11,color:'var(--og)',fontWeight:600 }}>{t('c.starting')}</div>
+              {srvStatus && <div style={{ fontSize:10,color:'var(--tx3)' }}>{srvStatus}</div>}
+            </div>
+          </div>
+        )}
 
         <div className="tb" style={{ marginBottom:20,width:'100%' }}>
           <button className={`tbn ${mode==='admin'?'on':''}`} style={{ flex:1 }} onClick={() => setMode('admin')}>{t('login.admin')}</button>

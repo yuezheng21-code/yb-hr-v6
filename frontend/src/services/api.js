@@ -128,6 +128,7 @@ export function pollHealth(onReady, onStatusUpdate) {
       timer = setTimeout(check, INTERVAL);
     } else {
       onStatusUpdate('Server did not become ready after 6 minutes');
+      onReady(); // show login page anyway so users are not stuck forever
     }
   };
 
