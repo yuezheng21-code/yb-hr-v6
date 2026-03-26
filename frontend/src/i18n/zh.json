@@ -253,5 +253,19 @@
   "abm.revoke_reason": "撤销原因 *",
   "abm.revoke_btn": "确认撤销",
   "abm.revoke_placeholder": "请填写撤销原因...",
-  "abm.revoke_err": "请填写撤销原因"
+  "abm.revoke_err": "请填写撤销原因",
+  "ts.status_draft": "草稿",
+  "ts.status_wh_pending": "仓库待审",
+  "ts.status_fin_pending": "财务待审",
+  "ts.status_booked": "已过账",
+  "ts.status_rejected": "已拒绝",
+  "status.active": "在职",
+  "status.inactive": "离职",
+  "status.own": "自有",
+  "status.supplier": "供应商",
+  "status.draft": "草稿",
+  "status.wh_pending": "仓库待审",
+  "status.fin_pending": "财务待审",
+  "status.booked": "已过账",
+  "status.rejected": "已拒绝"
 }

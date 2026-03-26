@@ -54,111 +54,118 @@ def _migrate_schema() -> None:
     if _is_sqlite:
         return  # SQLite does not support ALTER COLUMN TYPE; fresh DB always correct
     with engine.begin() as conn:
-        # Check if employees.id is TEXT/VARCHAR instead of INTEGER.
-        # This happened when an older schema version created the table with a text PK.
+        # ── 1. Fix employees.id TEXT → INTEGER (legacy V6 schema) ─────────────
         row = conn.execute(text(
             "SELECT data_type FROM information_schema.columns "
             "WHERE table_name='employees' AND column_name='id'"
         )).fetchone()
-        if row is None or row[0].lower() in ("integer", "bigint", "smallint"):
-            return  # employees table missing or already correct
 
-        print(f"⚠  employees.id is '{row[0]}' — checking data before migration …")
+        if row is not None and row[0].lower() not in ("integer", "bigint", "smallint"):
+            print(f"⚠  employees.id is '{row[0]}' — checking data before migration …")
 
-        # Guard: if any existing id values are non-numeric (e.g. "YB-001") they
-        # cannot be cast to INTEGER.  The old schema is fundamentally incompatible
-        # with V7, so drop employees and every table that depends on it via
-        # foreign keys, then return.  create_all() will recreate them all with
-        # the correct V7 schema, and seed data is re-applied on the same startup.
-        non_numeric_count = conn.execute(text(
-            "SELECT COUNT(*) FROM employees WHERE id IS NOT NULL AND id !~ '^[0-9]+$'"
-        )).scalar() or 0
+            non_numeric_count = conn.execute(text(
+                "SELECT COUNT(*) FROM employees WHERE id IS NOT NULL AND id !~ '^[0-9]+$'"
+            )).scalar() or 0
 
-        if non_numeric_count > 0:
-            print(
-                f"⚠  employees.id has {non_numeric_count} non-castable value(s) "
-                f"(e.g. 'YB-001').  Dropping incompatible tables for a clean V7 rebuild …"
-            )
-            # Drop dependent child tables first so their own schemas are also
-            # recreated cleanly by create_all() (they may have TEXT employee_id
-            # columns from the old deployment).
-            # NOTE: this list mirrors the child_columns list used in the numeric-cast
-            # branch below; update both if new employee-dependent tables are added.
-            _LEGACY_CHILD_TABLES = [
-                "commission_monthly",
-                "commission_records",
-                "referral_records",
-                "employee_settlements",
-                "clock_events",
-                "timesheets",
-            ]
-            for tbl in _LEGACY_CHILD_TABLES:
-                conn.execute(text(f"DROP TABLE IF EXISTS {quoted_name(tbl, quote=True)} CASCADE"))
-                print(f"   dropped {tbl}")
-            conn.execute(text("DROP TABLE IF EXISTS employees CASCADE"))
-            print("   dropped employees")
-            print("✅ Incompatible tables dropped — create_all() will rebuild with correct V7 schema")
-            return
+            if non_numeric_count > 0:
+                print(
+                    f"⚠  employees.id has {non_numeric_count} non-castable value(s) "
+                    f"(e.g. 'YB-001').  Dropping incompatible tables for a clean V7 rebuild …"
+                )
+                _LEGACY_CHILD_TABLES = [
+                    "commission_monthly",
+                    "commission_records",
+                    "referral_records",
+                    "employee_settlements",
+                    "clock_events",
+                    "timesheets",
+                ]
+                for tbl in _LEGACY_CHILD_TABLES:
+                    conn.execute(text(f"DROP TABLE IF EXISTS {quoted_name(tbl, quote=True)} CASCADE"))
+                    print(f"   dropped {tbl}")
+                conn.execute(text("DROP TABLE IF EXISTS employees CASCADE"))
+                print("   dropped employees")
+                print("✅ Incompatible tables dropped — create_all() will rebuild with correct V7 schema")
+                return  # Early return; create_all() will build from scratch
 
-        print(f"⚠  employees.id is '{row[0]}' — migrating numeric values to INTEGER …")
+            print(f"⚠  employees.id is '{row[0]}' — migrating numeric values to INTEGER …")
 
-        # Drop dependent foreign-key constraints on other tables before altering.
-        # We only drop constraints that reference employees(id); the tables themselves stay.
-        fk_rows = conn.execute(text(
-            "SELECT tc.table_name, tc.constraint_name "
-            "FROM information_schema.table_constraints tc "
-            "JOIN information_schema.referential_constraints rc "
-            "  ON tc.constraint_name = rc.constraint_name "
-            "JOIN information_schema.key_column_usage kcu "
-            "  ON rc.unique_constraint_name = kcu.constraint_name "
-            "WHERE kcu.table_name = 'employees' AND kcu.column_name = 'id'"
-        )).fetchall()
-        for tbl, constraint in fk_rows:
-            print(f"   dropping FK {constraint} on {tbl}")
-            safe_tbl = quoted_name(tbl, quote=True)
-            safe_constraint = quoted_name(constraint, quote=True)
-            conn.execute(text(f"ALTER TABLE {safe_tbl} DROP CONSTRAINT IF EXISTS {safe_constraint}"))
-
-        # Convert employees.id column from TEXT to INTEGER.
-        conn.execute(text(
-            "ALTER TABLE employees ALTER COLUMN id TYPE INTEGER USING id::integer"
-        ))
-
-        # Re-create the sequence / default for the PK if needed (SERIAL equivalent).
-        seq_exists = conn.execute(text(
-            "SELECT 1 FROM pg_sequences WHERE schemaname='public' AND sequencename='employees_id_seq'"
-        )).fetchone()
-        if not seq_exists:
-            conn.execute(text("CREATE SEQUENCE IF NOT EXISTS employees_id_seq OWNED BY employees.id"))
-            conn.execute(text(
-                "SELECT setval('employees_id_seq', COALESCE((SELECT MAX(id) FROM employees), 0) + 1, false)"
-            ))
-            conn.execute(text("ALTER TABLE employees ALTER COLUMN id SET DEFAULT nextval('employees_id_seq')"))
-
-        # Also fix employee_id (or equivalent) columns in child tables that were created as TEXT.
-        child_columns = [
-            ("timesheets", "employee_id"),
-            ("clock_events", "employee_id"),
-            ("employee_settlements", "employee_id"),
-            ("referral_records", "referrer_emp_id"),
-            ("referral_records", "referee_emp_id"),
-            ("commission_records", "employee_id"),
-            ("commission_monthly", "employee_id"),
-        ]
-        for tbl, col in child_columns:
-            col_row = conn.execute(text(
-                "SELECT data_type FROM information_schema.columns "
-                "WHERE table_name=:tbl AND column_name=:col"
-            ), {"tbl": tbl, "col": col}).fetchone()
-            if col_row and col_row[0].lower() not in ("integer", "bigint", "smallint"):
-                print(f"   fixing {tbl}.{col} TEXT → INTEGER")
+            fk_rows = conn.execute(text(
+                "SELECT tc.table_name, tc.constraint_name "
+                "FROM information_schema.table_constraints tc "
+                "JOIN information_schema.referential_constraints rc "
+                "  ON tc.constraint_name = rc.constraint_name "
+                "JOIN information_schema.key_column_usage kcu "
+                "  ON rc.unique_constraint_name = kcu.constraint_name "
+                "WHERE kcu.table_name = 'employees' AND kcu.column_name = 'id'"
+            )).fetchall()
+            for tbl, constraint in fk_rows:
+                print(f"   dropping FK {constraint} on {tbl}")
                 safe_tbl = quoted_name(tbl, quote=True)
-                safe_col = quoted_name(col, quote=True)
+                safe_constraint = quoted_name(constraint, quote=True)
+                conn.execute(text(f"ALTER TABLE {safe_tbl} DROP CONSTRAINT IF EXISTS {safe_constraint}"))
+
+            conn.execute(text(
+                "ALTER TABLE employees ALTER COLUMN id TYPE INTEGER USING id::integer"
+            ))
+
+            seq_exists = conn.execute(text(
+                "SELECT 1 FROM pg_sequences WHERE schemaname='public' AND sequencename='employees_id_seq'"
+            )).fetchone()
+            if not seq_exists:
+                conn.execute(text("CREATE SEQUENCE IF NOT EXISTS employees_id_seq OWNED BY employees.id"))
                 conn.execute(text(
-                    f"ALTER TABLE {safe_tbl} ALTER COLUMN {safe_col} TYPE INTEGER USING {safe_col}::integer"
+                    "SELECT setval('employees_id_seq', COALESCE((SELECT MAX(id) FROM employees), 0) + 1, false)"
                 ))
+                conn.execute(text("ALTER TABLE employees ALTER COLUMN id SET DEFAULT nextval('employees_id_seq')"))
+
+            child_columns = [
+                ("timesheets", "employee_id"),
+                ("clock_events", "employee_id"),
+                ("employee_settlements", "employee_id"),
+                ("referral_records", "referrer_emp_id"),
+                ("referral_records", "referee_emp_id"),
+                ("commission_records", "employee_id"),
+                ("commission_monthly", "employee_id"),
+            ]
+            for tbl, col in child_columns:
+                col_row = conn.execute(text(
+                    "SELECT data_type FROM information_schema.columns "
+                    "WHERE table_name=:tbl AND column_name=:col"
+                ), {"tbl": tbl, "col": col}).fetchone()
+                if col_row and col_row[0].lower() not in ("integer", "bigint", "smallint"):
+                    print(f"   fixing {tbl}.{col} TEXT → INTEGER")
+                    safe_tbl = quoted_name(tbl, quote=True)
+                    safe_col = quoted_name(col, quote=True)
+                    conn.execute(text(
+                        f"ALTER TABLE {safe_tbl} ALTER COLUMN {safe_col} TYPE INTEGER USING {safe_col}::integer"
+                    ))
+
+            print("✅ employees.id migration complete")
+
+        # ── 2. Add missing columns to existing tables ─────────────────────────
+        # timesheets.emp_grade — added to store employee grade at time of record
+        _add_column_if_missing(conn, "timesheets", "emp_grade", "VARCHAR(5)")
 
         print("✅ Schema migration complete")
+
+
+def _add_column_if_missing(conn, table: str, column: str, col_type: str) -> None:
+    """Add a column to a table if it doesn't already exist (PostgreSQL only)."""
+    exists = conn.execute(text(
+        "SELECT 1 FROM information_schema.columns "
+        "WHERE table_name = :tbl AND column_name = :col"
+    ), {"tbl": table, "col": column}).fetchone()
+    if exists is None:
+        # Check the table itself exists before trying to alter it
+        tbl_exists = conn.execute(text(
+            "SELECT 1 FROM information_schema.tables WHERE table_name = :tbl"
+        ), {"tbl": table}).fetchone()
+        if tbl_exists:
+            safe_tbl = quoted_name(table, quote=True)
+            safe_col = quoted_name(column, quote=True)
+            conn.execute(text(f"ALTER TABLE {safe_tbl} ADD COLUMN IF NOT EXISTS {safe_col} {col_type}"))
+            print(f"   added column {table}.{column} ({col_type})")
 
 
 def init_db() -> None:

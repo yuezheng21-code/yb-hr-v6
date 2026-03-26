@@ -55,6 +55,7 @@ class TimesheetOut(TimesheetBase):
     ts_no: str
     emp_no: str
     emp_name: str
+    emp_grade: Optional[str] = None
     source_type: str
     supplier_id: Optional[int]
     biz_line: str
