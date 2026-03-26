@@ -23,5 +23,6 @@ class Supplier(Base):
     email: Mapped[Optional[str]] = mapped_column(String(100))
     status: Mapped[str] = mapped_column(String(20), default="active")
     rating: Mapped[Optional[str]] = mapped_column(String(5))
+    tax_handle: Mapped[Optional[str]] = mapped_column(String(50))  # 供应商自行报税 / 我方代报税
     notes: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())

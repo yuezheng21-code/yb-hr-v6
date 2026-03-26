@@ -267,5 +267,10 @@
   "status.wh_pending": "仓库待审",
   "status.fin_pending": "财务待审",
   "status.booked": "已过账",
-  "status.rejected": "已拒绝"
+  "status.rejected": "已拒绝",
+  "status.pending": "待处理",
+  "status.wh_approved": "仓库已批",
+  "status.fin_approved": "财务已批",
+  "status.confirmed": "已确认",
+  "status.paid": "已付款"
 }

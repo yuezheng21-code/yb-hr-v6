@@ -267,5 +267,10 @@
   "status.wh_pending": "Lager ausstehend",
   "status.fin_pending": "Finanz ausstehend",
   "status.booked": "Gebucht",
-  "status.rejected": "Abgelehnt"
+  "status.rejected": "Abgelehnt",
+  "status.pending": "Ausstehend",
+  "status.wh_approved": "Lager genehmigt",
+  "status.fin_approved": "Finanz genehmigt",
+  "status.confirmed": "Bestätigt",
+  "status.paid": "Bezahlt"
 }

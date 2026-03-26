@@ -267,5 +267,10 @@
   "status.wh_pending": "WH Pending",
   "status.fin_pending": "Fin Pending",
   "status.booked": "Booked",
-  "status.rejected": "Rejected"
+  "status.rejected": "Rejected",
+  "status.pending": "Đang chờ",
+  "status.wh_approved": "Kho đã duyệt",
+  "status.fin_approved": "Tài chính đã duyệt",
+  "status.confirmed": "Đã xác nhận",
+  "status.paid": "Đã thanh toán"
 }

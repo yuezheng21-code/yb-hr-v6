@@ -4,9 +4,11 @@
 from __future__ import annotations
 import csv
 import io
+import os
 import re
 from datetime import datetime
 from typing import Optional
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -155,8 +157,29 @@ def create_employee(
 ):
     if user.role not in {"admin", "hr"}:
         raise HTTPException(403, "Forbidden")
-    emp = Employee(**body.model_dump(), emp_no=_next_emp_no(db))
+
+    pin = body.pin
+    emp_no = _next_emp_no(db)
+    emp_data = body.model_dump(exclude={"pin"})
+    emp = Employee(**emp_data, emp_no=emp_no)
     db.add(emp)
+    db.flush()  # get emp.id without committing
+
+    # If a 4-digit PIN is provided, auto-create a linked worker User account
+    if pin and len(pin) == 4 and pin.isdigit():
+        placeholder_hash = bcrypt.hashpw(os.urandom(24), bcrypt.gensalt()).decode()
+        worker_user = User(
+            username=f"worker_{emp.id}",
+            password_hash=placeholder_hash,
+            display_name=emp.name,
+            role="worker",
+            pin=pin,
+            is_active=True,
+        )
+        db.add(worker_user)
+        db.flush()
+        emp.user_id = worker_user.id
+
     db.commit()
     db.refresh(emp)
     return EmployeeOut.model_validate(emp)
@@ -187,8 +210,31 @@ def update_employee(
     emp = db.get(Employee, emp_id)
     if emp is None:
         raise HTTPException(404, "Employee not found")
-    for k, v in body.model_dump(exclude_unset=True).items():
+
+    pin = body.pin
+    for k, v in body.model_dump(exclude_unset=True, exclude={"pin"}).items():
         setattr(emp, k, v)
+
+    # Handle PIN update / creation for linked worker User
+    if pin and len(pin) == 4 and pin.isdigit():
+        if emp.user_id:
+            linked_user = db.get(User, emp.user_id)
+            if linked_user:
+                linked_user.pin = pin
+        else:
+            placeholder_hash = bcrypt.hashpw(os.urandom(24), bcrypt.gensalt()).decode()
+            worker_user = User(
+                username=f"worker_{emp.id}",
+                password_hash=placeholder_hash,
+                display_name=emp.name,
+                role="worker",
+                pin=pin,
+                is_active=True,
+            )
+            db.add(worker_user)
+            db.flush()
+            emp.user_id = worker_user.id
+
     emp.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(emp)

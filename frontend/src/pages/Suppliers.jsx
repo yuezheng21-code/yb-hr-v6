@@ -27,11 +27,11 @@ export default function Suppliers({ token, user }) {
 
   const filtered = suppliers.filter(s =>
     !search || s.name?.toLowerCase().includes(search.toLowerCase()) ||
-    s.contact_name?.toLowerCase().includes(search.toLowerCase())
+    s.contact_person?.toLowerCase().includes(search.toLowerCase())
   );
 
   const openNew = () => {
-    setForm({ biz_line:'渊博', rating:'B', status:'合作中', tax_handle:'供应商自行报税' });
+    setForm({ biz_line:'渊博', rating:'B', status:'active', tax_handle:'供应商自行报税' });
     setEditModal('new');
   };
   const openEdit = (s) => { setForm({ ...s }); setEditModal(s.id); };
@@ -78,11 +78,17 @@ export default function Suppliers({ token, user }) {
               <td className="mn tm">{s.id}</td>
               <td className="fw6">{s.name}</td>
               <td><StatusBadge value={s.biz_line} /></td>
-              <td>{s.contact_name}</td>
+              <td>{s.contact_person}</td>
               <td className="mn">{s.phone}</td>
               <td className="tm" style={{ fontSize:10 }}>{s.email}</td>
               <td><span style={{ color:s.rating==='A'?'var(--gn)':s.rating==='B'?'var(--og)':'var(--rd)',fontWeight:700 }}>{s.rating}</span></td>
-              <td><StatusBadge value={s.status} /></td>
+              <td>
+                <span className="bg" style={{
+                  background: s.status === 'active' ? '#2dd4a01a' : '#f0526c1a',
+                  color: s.status === 'active' ? '#2dd4a0' : '#f0526c',
+                  border: `1px solid ${s.status === 'active' ? '#2dd4a033' : '#f0526c33'}`,
+                }}>{s.status === 'active' ? '合作中' : '停止合作'}</span>
+              </td>
               {canEdit && (
                 <td style={{ display:'flex',gap:4 }}>
                   <button className="b bgh" style={{ fontSize:9 }} onClick={() => openEdit(s)}>{t('c.edit')}</button>
@@ -115,7 +121,7 @@ export default function Suppliers({ token, user }) {
                 <option>渊博</option><option>579</option>
               </select></div>
             <div className="fg"><label className="fl">{t('sup.f_contact')}</label>
-              <input className="fi" value={form.contact_name||''} onChange={e => setForm({...form,contact_name:e.target.value})} /></div>
+              <input className="fi" value={form.contact_person||''} onChange={e => setForm({...form,contact_person:e.target.value})} /></div>
             <div className="fg"><label className="fl">{t('sup.f_phone')}</label>
               <input className="fi" value={form.phone||''} onChange={e => setForm({...form,phone:e.target.value})} /></div>
             <div className="fg"><label className="fl">{t('sup.f_email')}</label>
@@ -129,8 +135,9 @@ export default function Suppliers({ token, user }) {
                 {RATINGS.map(r => <option key={r}>{r}</option>)}
               </select></div>
             <div className="fg"><label className="fl">{t('c.status')}</label>
-              <select className="fsl" value={form.status||'合作中'} onChange={e => setForm({...form,status:e.target.value})}>
-                <option>合作中</option><option>停止合作</option>
+              <select className="fsl" value={form.status||'active'} onChange={e => setForm({...form,status:e.target.value})}>
+                <option value="active">合作中</option>
+                <option value="inactive">停止合作</option>
               </select></div>
             <div className="fg ful"><label className="fl">{t('sup.f_notes')}</label>
               <textarea className="fta" value={form.notes||''} onChange={e => setForm({...form,notes:e.target.value})} /></div>

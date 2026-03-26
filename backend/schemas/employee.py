@@ -32,11 +32,12 @@ class EmployeeBase(BaseModel):
     whatsapp: Optional[str] = None
     wechat: Optional[str] = None
     referrer_emp_id: Optional[int] = None
+    tax_mode: Optional[str] = None   # 我方报税 / 供应商报税
     notes: Optional[str] = None
 
 
 class EmployeeCreate(EmployeeBase):
-    pass
+    pin: Optional[str] = None   # 4-digit worker PIN — auto-creates a linked User account
 
 
 class EmployeeUpdate(BaseModel):
@@ -62,6 +63,8 @@ class EmployeeUpdate(BaseModel):
     tax_id: Optional[str] = None
     social_security_no: Optional[str] = None
     iban: Optional[str] = None
+    tax_mode: Optional[str] = None
+    pin: Optional[str] = None   # 4-digit worker PIN — updates / creates linked User account
 
 
 class EmployeeOut(EmployeeBase):

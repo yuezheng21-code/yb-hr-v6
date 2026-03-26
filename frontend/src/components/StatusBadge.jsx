@@ -4,14 +4,18 @@ const SC = {
   // Status values (Chinese)
   '已入账':'#2dd4a0','待财务确认':'#f97316','待仓库审批':'#f5a623','驳回':'#f0526c',
   '在职':'#2dd4a0','离职':'#f0526c','自有':'#4f6ef7','供应商':'#f97316',
-  '渊博':'#4f6ef7','579':'#f97316','合作中':'#2dd4a0','有效':'#f0526c',
-  '已撤销':'#6a7498','进行中':'#f5a623','已完成':'#2dd4a0',
+  '渊博':'#4f6ef7','579':'#f97316','合作中':'#2dd4a0','停止合作':'#f0526c',
+  '有效':'#f0526c','已撤销':'#6a7498','进行中':'#f5a623','已完成':'#2dd4a0',
   'A':'#2dd4a0','B':'#f5a623','C':'#f0526c',
   // Status values (English — V7 backend)
   'active':'#2dd4a0','inactive':'#f0526c',
   'own':'#4f6ef7','supplier':'#f97316',
   'draft':'#6a7498','wh_pending':'#f5a623','fin_pending':'#f97316',
   'booked':'#2dd4a0','rejected':'#f0526c',
+  // Container statuses
+  'pending':'#f5a623','wh_approved':'#2dd4a0','fin_approved':'#1d8d6e',
+  // Settlement statuses
+  'confirmed':'#4f6ef7','paid':'#2dd4a0',
 };
 
 // Maps backend enum values to i18n translation keys
@@ -21,6 +25,9 @@ const STATUS_KEY_MAP = {
   'draft': 'status.draft', 'wh_pending': 'status.wh_pending',
   'fin_pending': 'status.fin_pending', 'booked': 'status.booked',
   'rejected': 'status.rejected',
+  'pending': 'status.pending', 'wh_approved': 'status.wh_approved',
+  'fin_approved': 'status.fin_approved',
+  'confirmed': 'status.confirmed', 'paid': 'status.paid',
 };
 
 export function StatusBadge({ value }) {

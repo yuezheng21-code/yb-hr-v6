@@ -146,6 +146,10 @@ def _migrate_schema() -> None:
         # ── 2. Add missing columns to existing tables ─────────────────────────
         # timesheets.emp_grade — added to store employee grade at time of record
         _add_column_if_missing(conn, "timesheets", "emp_grade", "VARCHAR(5)")
+        # employees.tax_mode — tax-handling mode (我方报税 / 供应商报税)
+        _add_column_if_missing(conn, "employees", "tax_mode", "VARCHAR(50)")
+        # suppliers.tax_handle — supplier tax-handling mode
+        _add_column_if_missing(conn, "suppliers", "tax_handle", "VARCHAR(50)")
 
         print("✅ Schema migration complete")
 
