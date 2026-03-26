@@ -16,13 +16,14 @@ from backend.config import CORS_ORIGINS
 # ── Startup readiness flag ────────────────────────────────────────────
 _db_lock = threading.Lock()
 _db_ready = False
+_db_failed = False   # True when initialisation has permanently failed
 _db_error: str = ""
 _db_status: str = "starting"
 _MAX_DB_ATTEMPTS = 40  # 40 × (5s connect_timeout + 5s sleep) ≈ 400s max DB wait
 
 
 def _init_db_background():
-    global _db_ready, _db_error, _db_status
+    global _db_ready, _db_failed, _db_error, _db_status
     try:
         db_url = os.environ.get("DATABASE_URL", "")
         if db_url:
@@ -44,6 +45,7 @@ def _init_db_background():
                 with _db_lock:
                     _db_error = "Database unavailable after attempts"
                     _db_status = _db_error
+                    _db_failed = True
                 print(f"❌ {_db_error}")
                 return
 
@@ -67,6 +69,7 @@ def _init_db_background():
         with _db_lock:
             _db_error = str(exc)
             _db_status = str(exc)
+            _db_failed = True
         print(f"❌ Startup error: {exc}")
         import traceback
         traceback.print_exc()
@@ -116,10 +119,12 @@ async def db_readiness_gate(request: Request, call_next):
 def health():
     with _db_lock:
         ready = _db_ready
+        failed = _db_failed
         status = _db_status
     body = {
-        "status": "ok" if ready else "starting",
+        "status": "ok" if ready else ("error" if failed else "starting"),
         "db_ready": ready,
+        "db_failed": failed,
         "db_status": status,
         "version": "7.0.0",
         "time": datetime.now().isoformat(),

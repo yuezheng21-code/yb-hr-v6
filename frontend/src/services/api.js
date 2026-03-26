@@ -108,7 +108,7 @@ export async function downloadBlob(path, token, filename) {
 
 export function pollHealth(onReady, onStatusUpdate) {
   let attempts = 0;
-  const MAX = 120;
+  const MAX = 60;
   const INTERVAL = 3000;
   let timer;
 
@@ -116,7 +116,13 @@ export function pollHealth(onReady, onStatusUpdate) {
     try {
       const res = await fetch('/health');
       const data = await res.json();
-      if (data.db_ready !== false) {
+      if (data.db_ready === true) {
+        onReady();
+        return;
+      }
+      // Permanent failure — stop polling and let the user reach the login page.
+      if (data.db_failed === true) {
+        onStatusUpdate('error');
         onReady();
         return;
       }
