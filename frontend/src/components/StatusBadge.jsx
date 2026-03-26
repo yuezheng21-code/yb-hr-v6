@@ -1,3 +1,5 @@
+import { useLang } from '../context/LangContext.jsx';
+
 const SC = {
   // Status values (Chinese)
   '已入账':'#2dd4a0','待财务确认':'#f97316','待仓库审批':'#f5a623','驳回':'#f0526c',
@@ -12,17 +14,20 @@ const SC = {
   'booked':'#2dd4a0','rejected':'#f0526c',
 };
 
-// Map English backend values to Chinese display labels
-const LABEL_MAP = {
-  'active': '在职', 'inactive': '离职',
-  'own': '自有', 'supplier': '供应商',
-  'draft': '草稿', 'wh_pending': '仓库待审', 'fin_pending': '财务待审',
-  'booked': '已过账', 'rejected': '已拒绝',
+// Maps backend enum values to i18n translation keys
+const STATUS_KEY_MAP = {
+  'active': 'status.active', 'inactive': 'status.inactive',
+  'own': 'status.own', 'supplier': 'status.supplier',
+  'draft': 'status.draft', 'wh_pending': 'status.wh_pending',
+  'fin_pending': 'status.fin_pending', 'booked': 'status.booked',
+  'rejected': 'status.rejected',
 };
 
 export function StatusBadge({ value }) {
+  const { t } = useLang();
   const color = SC[value] || '#6a7498';
-  const label = LABEL_MAP[value] || value;
+  const i18nKey = STATUS_KEY_MAP[value];
+  const label = i18nKey ? t(i18nKey) : value;
   return (
     <span
       className="bg"

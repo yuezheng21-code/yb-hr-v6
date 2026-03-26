@@ -131,7 +131,9 @@ export default function Attendance({ token, user }) {
                 onChange={e => setForm({...form,hourly_rate:+e.target.value})} /></div>
             <div className="fg"><label className="fl">{t('emp.f_settle')}</label>
               <select className="fsl" value={form.settlement_type||'hourly'} onChange={e => setForm({...form,settlement_type:e.target.value})}>
-                <option value="hourly">按小时 (Hourly)</option><option value="piece">按件 (Piece)</option><option value="container">按柜 (Container)</option>
+                <option value="hourly">按小时 (Hourly)</option>
+                <option value="piece">按件 (Piece)</option>
+                <option value="container">按柜 (Container)</option>
               </select></div>
             <div className="fg"><label className="fl">{t('emp.f_contract_hrs')}</label>
               <input className="fi" type="number" value={form.contract_hours||8}

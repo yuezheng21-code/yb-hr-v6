@@ -144,7 +144,7 @@ def _migrate_schema() -> None:
             print("✅ employees.id migration complete")
 
         # ── 2. Add missing columns to existing tables ─────────────────────────
-        # timesheets.emp_grade — added in V7.1 to store employee grade at time of record
+        # timesheets.emp_grade — added to store employee grade at time of record
         _add_column_if_missing(conn, "timesheets", "emp_grade", "VARCHAR(5)")
 
         print("✅ Schema migration complete")

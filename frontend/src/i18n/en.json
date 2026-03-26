@@ -258,5 +258,14 @@
   "ts.status_wh_pending": "WH Pending",
   "ts.status_fin_pending": "Fin Pending",
   "ts.status_booked": "Booked",
-  "ts.status_rejected": "Rejected"
+  "ts.status_rejected": "Rejected",
+  "status.active": "Active",
+  "status.inactive": "Inactive",
+  "status.own": "Own",
+  "status.supplier": "Supplier",
+  "status.draft": "Draft",
+  "status.wh_pending": "WH Pending",
+  "status.fin_pending": "Fin Pending",
+  "status.booked": "Booked",
+  "status.rejected": "Rejected"
 }
