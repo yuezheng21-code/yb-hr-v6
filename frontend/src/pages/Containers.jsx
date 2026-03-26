@@ -11,19 +11,6 @@ function parseWorkerCount(worker_ids) {
   try { return JSON.parse(worker_ids).length; } catch { return 0; }
 }
 
-function computeHours(start, end) {
-  if (!start || !end) return null;
-  const startParts = start.split(':').map(Number);
-  const endParts = end.split(':').map(Number);
-  if (startParts.length < 2 || endParts.length < 2) return null;
-  const [sh, sm] = startParts;
-  const [eh, em] = endParts;
-  if ([sh, sm, eh, em].some(isNaN)) return null;
-  let mins = (eh * 60 + em) - (sh * 60 + sm);
-  if (mins <= 0) mins += 24 * 60;
-  return parseFloat((mins / 60).toFixed(1));
-}
-
 export default function Containers({ token, user }) {
   const [containers, setContainers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -128,8 +115,8 @@ export default function Containers({ token, user }) {
               <td>{c.work_date}</td>
               <td>{c.start_time || '—'}</td>
               <td>{c.end_time || '—'}</td>
-              <td className="mn">{computeHours(c.start_time, c.end_time) ? computeHours(c.start_time, c.end_time) + 'h' : '—'}</td>
-              <td className="mn">{parseWorkerCount(c.worker_ids)}</td>
+              <td className="mn">{c.total_hours != null ? c.total_hours + 'h' : '—'}</td>
+              <td className="mn">{c.worker_count ?? parseWorkerCount(c.worker_ids)}</td>
               <td className="mn">€{(c.client_revenue || 0).toFixed(0)}</td>
               <td>{c.video_recorded ? '✅' : '—'}</td>
               <td><StatusBadge value={c.approval_status} /></td>

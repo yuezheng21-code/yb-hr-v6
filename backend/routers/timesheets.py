@@ -341,6 +341,8 @@ def submit_timesheet(
     db: Session = Depends(get_db),
 ):
     """Submit a draft timesheet for warehouse approval."""
+    if user.role not in {"admin", "hr", "wh", "mgr"}:
+        raise HTTPException(403, "Only admin, hr, wh, and mgr roles can submit timesheets")
     ts = db.get(Timesheet, ts_id)
     if ts is None:
         raise HTTPException(404, "Timesheet not found")

@@ -283,6 +283,21 @@ async def office365_test(tenant_id: str, client_id: str, client_secret: str) -> 
     return {"platform": "office365", "status": "ok", "token_preview": token[:20] + "..."}
 
 
+def _parse_extra(raw) -> dict:
+    """
+    Return extra_config as a plain dict regardless of whether it arrived as
+    a JSON string (direct from DB) or an already-decoded dict (from router).
+    """
+    if isinstance(raw, dict):
+        return raw
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw)
+    except (ValueError, TypeError):
+        return {}
+
+
 # ─── Generic dispatcher ─────────────────────────────────────────────────────────
 
 async def platform_test(cfg: dict) -> dict:
@@ -291,7 +306,7 @@ async def platform_test(cfg: dict) -> dict:
     `cfg` is the full IntegrationConfig as a dict.
     """
     platform = cfg["platform"]
-    extra = json.loads(cfg.get("extra_config") or "{}")
+    extra = _parse_extra(cfg.get("extra_config"))
 
     try:
         if platform == "wechat_work":
@@ -350,7 +365,7 @@ async def platform_send(cfg: dict, text: str) -> dict:
     Send a text message via the configured platform.
     """
     platform = cfg["platform"]
-    extra = json.loads(cfg.get("extra_config") or "{}")
+    extra = _parse_extra(cfg.get("extra_config"))
 
     if platform == "wechat_work":
         return await wechat_work_send(cfg["webhook_url"], text)

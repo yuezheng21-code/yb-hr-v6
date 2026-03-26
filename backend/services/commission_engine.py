@@ -26,7 +26,7 @@ def determine_tier(avg_monthly_invoice: float) -> str:
         key=lambda x: x[1]["min"],
         reverse=True,
     ):
-        if tier_info["max"] is None or avg_monthly_invoice >= tier_info["min"]:
+        if avg_monthly_invoice >= tier_info["min"]:
             return tier_name
     return "bronze"
 

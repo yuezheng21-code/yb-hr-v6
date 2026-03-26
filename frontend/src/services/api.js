@@ -108,7 +108,7 @@ export async function downloadBlob(path, token, filename) {
 
 export function pollHealth(onReady, onStatusUpdate) {
   let attempts = 0;
-  const MAX = 60;
+  const MAX = 120;
   const INTERVAL = 3000;
   let timer;
 
@@ -122,7 +122,7 @@ export function pollHealth(onReady, onStatusUpdate) {
       }
       // Permanent failure — stop polling and let the user reach the login page.
       if (data.db_failed === true) {
-        onStatusUpdate('error');
+        onStatusUpdate('error', data.db_status || '');
         onReady();
         return;
       }

@@ -12,6 +12,7 @@ from backend.models.quotation import Quotation, CostCalculation  # noqa: F401
 from backend.models.dispatch import DispatchDemand, TalentPool  # noqa: F401
 from backend.models.message import SystemMessage, MessageRead  # noqa: F401
 from backend.models.integration import IntegrationConfig  # noqa: F401
+from backend.models.audit_log import AuditLog  # noqa: F401
 
 __all__ = [
     "User", "Employee", "Supplier", "Warehouse",
@@ -22,4 +23,5 @@ __all__ = [
     "DispatchDemand", "TalentPool",
     "SystemMessage", "MessageRead",
     "IntegrationConfig",
+    "AuditLog",
 ]

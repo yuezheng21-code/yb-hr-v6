@@ -1,13 +1,15 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 export const ToastCtx = createContext(() => {});
 
 export function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
+  const timerRef = useRef(null);
 
   const showToast = useCallback((message, type = 'ok') => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     setToast({ message, type });
-    setTimeout(() => setToast(null), 2500);
+    timerRef.current = setTimeout(() => { setToast(null); timerRef.current = null; }, 2500);
   }, []);
 
   return (

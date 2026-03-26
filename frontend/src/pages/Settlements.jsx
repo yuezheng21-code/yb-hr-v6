@@ -13,7 +13,9 @@ function SettlementTab({ tab, period, token, user, t, showToast }) {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
-  const canGenerate = ['admin', 'hr', 'fin'].includes(user?.role);
+  const canGenerate = tab === 'project'
+    ? ['admin', 'fin'].includes(user?.role)
+    : ['admin', 'hr', 'fin'].includes(user?.role);
   const canExport = ['admin', 'hr', 'fin'].includes(user?.role);
 
   const load = () => {
@@ -71,7 +73,7 @@ function SettlementTab({ tab, period, token, user, t, showToast }) {
       {sumData && (
         <div className="sr" style={{ marginBottom: 12 }}>
           {tab === 'employee' && [
-            [t('settle.emp_count'), sumData.count, 'var(--cy)'],
+            [sumData.count, t('settle.emp_count'), 'var(--cy)'],
             [`${sumData.total_hours}h`, t('settle.hours'), 'var(--pp)'],
             [fmtE(sumData.total_gross), 'Brutto', 'var(--og)'],
             [fmtE(sumData.total_cost), t('settle.total_cost'), 'var(--rd)'],
@@ -202,6 +204,11 @@ function SettlementTab({ tab, period, token, user, t, showToast }) {
 }
 
 export default function Settlements({ token, user }) {
+  // hr role cannot access project settlements (backend returns 403)
+  const visibleTabs = ['admin', 'fin', 'mgr'].includes(user?.role)
+    ? ['employee', 'supplier', 'project']
+    : ['employee', 'supplier'];
+
   const [tab, setTab] = useState('employee');
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
   const { t } = useLang();
@@ -217,7 +224,7 @@ export default function Settlements({ token, user }) {
     <div>
       <div className="ab">
         <div style={{ display: 'flex', gap: 6 }}>
-          {TABS.map(tb => (
+          {visibleTabs.map(tb => (
             <button key={tb} className={`fb ${tab === tb ? 'on' : ''}`} onClick={() => setTab(tb)}>
               {tabLabels[tb]}
             </button>

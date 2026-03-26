@@ -38,6 +38,7 @@
   "c.connecting": "Kapcsolódás a szerverhez…",
   "c.srv_timeout": "A szerver 3 perc alatt nem indult el — kérjük, frissítse az oldalt",
   "c.srv_error": "A rendszer inicializálása meghiúsult — kérje az adminisztrátor segítségét vagy frissítse az oldalt",
+  "c.retry": "Újra próbálkozás",
   "nav.dashboard": "Vezérlőpult",
   "nav.employees": "Munkavállalói nyilvántartás",
   "nav.timesheets": "Munkaidő nyilvántartás",

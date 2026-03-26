@@ -512,11 +512,16 @@ def generate_project_settlements(
         for r in revenue_rows
     }
 
+    # Build a unified set of (warehouse, biz_line) keys from both cost and revenue sources
+    emp_cost_map: dict[tuple, float] = {
+        (row["warehouse_code"], row["biz_line"]): float(row["own_cost"] or 0)
+        for row in emp_costs
+    }
+    all_keys = set(emp_cost_map.keys()) | set(rev_map.keys())
+
     created = 0
-    for row in emp_costs:
-        wh = row["warehouse_code"]
-        biz = row["biz_line"]
-        own_cost = float(row["own_cost"] or 0)
+    for (wh, biz) in all_keys:
+        own_cost = emp_cost_map.get((wh, biz), 0.0)
         revenue = rev_map.get((wh, biz), 0.0)
 
         sup_cost = db.scalar(
