@@ -267,5 +267,10 @@
   "status.wh_pending": "WH Pending",
   "status.fin_pending": "Fin Pending",
   "status.booked": "Booked",
-  "status.rejected": "Rejected"
+  "status.rejected": "Rejected",
+  "status.pending": "Oczekujące",
+  "status.wh_approved": "Zatwierdzone (mag.)",
+  "status.fin_approved": "Zatwierdzone (fin.)",
+  "status.confirmed": "Potwierdzone",
+  "status.paid": "Opłacone"
 }

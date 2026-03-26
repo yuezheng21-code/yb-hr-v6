@@ -18,6 +18,7 @@ class SupplierBase(BaseModel):
     email: Optional[str] = None
     status: str = "active"
     rating: Optional[str] = None
+    tax_handle: Optional[str] = None   # 供应商自行报税 / 我方代报税
     notes: Optional[str] = None
 
 
@@ -38,6 +39,7 @@ class SupplierUpdate(BaseModel):
     email: Optional[str] = None
     status: Optional[str] = None
     rating: Optional[str] = None
+    tax_handle: Optional[str] = None
     notes: Optional[str] = None
 
 

@@ -267,5 +267,10 @@
   "status.wh_pending": "WH Pending",
   "status.fin_pending": "Fin Pending",
   "status.booked": "Booked",
-  "status.rejected": "Rejected"
+  "status.rejected": "Rejected",
+  "status.pending": "Beklemede",
+  "status.wh_approved": "Depo Onaylandı",
+  "status.fin_approved": "Finans Onaylandı",
+  "status.confirmed": "Onaylandı",
+  "status.paid": "Ödendi"
 }

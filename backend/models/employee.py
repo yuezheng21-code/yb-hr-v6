@@ -41,6 +41,7 @@ class Employee(Base):
     whatsapp: Mapped[Optional[str]] = mapped_column(String(30))
     wechat: Mapped[Optional[str]] = mapped_column(String(50))
     user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    tax_mode: Mapped[Optional[str]] = mapped_column(String(50))   # 我方报税 / 供应商报税
     referrer_emp_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("employees.id"), nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())

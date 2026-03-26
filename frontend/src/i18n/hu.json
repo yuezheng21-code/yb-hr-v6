@@ -267,5 +267,10 @@
   "status.wh_pending": "WH Pending",
   "status.fin_pending": "Fin Pending",
   "status.booked": "Booked",
-  "status.rejected": "Rejected"
+  "status.rejected": "Rejected",
+  "status.pending": "Függőben",
+  "status.wh_approved": "Raktár jóváhagyta",
+  "status.fin_approved": "Pénzügy jóváhagyta",
+  "status.confirmed": "Megerősített",
+  "status.paid": "Kifizetve"
 }

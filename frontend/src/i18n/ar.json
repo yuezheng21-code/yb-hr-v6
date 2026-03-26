@@ -267,5 +267,10 @@
   "status.wh_pending": "WH Pending",
   "status.fin_pending": "Fin Pending",
   "status.booked": "Booked",
-  "status.rejected": "Rejected"
+  "status.rejected": "Rejected",
+  "status.pending": "قيد الانتظار",
+  "status.wh_approved": "معتمد (المستودع)",
+  "status.fin_approved": "معتمد (المالية)",
+  "status.confirmed": "مؤكد",
+  "status.paid": "مدفوع"
 }
