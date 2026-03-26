@@ -169,7 +169,7 @@ def create_employee(
     if pin and len(pin) == 4 and pin.isdigit():
         placeholder_hash = bcrypt.hashpw(os.urandom(24), bcrypt.gensalt()).decode()
         worker_user = User(
-            username=emp_no.lower().replace("-", "_"),
+            username=f"worker_{emp.id}",
             password_hash=placeholder_hash,
             display_name=emp.name,
             role="worker",
@@ -224,7 +224,7 @@ def update_employee(
         else:
             placeholder_hash = bcrypt.hashpw(os.urandom(24), bcrypt.gensalt()).decode()
             worker_user = User(
-                username=emp.emp_no.lower().replace("-", "_"),
+                username=f"worker_{emp.id}",
                 password_hash=placeholder_hash,
                 display_name=emp.name,
                 role="worker",
