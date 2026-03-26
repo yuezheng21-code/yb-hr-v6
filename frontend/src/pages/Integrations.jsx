@@ -79,12 +79,11 @@ export default function Integrations({ token, user }) {
   const [sendText, setSendText] = useState('');
   const [sendModal, setSendModal] = useState(null);
   const showToast = useToast();
+  const isAdmin = user?.role === 'admin';
 
-  if (user?.role !== 'admin') {
-    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--tx3)' }}>⛔ 仅管理员可访问</div>;
-  }
-
+  // Hooks MUST be called before any conditional return (React Rules of Hooks).
   const load = useCallback(() => {
+    if (!isAdmin) return;
     setLoading(true);
     Promise.all([
       api('/api/v1/integrations/catalogue', { token }),
@@ -94,10 +93,16 @@ export default function Integrations({ token, user }) {
       const map = {};
       cfgs.forEach(c => { map[c.platform] = c; });
       setConfigs(map);
+    }).catch(e => {
+      showToast(e.message, 'err');
     }).finally(() => setLoading(false));
-  }, [token]);
+  }, [token, isAdmin, showToast]);
 
   useEffect(() => { load(); }, [load]);
+
+  if (!isAdmin) {
+    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--tx3)' }}>⛔ 仅管理员可访问</div>;
+  }
 
   const catMap = Object.fromEntries(catalogue.map(c => [c.platform, c]));
 
