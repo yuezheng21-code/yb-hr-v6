@@ -63,7 +63,44 @@ def _migrate_schema() -> None:
         if row is None or row[0].lower() in ("integer", "bigint", "smallint"):
             return  # employees table missing or already correct
 
-        print(f"⚠  employees.id is '{row[0]}' — migrating to INTEGER …")
+        print(f"⚠  employees.id is '{row[0]}' — checking data before migration …")
+
+        # Guard: if any existing id values are non-numeric (e.g. "YB-001") they
+        # cannot be cast to INTEGER.  The old schema is fundamentally incompatible
+        # with V7, so drop employees and every table that depends on it via
+        # foreign keys, then return.  create_all() will recreate them all with
+        # the correct V7 schema, and seed data is re-applied on the same startup.
+        non_numeric_count = conn.execute(text(
+            "SELECT COUNT(*) FROM employees WHERE id IS NOT NULL AND id !~ '^[0-9]+$'"
+        )).scalar() or 0
+
+        if non_numeric_count > 0:
+            print(
+                f"⚠  employees.id has {non_numeric_count} non-castable value(s) "
+                f"(e.g. 'YB-001').  Dropping incompatible tables for a clean V7 rebuild …"
+            )
+            # Drop dependent child tables first so their own schemas are also
+            # recreated cleanly by create_all() (they may have TEXT employee_id
+            # columns from the old deployment).
+            # NOTE: this list mirrors the child_columns list used in the numeric-cast
+            # branch below; update both if new employee-dependent tables are added.
+            _LEGACY_CHILD_TABLES = [
+                "commission_monthly",
+                "commission_records",
+                "referral_records",
+                "employee_settlements",
+                "clock_events",
+                "timesheets",
+            ]
+            for tbl in _LEGACY_CHILD_TABLES:
+                conn.execute(text(f"DROP TABLE IF EXISTS {quoted_name(tbl, quote=True)} CASCADE"))
+                print(f"   dropped {tbl}")
+            conn.execute(text("DROP TABLE IF EXISTS employees CASCADE"))
+            print("   dropped employees")
+            print("✅ Incompatible tables dropped — create_all() will rebuild with correct V7 schema")
+            return
+
+        print(f"⚠  employees.id is '{row[0]}' — migrating numeric values to INTEGER …")
 
         # Drop dependent foreign-key constraints on other tables before altering.
         # We only drop constraints that reference employees(id); the tables themselves stay.
