@@ -3,7 +3,7 @@ import { useLang, LangSwitcher } from '../context/LangContext.jsx';
 import { Spinner } from '../components/Spinner.jsx';
 import { loginAdmin, loginPin, persistSession } from '../services/auth.js';
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, srvReady = true, srvStatus = '' }) {
   const [mode, setMode] = useState('admin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -11,6 +11,19 @@ export default function Login({ onLogin }) {
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
   const { t } = useLang();
+
+  /** Translate raw db_status keys from pollHealth into localised text. */
+  const statusLabel = (raw) => {
+    const map = {
+      'waiting_for_database': t('c.db_waiting'),
+      'initializing_schema':  t('c.db_init_schema'),
+      'seeding_data':         t('c.db_seeding'),
+      'starting':             t('c.starting'),
+      'connecting':           t('c.connecting'),
+      'timeout':              t('c.srv_timeout'),
+    };
+    return map[raw] || raw;
+  };
 
   const doLogin = async () => {
     if (!username || !password) { setErr(t('login.err_empty')); return; }
@@ -55,6 +68,17 @@ export default function Login({ onLogin }) {
           </div>
         </div>
 
+        {!srvReady && (
+          <div style={{ marginBottom:16,padding:'8px 12px',background:'var(--og)15',border:'1px solid var(--og)40',borderRadius:'var(--R2)',display:'flex',alignItems:'center',gap:8 }}>
+            <span style={{ animation:'spin 1s linear infinite',display:'inline-block',fontSize:14 }}>⟳</span>
+            <div>
+              <div style={{ fontSize:11,color:'var(--og)',fontWeight:600 }}>{t('c.starting')}</div>
+              {srvStatus && <div style={{ fontSize:10,color:'var(--tx3)' }}>{statusLabel(srvStatus)}</div>}
+              <div style={{ fontSize:9,color:'var(--tx3)',marginTop:2,opacity:.8 }}>{t('c.first_run_hint')}</div>
+            </div>
+          </div>
+        )}
+
         <div className="tb" style={{ marginBottom:20,width:'100%' }}>
           <button className={`tbn ${mode==='admin'?'on':''}`} style={{ flex:1 }} onClick={() => setMode('admin')}>{t('login.admin')}</button>
           <button className={`tbn ${mode==='worker'?'on':''}`} style={{ flex:1 }} onClick={() => setMode('worker')}>{t('login.worker')}</button>
@@ -72,7 +96,7 @@ export default function Login({ onLogin }) {
               <input className="fi" type="password" value={password} onChange={e => { setPassword(e.target.value); setErr(''); }}
                 onKeyDown={e => e.key === 'Enter' && doLogin()} />
             </div>
-            <button className="b bga bl" style={{ width:'100%' }} onClick={doLogin} disabled={loading}>
+            <button className="b bga bl" style={{ width:'100%' }} onClick={doLogin} disabled={loading || !srvReady}>
               {loading ? <Spinner /> : t('login.btn')}
             </button>
             <div style={{ marginTop:10,fontSize:9,color:'var(--tx3)',textAlign:'center' }}>{t('login.hint')}</div>
@@ -86,7 +110,7 @@ export default function Login({ onLogin }) {
                 value={pin} onChange={e => { setPin(e.target.value.replace(/\D/g,'')); setErr(''); }}
                 onKeyDown={e => e.key === 'Enter' && doPin()} placeholder="••••" />
             </div>
-            <button className="b bga bl" style={{ width:'100%' }} onClick={doPin} disabled={loading}>
+            <button className="b bga bl" style={{ width:'100%' }} onClick={doPin} disabled={loading || !srvReady}>
               {loading ? <Spinner /> : t('login.pin_btn')}
             </button>
             <div style={{ marginTop:10,fontSize:9,color:'var(--tx3)',textAlign:'center' }}>{t('login.pin_hint')}</div>

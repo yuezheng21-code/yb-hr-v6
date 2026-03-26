@@ -72,6 +72,10 @@ export default function App() {
     navigate('/login');
   };
 
+  if (!token || !user) {
+    return <Login onLogin={onLogin} srvReady={srvReady} srvStatus={srvStatus} />;
+  }
+
   if (!srvReady) {
     return (
       <div style={{ position:'fixed',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'var(--bg)',gap:16 }}>
@@ -80,10 +84,6 @@ export default function App() {
         {srvStatus && <div style={{ fontSize:10,color:'var(--tx3)',opacity:.6 }}>{srvStatus}</div>}
       </div>
     );
-  }
-
-  if (!token || !user) {
-    return <Login onLogin={onLogin} />;
   }
 
   return (
@@ -114,7 +114,7 @@ export default function App() {
         <Route path="/messages" element={<ProtectedRoute><Messages {...props} /></ProtectedRoute>} />
         <Route path="/integrations" element={<ProtectedRoute><Integrations {...props} /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><Admin {...props} /></ProtectedRoute>} />
-        <Route path="/login" element={<Login onLogin={onLogin} />} />
+        <Route path="/login" element={<Login onLogin={onLogin} srvReady={srvReady} srvStatus={srvStatus} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppShell>

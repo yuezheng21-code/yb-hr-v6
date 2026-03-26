@@ -120,14 +120,16 @@ export function pollHealth(onReady, onStatusUpdate) {
         onReady();
         return;
       }
+      // Pass the raw db_status key; Login.jsx translates it via i18n.
       onStatusUpdate(data.db_status || 'starting');
     } catch {
-      onStatusUpdate('connecting...');
+      onStatusUpdate('connecting');
     }
     if (++attempts < MAX) {
       timer = setTimeout(check, INTERVAL);
     } else {
-      onStatusUpdate('Server did not become ready after 6 minutes');
+      onStatusUpdate('timeout');
+      onReady(); // show login page anyway so users are not stuck forever
     }
   };
 
