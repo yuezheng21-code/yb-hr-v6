@@ -38,6 +38,7 @@
   "c.connecting": "Verbindung zum Server wird hergestellt…",
   "c.srv_timeout": "Server nach 3 Minuten nicht bereit — bitte Seite neu laden",
   "c.srv_error": "Systeminitialisierung fehlgeschlagen — Administrator kontaktieren oder Seite neu laden",
+  "c.retry": "Erneut versuchen",
   "nav.dashboard": "Dashboard",
   "nav.employees": "Mitarbeiter",
   "nav.timesheets": "Arbeitszeiterfassung",

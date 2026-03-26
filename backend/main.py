@@ -24,6 +24,8 @@ _MAX_DB_ATTEMPTS = 40  # 40 × (5s connect_timeout + 5s sleep) ≈ 400s max DB w
 
 def _init_db_background():
     global _db_ready, _db_failed, _db_error, _db_status
+    import traceback as _tb
+
     try:
         db_url = os.environ.get("DATABASE_URL", "")
         if db_url:
@@ -49,30 +51,55 @@ def _init_db_background():
                 print(f"❌ {_db_error}")
                 return
 
+        # ── Schema init (with retry) ─────────────────────────────────────────
+        _INIT_MAX_RETRIES = 3
+        _INIT_RETRY_DELAY = 10  # seconds between retries
+
         with _db_lock:
             _db_status = "initializing_schema"
         print("🗄️  Initialising schema...")
-        database.init_db()
-        print("✅ Schema ready")
+        for attempt in range(1, _INIT_MAX_RETRIES + 1):
+            try:
+                database.init_db()
+                print("✅ Schema ready")
+                break
+            except Exception as exc:
+                print(f"⚠  Schema init failed (attempt {attempt}/{_INIT_MAX_RETRIES}): {exc}")
+                _tb.print_exc()
+                if attempt < _INIT_MAX_RETRIES:
+                    time.sleep(_INIT_RETRY_DELAY)
+                else:
+                    raise  # re-raise on final attempt so outer except catches it
 
+        # ── Seed data (with retry) ───────────────────────────────────────────
         with _db_lock:
             _db_status = "seeding_data"
         print("🌱 Seeding default data...")
-        database.seed_data()
-        print("✅ Seed data applied")
+        for attempt in range(1, _INIT_MAX_RETRIES + 1):
+            try:
+                database.seed_data()
+                print("✅ Seed data applied")
+                break
+            except Exception as exc:
+                print(f"⚠  Seed failed (attempt {attempt}/{_INIT_MAX_RETRIES}): {exc}")
+                _tb.print_exc()
+                if attempt < _INIT_MAX_RETRIES:
+                    time.sleep(_INIT_RETRY_DELAY)
+                else:
+                    raise  # re-raise on final attempt
 
         with _db_lock:
             _db_ready = True
             _db_status = "ok"
         print("🚀 Application fully ready — V7.0")
     except Exception as exc:
+        err_msg = str(exc)
         with _db_lock:
-            _db_error = str(exc)
-            _db_status = str(exc)
+            _db_error = err_msg
+            _db_status = err_msg
             _db_failed = True
         print(f"❌ Startup error: {exc}")
-        import traceback
-        traceback.print_exc()
+        _tb.print_exc()
 
 
 _init_thread: threading.Thread | None = None
@@ -106,7 +133,14 @@ async def db_readiness_gate(request: Request, call_next):
     if request.url.path.startswith("/api/"):
         with _db_lock:
             ready = _db_ready
+            failed = _db_failed
+            err = _db_error
         if not ready:
+            if failed:
+                return JSONResponse(
+                    status_code=503,
+                    content={"detail": f"系统初始化失败，请联系管理员。错误: {err}"},
+                )
             return JSONResponse(
                 status_code=503,
                 headers={"Retry-After": "5"},

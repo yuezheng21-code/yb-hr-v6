@@ -38,6 +38,7 @@
   "c.connecting": "Sunucuya bağlanılıyor…",
   "c.srv_timeout": "Sunucu 3 dakika içinde hazır olmadı — lütfen sayfayı yenileyin",
   "c.srv_error": "Sistem başlatma başarısız oldu — yöneticiyle iletişime geçin veya sayfayı yenileyin",
+  "c.retry": "Tekrar Dene",
   "nav.dashboard": "Gösterge Paneli",
   "nav.employees": "Personel Listesi",
   "nav.timesheets": "Mesai Kayıtları",

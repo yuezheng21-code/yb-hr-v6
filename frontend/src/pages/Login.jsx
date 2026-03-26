@@ -3,7 +3,7 @@ import { useLang, LangSwitcher } from '../context/LangContext.jsx';
 import { Spinner } from '../components/Spinner.jsx';
 import { loginAdmin, loginPin, persistSession } from '../services/auth.js';
 
-export default function Login({ onLogin, srvReady = true, srvStatus = '' }) {
+export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErrDetail = '' }) {
   const [mode, setMode] = useState('admin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -74,10 +74,11 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '' }) {
         {(!srvReady || isSrvError) && (
           <div style={{ marginBottom:16,padding:'8px 12px',background: isSrvError ? 'var(--rd)15' : 'var(--og)15',border:`1px solid ${isSrvError ? 'var(--rd)40' : 'var(--og)40'}`,borderRadius:'var(--R2)',display:'flex',alignItems:'center',gap:8 }}>
             <span style={{ animation: isSrvError ? 'none' : 'spin 1s linear infinite',display:'inline-block',fontSize:14 }}>{isSrvError ? '⚠' : '⟳'}</span>
-            <div>
+            <div style={{ flex:1 }}>
               <div style={{ fontSize:11,color: isSrvError ? 'var(--rd)' : 'var(--og)',fontWeight:600 }}>{isSrvError ? t('c.srv_error') : t('c.starting')}</div>
               {srvStatus && !isSrvError && <div style={{ fontSize:10,color:'var(--tx3)' }}>{statusLabel(srvStatus)}</div>}
               {!isSrvError && <div style={{ fontSize:9,color:'var(--tx3)',marginTop:2,opacity:.8 }}>{t('c.first_run_hint')}</div>}
+              {isSrvError && <button className="b" style={{ marginTop:6,padding:'2px 10px',fontSize:10 }} onClick={() => window.location.reload()}>{t('c.retry')}</button>}
             </div>
           </div>
         )}

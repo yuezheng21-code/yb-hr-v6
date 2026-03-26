@@ -38,6 +38,7 @@
   "c.connecting": "Đang kết nối máy chủ…",
   "c.srv_timeout": "Máy chủ chưa sẵn sàng sau 3 phút — vui lòng làm mới trang",
   "c.srv_error": "Khởi tạo hệ thống thất bại — vui lòng liên hệ quản trị viên hoặc làm mới trang",
+  "c.retry": "Thử lại",
   "nav.dashboard": "Bảng điều khiển",
   "nav.employees": "Danh sách nhân viên",
   "nav.timesheets": "Chấm công",

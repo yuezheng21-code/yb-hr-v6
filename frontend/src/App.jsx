@@ -50,6 +50,7 @@ export default function App() {
   const location = useLocation();
   const [srvReady, setSrvReady] = useState(false);
   const [srvStatus, setSrvStatus] = useState('');
+  const [srvErrDetail, setSrvErrDetail] = useState('');
 
   const currentPage = PATH_TO_KEY[location.pathname] || 'dashboard';
   const props = { token, user };
@@ -57,7 +58,7 @@ export default function App() {
   useEffect(() => {
     return pollHealth(
       () => setSrvReady(true),
-      (status) => setSrvStatus(status)
+      (status, detail) => { setSrvStatus(status); if (detail) setSrvErrDetail(detail); }
     );
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -73,7 +74,7 @@ export default function App() {
   };
 
   if (!token || !user) {
-    return <Login onLogin={onLogin} srvReady={srvReady} srvStatus={srvStatus} />;
+    return <Login onLogin={onLogin} srvReady={srvReady} srvStatus={srvStatus} srvErrDetail={srvErrDetail} />;
   }
 
   if (!srvReady) {
@@ -86,6 +87,7 @@ export default function App() {
         }
         <div style={{ fontSize:12,color:'var(--tx3)' }}>{isErr ? t('c.srv_error') : t('c.starting')}</div>
         {srvStatus && !isErr && <div style={{ fontSize:10,color:'var(--tx3)',opacity:.6 }}>{srvStatus}</div>}
+        {isErr && <button className="b bga" style={{ marginTop:8,fontSize:11 }} onClick={() => window.location.reload()}>{t('c.retry')}</button>}
       </div>
     );
   }
@@ -118,7 +120,7 @@ export default function App() {
         <Route path="/messages" element={<ProtectedRoute><Messages {...props} /></ProtectedRoute>} />
         <Route path="/integrations" element={<ProtectedRoute><Integrations {...props} /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><Admin {...props} /></ProtectedRoute>} />
-        <Route path="/login" element={<Login onLogin={onLogin} srvReady={srvReady} srvStatus={srvStatus} />} />
+        <Route path="/login" element={<Login onLogin={onLogin} srvReady={srvReady} srvStatus={srvStatus} srvErrDetail={srvErrDetail} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppShell>
