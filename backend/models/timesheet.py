@@ -16,6 +16,7 @@ class Timesheet(Base):
     employee_id: Mapped[int] = mapped_column(Integer, ForeignKey("employees.id"), nullable=False, index=True)
     emp_no: Mapped[str] = mapped_column(String(20), nullable=False)
     emp_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    emp_grade: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)
 
     # Row-level security fields
     source_type: Mapped[str] = mapped_column(String(10), default="own")  # own/supplier

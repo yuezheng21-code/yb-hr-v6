@@ -253,5 +253,10 @@
   "abm.revoke_reason": "Grund *",
   "abm.revoke_btn": "Widerruf bestätigen",
   "abm.revoke_placeholder": "Grund eingeben...",
-  "abm.revoke_err": "Bitte Grund angeben"
+  "abm.revoke_err": "Bitte Grund angeben",
+  "ts.status_draft": "Entwurf",
+  "ts.status_wh_pending": "Lager ausstehend",
+  "ts.status_fin_pending": "Finanz ausstehend",
+  "ts.status_booked": "Gebucht",
+  "ts.status_rejected": "Abgelehnt"
 }

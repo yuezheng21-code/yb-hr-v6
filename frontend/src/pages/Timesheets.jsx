@@ -99,16 +99,16 @@ export default function Timesheets({ token, user }) {
   ).length;
 
   const statusFilters = [
-    ['', 'c.all'], ['draft', 'Draft'], ['wh_pending', 'WH Pending'],
-    ['fin_pending', 'Fin Pending'], ['booked', 'Booked'], ['rejected', 'Rejected'],
+    ['', 'c.all'], ['draft', 'ts.status_draft'], ['wh_pending', 'ts.status_wh_pending'],
+    ['fin_pending', 'ts.status_fin_pending'], ['booked', 'ts.status_booked'], ['rejected', 'ts.status_rejected'],
   ];
 
   return (
     <div>
       <div className="ab">
-        {statusFilters.map(([s, label]) => (
+        {statusFilters.map(([s, labelKey]) => (
           <button key={s} className={`fb ${filterStatus === s ? 'on' : ''}`} onClick={() => setFilterStatus(s)}>
-            {s === '' ? t('c.all') : label}
+            {t(labelKey)}
           </button>
         ))}
         <div className="ml" style={{ display: 'flex', gap: 6 }}>
@@ -135,7 +135,7 @@ export default function Timesheets({ token, user }) {
             <tr key={row.id}>
               <td className="mn tm">{row.ts_no}</td>
               <td className="fw6">{row.emp_name}</td>
-              <td style={{ color: 'var(--pp)', fontWeight: 600 }}>{row.biz_line || '—'}</td>
+              <td style={{ color: 'var(--pp)', fontWeight: 600 }}>{row.emp_grade || row.biz_line || '—'}</td>
               <td>{row.warehouse_code}</td>
               <td>{row.work_date}</td>
               <td>

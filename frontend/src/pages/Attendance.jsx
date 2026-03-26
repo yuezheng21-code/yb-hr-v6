@@ -23,7 +23,7 @@ export default function Attendance({ token, user }) {
 
   const load = useCallback(() => {
     setLoading(true);
-    api(`/api/v1/employees?search=${encodeURIComponent(search)}&status=${encodeURIComponent(filterStatus)}`, { token })
+    api(`/api/v1/employees?q=${encodeURIComponent(search)}&status=${encodeURIComponent(filterStatus)}`, { token })
       .then(setEmps)
       .finally(() => setLoading(false));
   }, [token, search, filterStatus]);
@@ -31,7 +31,7 @@ export default function Attendance({ token, user }) {
   useEffect(() => { load(); }, [load]);
 
   const openNew = () => {
-    setForm({ biz_line:'渊博',source:'自有',grade:'P1',settlement_type:'按小时',hourly_rate:13,status:'在职',contract_hours:8 });
+    setForm({ biz_line:'渊博',source_type:'own',grade:'P1',settlement_type:'hourly',hourly_rate:13,status:'active',contract_hours:8 });
     setEditModal('new');
   };
   const openEdit = (e) => { setForm({ ...e }); setEditModal(e.id); };
@@ -80,10 +80,10 @@ export default function Attendance({ token, user }) {
               <td className="mn gn">{e.id}</td>
               <td className="fw6">{e.name}</td>
               <td><StatusBadge value={e.biz_line} /></td>
-              <td>{e.warehouse_code}</td>
+              <td>{e.primary_warehouse}</td>
               <td>{e.position}</td>
               <td><span style={{ color:'var(--pp)',fontWeight:600 }}>{e.grade}</span></td>
-              <td><StatusBadge value={e.source} /></td>
+              <td><StatusBadge value={e.source_type} /></td>
               <td className="mn">€{fmt(e.hourly_rate)}/h</td>
               <td><StatusBadge value={e.status} /></td>
               <td className="tm">{e.join_date}</td>
@@ -112,7 +112,7 @@ export default function Attendance({ token, user }) {
                 <option>渊博</option><option>579</option>
               </select></div>
             <div className="fg"><label className="fl">{t('emp.f_wh')}</label>
-              <select className="fsl" value={form.warehouse_code||''} onChange={e => setForm({...form,warehouse_code:e.target.value})}>
+              <select className="fsl" value={form.primary_warehouse||''} onChange={e => setForm({...form,primary_warehouse:e.target.value})}>
                 <option value="">-</option>{WHS.map(w => <option key={w}>{w}</option>)}
               </select></div>
             <div className="fg"><label className="fl">{t('emp.f_pos')}</label>
@@ -122,16 +122,16 @@ export default function Attendance({ token, user }) {
                 {GRADES.map(g => <option key={g}>{g}</option>)}
               </select></div>
             <div className="fg"><label className="fl">{t('emp.f_src')}</label>
-              <select className="fsl" value={form.source||'自有'} onChange={e => setForm({...form,source:e.target.value})}>
-                <option value="自有">{t('emp.src_own')}</option>
-                <option value="供应商">{t('emp.src_sup')}</option>
+              <select className="fsl" value={form.source_type||'own'} onChange={e => setForm({...form,source_type:e.target.value})}>
+                <option value="own">{t('emp.src_own')}</option>
+                <option value="supplier">{t('emp.src_sup')}</option>
               </select></div>
             <div className="fg"><label className="fl">{t('emp.f_rate')}</label>
               <input className="fi" type="number" step="0.5" value={form.hourly_rate||13}
                 onChange={e => setForm({...form,hourly_rate:+e.target.value})} /></div>
             <div className="fg"><label className="fl">{t('emp.f_settle')}</label>
-              <select className="fsl" value={form.settlement_type||'按小时'} onChange={e => setForm({...form,settlement_type:e.target.value})}>
-                <option>按小时</option><option>按件</option><option>按柜</option>
+              <select className="fsl" value={form.settlement_type||'hourly'} onChange={e => setForm({...form,settlement_type:e.target.value})}>
+                <option value="hourly">按小时 (Hourly)</option><option value="piece">按件 (Piece)</option><option value="container">按柜 (Container)</option>
               </select></div>
             <div className="fg"><label className="fl">{t('emp.f_contract_hrs')}</label>
               <input className="fi" type="number" value={form.contract_hours||8}
