@@ -34,7 +34,7 @@ i18n.use(initReactI18next).init({
     pl: { translation: pl },
   },
   lng: localStorage.getItem('hr7_lang') || 'zh',
-  fallbackLng: 'zh',
+  fallbackLng: 'en',
   interpolation: { escapeValue: false },
   keySeparator: false,
   nsSeparator: false,
