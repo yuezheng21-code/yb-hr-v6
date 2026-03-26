@@ -15,7 +15,6 @@ def _make_wb_title(ws, title: str, col_count: int) -> None:
     from openpyxl.styles import Font, Alignment, PatternFill
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=col_count)
     cell = ws.cell(row=1, column=1, value=title)
-    cell.font = Font(bold=True, size=13)
     cell.alignment = Alignment(horizontal="center", vertical="center")
     cell.fill = PatternFill("solid", fgColor="4F6EF7")
     cell.font = Font(bold=True, size=13, color="FFFFFF")
