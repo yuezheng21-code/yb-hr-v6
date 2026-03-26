@@ -5,6 +5,7 @@ SQLAlchemy 2.0+ — PostgreSQL (prod) / SQLite (dev)
 from __future__ import annotations
 import os
 from sqlalchemy import create_engine, event, text
+from sqlalchemy.sql import quoted_name
 from sqlalchemy.orm import sessionmaker, DeclarativeBase, Session
 from typing import Generator
 
@@ -48,9 +49,85 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
+def _migrate_schema() -> None:
+    """Fix schema mismatches from older deployments before create_all()."""
+    if _is_sqlite:
+        return  # SQLite does not support ALTER COLUMN TYPE; fresh DB always correct
+    with engine.begin() as conn:
+        # Check if employees.id is TEXT/VARCHAR instead of INTEGER.
+        # This happened when an older schema version created the table with a text PK.
+        row = conn.execute(text(
+            "SELECT data_type FROM information_schema.columns "
+            "WHERE table_name='employees' AND column_name='id'"
+        )).fetchone()
+        if row is None or row[0].lower() in ("integer", "bigint", "smallint"):
+            return  # employees table missing or already correct
+
+        print(f"⚠  employees.id is '{row[0]}' — migrating to INTEGER …")
+
+        # Drop dependent foreign-key constraints on other tables before altering.
+        # We only drop constraints that reference employees(id); the tables themselves stay.
+        fk_rows = conn.execute(text(
+            "SELECT tc.table_name, tc.constraint_name "
+            "FROM information_schema.table_constraints tc "
+            "JOIN information_schema.referential_constraints rc "
+            "  ON tc.constraint_name = rc.constraint_name "
+            "JOIN information_schema.key_column_usage kcu "
+            "  ON rc.unique_constraint_name = kcu.constraint_name "
+            "WHERE kcu.table_name = 'employees' AND kcu.column_name = 'id'"
+        )).fetchall()
+        for tbl, constraint in fk_rows:
+            print(f"   dropping FK {constraint} on {tbl}")
+            safe_tbl = quoted_name(tbl, quote=True)
+            safe_constraint = quoted_name(constraint, quote=True)
+            conn.execute(text(f"ALTER TABLE {safe_tbl} DROP CONSTRAINT IF EXISTS {safe_constraint}"))
+
+        # Convert employees.id column from TEXT to INTEGER.
+        conn.execute(text(
+            "ALTER TABLE employees ALTER COLUMN id TYPE INTEGER USING id::integer"
+        ))
+
+        # Re-create the sequence / default for the PK if needed (SERIAL equivalent).
+        seq_exists = conn.execute(text(
+            "SELECT 1 FROM pg_sequences WHERE schemaname='public' AND sequencename='employees_id_seq'"
+        )).fetchone()
+        if not seq_exists:
+            conn.execute(text("CREATE SEQUENCE IF NOT EXISTS employees_id_seq OWNED BY employees.id"))
+            conn.execute(text(
+                "SELECT setval('employees_id_seq', COALESCE((SELECT MAX(id) FROM employees), 0) + 1, false)"
+            ))
+            conn.execute(text("ALTER TABLE employees ALTER COLUMN id SET DEFAULT nextval('employees_id_seq')"))
+
+        # Also fix employee_id (or equivalent) columns in child tables that were created as TEXT.
+        child_columns = [
+            ("timesheets", "employee_id"),
+            ("clock_events", "employee_id"),
+            ("employee_settlements", "employee_id"),
+            ("referral_records", "referrer_emp_id"),
+            ("referral_records", "referee_emp_id"),
+            ("commission_records", "employee_id"),
+            ("commission_monthly", "employee_id"),
+        ]
+        for tbl, col in child_columns:
+            col_row = conn.execute(text(
+                "SELECT data_type FROM information_schema.columns "
+                "WHERE table_name=:tbl AND column_name=:col"
+            ), {"tbl": tbl, "col": col}).fetchone()
+            if col_row and col_row[0].lower() not in ("integer", "bigint", "smallint"):
+                print(f"   fixing {tbl}.{col} TEXT → INTEGER")
+                safe_tbl = quoted_name(tbl, quote=True)
+                safe_col = quoted_name(col, quote=True)
+                conn.execute(text(
+                    f"ALTER TABLE {safe_tbl} ALTER COLUMN {safe_col} TYPE INTEGER USING {safe_col}::integer"
+                ))
+
+        print("✅ Schema migration complete")
+
+
 def init_db() -> None:
     """Create all tables (if not exist). Called at startup."""
     from backend.models import user, employee, supplier, warehouse, timesheet, container, clock, settlement, referral, commission, quotation, dispatch, message, integration  # noqa: F401
+    _migrate_schema()
     Base.metadata.create_all(bind=engine)
 
 
