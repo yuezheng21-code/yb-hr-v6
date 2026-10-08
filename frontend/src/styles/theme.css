@@ -134,18 +134,19 @@ body {
   /* Off-canvas drawer. Safe-area padding keeps the header/footer clear of the notch and
      home indicator when installed to the home screen (status bar is black-translucent). */
   .sidebar {
-    position: fixed; left: 0; top: 0; bottom: 0; z-index: 200; width: 260px; min-width: 0; max-width: 85vw;
+    position: fixed; left: 0; top: 0; bottom: 0; z-index: 1100; width: 260px; min-width: 0; max-width: 85vw;
     transform: translateX(-105%); transition: transform .22s ease, visibility 0s linear .22s; box-shadow: var(--shadow);
     padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
     overscroll-behavior: contain; visibility: hidden;
   }
   .sidebar.open { transform: none; visibility: visible; transition: transform .22s ease; }
   .ni { height: 40px; font-size: 14px; }
-  .mob-overlay { display: none; position: fixed; inset: 0; z-index: 199; background: var(--overlay); }
+  .mob-overlay { display: none; position: fixed; inset: 0; z-index: 1090; background: var(--overlay); touch-action: none; }
   .mob-overlay.show { display: block; }
   .mob-hdr {
     display: flex; align-items: center; gap: 6px; padding: env(safe-area-inset-top) 8px 0; min-height: 52px;
     height: calc(52px + env(safe-area-inset-top)); border-bottom: 1px solid var(--bd); background: var(--bg2); flex-shrink: 0;
+    position: relative; z-index: 300;
   }
   .mob-menu-btn {
     background: none; border: none; color: var(--tx); cursor: pointer; width: 44px; height: 44px; border-radius: var(--R2);
