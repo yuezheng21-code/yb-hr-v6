@@ -160,7 +160,7 @@ export default function Talent({ token, user }) {
               style={{
                 padding: '10px 12px', borderRadius: 'var(--R2)', cursor: 'pointer',
                 border: `1px solid ${selId === t.id ? 'var(--ac)' : 'var(--bd)'}`,
-                background: selId === t.id ? 'var(--ac)12' : 'var(--bg2)',
+                background: selId === t.id ? 'color-mix(in srgb, var(--ac) 7%, transparent)' : 'var(--bg2)',
               }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                 <span style={{ fontWeight: 700, fontSize: 13 }}>{t.name}</span>

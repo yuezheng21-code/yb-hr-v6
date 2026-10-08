@@ -1,7 +1,7 @@
 {
   "login.title": "Yuanbo+579 HR",
-  "login.admin": "👔 Admin Login",
-  "login.worker": "👷 Worker PIN",
+  "login.admin": "Admin Login",
+  "login.worker": "Worker PIN",
   "login.username": "Username",
   "login.password": "Password",
   "login.btn": "Sign In",
@@ -71,7 +71,7 @@
   "dash.abmahnung": "Active Abmahnungen",
   "dash.zk_alerts": "Zeitkonto Alerts",
   "dash.wv_active": "Active WV Projects",
-  "dash.chart": "📊 Last 7 Days Hours",
+  "dash.chart": "Last 7 Days Hours",
   "dash.no_data": "No timesheet data",
   "emp.new": "+ New Employee",
   "emp.search": "Search name/ID/phone...",

@@ -184,7 +184,7 @@ def _add_column_if_missing(conn, table: str, column: str, col_type: str) -> None
 
 def init_db() -> None:
     """Create all tables (if not exist). Called at startup."""
-    from backend.models import user, employee, supplier, warehouse, timesheet, container, clock, settlement, referral, commission, quotation, dispatch, message, integration, audit_log, operation  # noqa: F401
+    from backend.models import user, employee, supplier, warehouse, timesheet, container, clock, settlement, referral, commission, quotation, dispatch, message, integration, audit_log, operation, system_setting  # noqa: F401
     _migrate_schema()
     Base.metadata.create_all(bind=engine)
 
@@ -196,6 +196,8 @@ def seed_data() -> None:
     try:
         run_seed(db)
         db.commit()
+        from backend.services import settings_store
+        settings_store.load(db)
     except Exception:
         db.rollback()
         raise

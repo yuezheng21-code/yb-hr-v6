@@ -19,25 +19,10 @@ from backend.schemas.user import UserCreate, UserUpdate
 from backend.middleware.auth import get_current_user
 import backend.config as cfg
 import backend.database as database
+from backend.models.audit_log import AuditLog
+from backend.services import settings_store
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
-
-# ── System config stored in-memory (can be persisted to DB later) ─────────
-_SYSTEM_CONFIG: dict = {
-    "p1_hourly_rate": 13.90,
-    "social_rate": 0.21,
-    "vacation_rate": 0.10,
-    "sick_rate": 0.05,
-    "mgmt_overhead": 0.08,
-    "default_margin": 0.20,
-    "arbzg_daily_limit": 10.0,
-    "arbzg_weekly_limit": 48.0,
-    "zeitkonto_max_positive": 120.0,
-    "zeitkonto_max_negative": -40.0,
-    "session_timeout_minutes": 480,
-    "company_name": "渊博579 GmbH",
-    "company_timezone": "Europe/Berlin",
-}
 
 ROLES_ALLOWED = {"admin", "hr", "fin", "wh", "sup", "mgr", "worker"}
 
@@ -231,24 +216,34 @@ def get_audit_logs(
 @router.get("/system-config")
 def get_system_config(
     user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     _admin_only(user)
-    return _SYSTEM_CONFIG.copy()
+    values = settings_store.load(db)
+    m = settings_store.meta()
+    return {**values, "_updated_at": m["updated_at"], "_updated_by": m["updated_by"]}
 
 
 @router.put("/system-config")
 def update_system_config(
     body: dict = Body(...),
     user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     _admin_only(user)
-    allowed_keys = set(_SYSTEM_CONFIG.keys())
-    updated = {}
-    for k, v in body.items():
-        if k in allowed_keys:
-            _SYSTEM_CONFIG[k] = v
-            updated[k] = v
-    return {"updated": updated, "config": _SYSTEM_CONFIG.copy()}
+    try:
+        changed = settings_store.save(db, body, user.display_name or user.username)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    if changed:
+        db.add(AuditLog(
+            username=user.username, user_display=user.display_name, action="update",
+            target_table="system_settings", target_id=",".join(changed.keys())[:50],
+            detail="; ".join(f"{k}: {old} → {new}" for k, (old, new) in changed.items()),
+        ))
+    db.commit()
+    settings_store.load(db)
+    return {"updated": {k: new for k, (_, new) in changed.items()}, "config": settings_store.get_all()}
 
 
 # ─── Admin Dashboard ──────────────────────────────────────────────────────────
@@ -362,7 +357,7 @@ def admin_overview(
         "data": data,
         "checks": checks,
         "system": {"version": "7.0.0", "database": "SQLite" if database._is_sqlite else "PostgreSQL",
-                   "company": _SYSTEM_CONFIG.get("company_name"), "server_time": now.isoformat()},
+                   "company": settings_store.get("company_name"), "server_time": now.isoformat()},
     }
 
 

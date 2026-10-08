@@ -98,7 +98,7 @@ export default function Recruit({ token, user }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>
-          🎯 {t('nav.recruit')}
+          {t('nav.recruit')}
         </h2>
         <input
           type="text"
@@ -213,20 +213,20 @@ export default function Recruit({ token, user }) {
                 <><span style={{ color: 'var(--tx3)' }}>{t('c.phone')}:</span><span>{detailModal.phone}</span></>
               )}
               {detailModal.nationality && (
-                <><span style={{ color: 'var(--tx3)' }}>🌍</span><span>{detailModal.nationality}</span></>
+                <><span style={{ color: 'var(--tx3)' }}>国籍</span><span>{detailModal.nationality}</span></>
               )}
               {detailModal.position && (
-                <><span style={{ color: 'var(--tx3)' }}>💼</span><span>{detailModal.position}</span></>
+                <><span style={{ color: 'var(--tx3)' }}>职位</span><span>{detailModal.position}</span></>
               )}
               {detailModal.expected_rate != null && (
                 <><span style={{ color: 'var(--tx3)' }}>€/h:</span>
                 <span style={{ color: '#10b981' }}>{Number(detailModal.expected_rate).toFixed(2)}</span></>
               )}
               {detailModal.languages && (
-                <><span style={{ color: 'var(--tx3)' }}>🗣️</span><span>{detailModal.languages}</span></>
+                <><span style={{ color: 'var(--tx3)' }}>语言</span><span>{detailModal.languages}</span></>
               )}
               {detailModal.skills && (
-                <><span style={{ color: 'var(--tx3)' }}>🔧</span><span>{detailModal.skills}</span></>
+                <><span style={{ color: 'var(--tx3)' }}>技能</span><span>{detailModal.skills}</span></>
               )}
             </div>
             {detailModal.notes && (

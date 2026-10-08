@@ -116,12 +116,12 @@ export default function Performance({ token, user }) {
               [s.avg_score ?? '—', '平均综合分', 'var(--og)'],
               [`€${s.piece_amount.toLocaleString()}`, '计件金额', 'var(--gn)'],
             ].map(([v, l, c], i) => (
-              <div key={i} className="sc"><div className="sl">{l}</div><div className="sv" style={{ color: c }}>{v}</div></div>
+              <div key={i} className="sc"><div className="sl">{l}</div><div className={`sv ${l === '整体效率' || l === '期间效率' || l === '等级' ? 'keep' : ''}`} style={{ color: c }}>{v}</div></div>
             ))}
           </div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 10, fontSize: 11 }}>
             {Object.entries(s.grades).map(([k, v]) => (
-              <span key={k} className="bg" style={{ background: `${GRADE_COLORS[k]}20`, color: GRADE_COLORS[k], padding: '2px 8px', borderRadius: 6 }}>
+              <span key={k} className="mz-tag"><span className="mz-dot" style={{ background: GRADE_COLORS[k] }} />
                 {k === '-' ? '未评级' : `${k} 级`}：{v}
               </span>
             ))}
@@ -183,7 +183,7 @@ export default function Performance({ token, user }) {
               [detail.row.quality_score, '质量分', 'var(--cy)'],
               [detail.row.score ?? '—', '综合分', 'var(--og)'],
               [detail.row.grade, '等级', GRADE_COLORS[detail.row.grade]]].map(([v, l, c], i) => (
-              <div key={i} className="sc"><div className="sl">{l}</div><div className="sv" style={{ color: c }}>{v}</div></div>
+              <div key={i} className="sc"><div className="sl">{l}</div><div className={`sv ${l === '整体效率' || l === '期间效率' || l === '等级' ? 'keep' : ''}`} style={{ color: c }}>{v}</div></div>
             ))}
           </div>
           <Chart data={detail.days.map(r => ({ label: r.key.slice(5), value: r.efficiency || 0 }))} height={130} color="var(--gn)" />

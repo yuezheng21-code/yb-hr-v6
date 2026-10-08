@@ -47,7 +47,7 @@ export default function WarehouseRates({ token }) {
             style={{
               padding:'10px 12px', borderRadius:'var(--R2)', cursor:'pointer', marginBottom:4,
               border: `1px solid ${selWH===wh.code?'var(--ac)':'var(--bd)'}`,
-              background: selWH===wh.code?'var(--ac)10':'var(--bg2)',
+              background: selWH===wh.code?'color-mix(in srgb, var(--ac) 6%, transparent)':'var(--bg2)',
             }}
           >
             <div style={{ fontWeight:600, fontSize:12 }}>{wh.code}</div>
@@ -61,7 +61,7 @@ export default function WarehouseRates({ token }) {
         {selWH && rates && (
           <div className="cd">
             <div style={{ display:'flex',justifyContent:'space-between',marginBottom:12 }}>
-              <div className="ct-t">🏭 {selWH} — 价格配置</div>
+              <div className="ct-t">{selWH} — 价格配置</div>
               {!editing
                 ? <button className="b bgh" onClick={() => setEditing(true)}>{t('wh.edit')}</button>
                 : <div style={{ display:'flex',gap:6 }}>
@@ -79,7 +79,7 @@ export default function WarehouseRates({ token }) {
                     {editing
                       ? <input className="fi" type="number" step="0.01" value={form[key]||0}
                           onChange={e => setForm({...form,[key]:+e.target.value})} />
-                      : <div style={{ fontFamily:'monospace',color:'var(--gn)',fontWeight:600 }}>€{val}</div>
+                      : <div style={{ fontVariantNumeric:'tabular-nums',fontWeight:500 }}>€{val}</div>
                     }
                   </div>
                 ))}

@@ -33,218 +33,145 @@ export default function Dashboard({ token, user }) {
 
   if (loading) return <Loading />;
 
+  const whMax = Math.max(1, ...(charts?.warehouse_distribution || []).map(w => w.value));
+  const TIER_COLORS = { bronze: '#b4783c', silver: '#9a9aa6', gold: 'var(--og)', platinum: 'var(--ac)' };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Stat Cards Row */}
+    <div className="mz">
       {stats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
-          <StatCard icon="👥" label={t('dash.employees')} value={stats.active_employees} color="var(--cy)" />
-          <StatCard icon="⏳" label={t('dash.pending_ts')} value={stats.pending_timesheets} color="var(--og)" />
-          <StatCard icon="⏱️" label={t('dash.total_hours')} value={(stats.current_month_hours ?? 0).toFixed(1) + 'h'} color="var(--pp)" sub="当月已过账" />
-          <StatCard icon="🏢" label={t('nav.suppliers')} value={stats.total_suppliers} color="var(--gn)" />
-          <StatCard icon="🏭" label={t('nav.warehouse_rates')} value={stats.total_warehouses} color="var(--ac)" />
+        <div className="mz-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+          <StatCard label={t('dash.employees')} value={stats.active_employees} />
+          <StatCard label={t('dash.pending_ts')} value={stats.pending_timesheets} color={stats.pending_timesheets ? 'var(--og)' : undefined} />
+          <StatCard label={t('dash.total_hours')} value={(stats.current_month_hours ?? 0).toFixed(1) + 'h'} sub="当月已过账" />
+          <StatCard label={t('nav.suppliers')} value={stats.total_suppliers} />
+          <StatCard label={t('nav.warehouse_rates')} value={stats.total_warehouses} />
         </div>
       )}
 
-      {/* Charts Row */}
       {charts && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>📊 近6月工时趋势</div>
-            <Chart data={charts.monthly_hours} labelKey="label" valueKey="value" color="var(--pp)" height={110} />
-          </div>
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>💶 近6月结算金额趋势</div>
-            <Chart data={charts.monthly_amount} labelKey="label" valueKey="value" color="var(--gn)" height={110} />
-          </div>
+        <div className="mz-grid mz-g2">
+          <Card title="近 6 月工时趋势"><Chart data={charts.monthly_hours} labelKey="label" valueKey="value" height={120} /></Card>
+          <Card title="近 6 月结算金额趋势"><Chart data={charts.monthly_amount} labelKey="label" valueKey="value" height={120} /></Card>
         </div>
       )}
 
-      {/* Warehouse Distribution + Margin */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="mz-grid mz-g2">
         {charts?.warehouse_distribution?.length > 0 && (
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>🏭 本月仓库工时分布</div>
-            {charts.warehouse_distribution.map((wh, i) => {
-              const max = Math.max(...charts.warehouse_distribution.map(w => w.value), 1);
-              const pct = Math.round(wh.value / max * 100);
-              return (
-                <div key={i} style={{ marginBottom: 8 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 2 }}>
-                    <span style={{ fontWeight: 600 }}>{wh.label}</span>
-                    <span style={{ color: 'var(--tx3)' }}>{wh.value}h</span>
-                  </div>
-                  <div style={{ height: 6, background: 'var(--bg3)', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, background: 'var(--ac)', borderRadius: 3, transition: 'width 0.5s' }} />
-                  </div>
+          <Card title="本月仓库工时分布">
+            {charts.warehouse_distribution.map((wh, i) => (
+              <div key={i} style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 6 }}>
+                  <span>{wh.label}</span><span className="mz-muted mz-num">{wh.value}h</span>
                 </div>
-              );
-            })}
-          </div>
+                <div className="mz-bar"><div style={{ width: `${wh.value / whMax * 100}%` }} /></div>
+              </div>
+            ))}
+          </Card>
         )}
 
         {margin?.has_data ? (
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>📈 毛利分析 (近{MARGIN_ANALYSIS_MONTHS}月)</div>
+          <Card title={`毛利分析（近 ${MARGIN_ANALYSIS_MONTHS} 月）`}>
             {margin.by_period.map((p, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--bd)', fontSize: 11 }}>
-                <span style={{ color: 'var(--tx3)' }}>{p.period}</span>
-                <span>€{p.revenue.toFixed(0)}</span>
-                <span style={{ color: p.profit >= 0 ? 'var(--gn)' : 'var(--rd)', fontWeight: 600 }}>
-                  {p.profit >= 0 ? '+' : ''}€{p.profit.toFixed(0)} ({p.margin}%)
+              <div key={i} className="mz-row" style={{ fontSize: 12 }}>
+                <span className="mz-muted" style={{ width: 80 }}>{p.period}</span>
+                <span className="mz-grow mz-num">€{p.revenue.toFixed(0)}</span>
+                <span className="mz-num" style={{ color: p.profit >= 0 ? 'var(--gn)' : 'var(--rd)' }}>
+                  {p.profit >= 0 ? '+' : ''}€{p.profit.toFixed(0)} · {p.margin}%
                 </span>
               </div>
             ))}
-          </div>
+          </Card>
         ) : (
-          <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>🚀 系统状态</div>
-            <div style={{ color: 'var(--tx3)', fontSize: 11, lineHeight: 2 }}>
-              {[
-                '✅ 员工管理 · 供应商 · 仓库配置',
-                '✅ 工时录入 · 仓库/财务双重审批',
-                '✅ 装卸柜记录 · 自动拆分工时',
-                '✅ 打卡系统 · 考勤记录',
-                '✅ 月度结算 · 员工/供应商/项目',
-                '✅ 推荐奖励 · 返佣系统',
-                '✅ 报价单 · 成本测算',
-                '✅ 派遣需求 · 人才储备池',
-              ].map((s, i) => <div key={i}>{s}</div>)}
-            </div>
-          </div>
+          <Card title="毛利分析">
+            <div className="mz-empty">暂无已结算数据。完成月度结算后这里会显示收入、利润与毛利率。</div>
+          </Card>
         )}
       </div>
 
-      {/* Biz Line Distribution */}
       {charts?.biz_line_distribution?.length > 0 && (
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>🏢 业务线分布 (当月)</div>
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <Card title="业务线分布（当月）">
+          <div className="mz-stats">
             {charts.biz_line_distribution.map((b, i) => (
-              <div key={i} style={{ background: 'var(--bg3)', borderRadius: 8, padding: '10px 16px', textAlign: 'center', minWidth: 100 }}>
-                <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--ac2)' }}>{b.value}h</div>
-                <div style={{ fontSize: 10, color: 'var(--tx3)', marginTop: 2 }}>{b.label}</div>
-              </div>
+              <div key={i} className="mz-stat"><div className="mz-stat-v">{b.value}h</div><div className="mz-stat-l">{b.label}</div></div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* Referral & Commission Summary */}
       {(referralSummary || commissionSummary) && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="mz-grid mz-g2">
           {referralSummary && (
-            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>🎁 员工推荐奖励</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {[
-                  ['总推荐数', referralSummary.total, 'var(--cy)'],
-                  ['进行中', referralSummary.active, 'var(--og)'],
-                  ['已完成', referralSummary.completed, 'var(--gn)'],
-                  ['本月新增', referralSummary.this_month, 'var(--pp)'],
-                ].map(([label, val, color], i) => (
-                  <div key={i} style={{ textAlign: 'center', padding: '8px 4px', background: 'var(--bg3)', borderRadius: 6 }}>
-                    <div style={{ fontWeight: 700, fontSize: 18, color }}>{val}</div>
-                    <div style={{ fontSize: 10, color: 'var(--tx3)', marginTop: 2 }}>{label}</div>
-                  </div>
-                ))}
+            <Card title="员工推荐奖励">
+              <div className="mz-stats" style={{ marginBottom: 16 }}>
+                {[['总推荐', referralSummary.total], ['进行中', referralSummary.active], ['已完成', referralSummary.completed], ['本月新增', referralSummary.this_month]]
+                  .map(([l, v]) => <div key={l} className="mz-stat"><div className="mz-stat-v">{v}</div><div className="mz-stat-l">{l}</div></div>)}
               </div>
-              <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--tx3)' }}>
-                <span>已付 <span style={{ color: 'var(--gn)', fontWeight: 600 }}>€{referralSummary.total_paid.toFixed(0)}</span></span>
-                <span>待付 <span style={{ color: 'var(--og)', fontWeight: 600 }}>€{referralSummary.total_pending.toFixed(0)}</span></span>
-              </div>
-            </div>
+              <PaidPending paid={referralSummary.total_paid} pending={referralSummary.total_pending} />
+            </Card>
           )}
           {commissionSummary && (
-            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>💰 合作伙伴返佣</div>
-              <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: 10 }}>
-                {[
-                  ['总协议', commissionSummary.total, 'var(--cy)'],
-                  ['生效中', commissionSummary.active, 'var(--gn)'],
-                ].map(([label, val, color], i) => (
-                  <div key={i} style={{ textAlign: 'center' }}>
-                    <div style={{ fontWeight: 700, fontSize: 22, color }}>{val}</div>
-                    <div style={{ fontSize: 10, color: 'var(--tx3)' }}>{label}</div>
-                  </div>
+            <Card title="合作伙伴返佣">
+              <div className="mz-stats" style={{ marginBottom: 16 }}>
+                {[['总协议', commissionSummary.total], ['生效中', commissionSummary.active]]
+                  .map(([l, v]) => <div key={l} className="mz-stat"><div className="mz-stat-v">{v}</div><div className="mz-stat-l">{l}</div></div>)}
+              </div>
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 14 }}>
+                {Object.entries(commissionSummary.tier_breakdown).filter(([, c]) => c > 0).map(([tier, count]) => (
+                  <span key={tier} className="mz-tag"><span className="mz-dot" style={{ background: TIER_COLORS[tier] || 'var(--tx3)' }} />
+                    {tier.charAt(0).toUpperCase() + tier.slice(1)} × {count}</span>
                 ))}
               </div>
-              <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
-                {Object.entries(commissionSummary.tier_breakdown).map(([tier, count]) => {
-                  const colors = { bronze: '#cd7f32', silver: '#a0a0b0', gold: '#f5a623', platinum: '#6b7de8' };
-                  const c = colors[tier] || '#6a7498';
-                  return count > 0 ? (
-                    <span key={tier} style={{ background: c + '20', color: c, border: `1px solid ${c}44`,
-                      padding: '1px 7px', borderRadius: 3, fontSize: 10, fontWeight: 700 }}>
-                      {tier.charAt(0).toUpperCase() + tier.slice(1)} ×{count}
-                    </span>
-                  ) : null;
-                })}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--tx3)' }}>
-                <span>已付 <span style={{ color: 'var(--gn)', fontWeight: 600 }}>€{commissionSummary.total_paid.toFixed(0)}</span></span>
-                <span>待付 <span style={{ color: 'var(--og)', fontWeight: 600 }}>€{commissionSummary.total_pending.toFixed(0)}</span></span>
-              </div>
-            </div>
+              <PaidPending paid={commissionSummary.total_paid} pending={commissionSummary.total_pending} />
+            </Card>
           )}
         </div>
       )}
 
-      {/* Dispatch & Talent Summary */}
       {dispatchSummary && (
-        <div style={{ background: 'var(--bg2)', border: '1px solid var(--bd)', borderRadius: 'var(--R2)', padding: '16px 20px' }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tx2)', marginBottom: 12 }}>🚚 派遣需求 & 人才储备</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            {/* Demand stats */}
+        <Card title="派遣需求与人才储备">
+          <div className="mz-grid mz-g2">
             <div>
-              <div style={{ fontSize: 10, color: 'var(--tx3)', marginBottom: 8, fontWeight: 600 }}>需求漏斗</div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                {[
-                  ['open', '招募中', '#3b82f6'],
-                  ['recruiting', '招聘中', '#f59e0b'],
-                  ['filled', '已满员', '#10b981'],
-                  ['closed', '已关闭', '#94a3b8'],
-                ].map(([k, label, color]) => (
-                  dispatchSummary.demand_by_status?.[k] ? (
-                    <div key={k} style={{ background: color + '18', border: `1px solid ${color}44`, borderRadius: 6, padding: '4px 10px', textAlign: 'center' }}>
-                      <div style={{ fontWeight: 700, fontSize: 16, color }}>{dispatchSummary.demand_by_status[k]}</div>
-                      <div style={{ fontSize: 9, color: 'var(--tx3)' }}>{label}</div>
-                    </div>
-                  ) : null
+              <div className="mz-muted" style={{ marginBottom: 10 }}>需求状态</div>
+              <div className="mz-stats" style={{ marginBottom: 12 }}>
+                {[['open', '招募中'], ['recruiting', '招聘中'], ['filled', '已满员'], ['closed', '已关闭']].map(([k, l]) => (
+                  <div key={k} className="mz-stat"><div className="mz-stat-v">{dispatchSummary.demand_by_status?.[k] || 0}</div><div className="mz-stat-l">{l}</div></div>
                 ))}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--tx3)', display: 'flex', gap: 12 }}>
-                <span>需求人数 <span style={{ color: 'var(--ac)', fontWeight: 600 }}>{dispatchSummary.open_headcount}</span></span>
-                <span>已匹配 <span style={{ color: 'var(--gn)', fontWeight: 600 }}>{dispatchSummary.matched_count}</span></span>
-                <span>填满率 <span style={{ color: dispatchSummary.fill_rate >= 80 ? 'var(--gn)' : 'var(--og)', fontWeight: 600 }}>{dispatchSummary.fill_rate}%</span></span>
+              <div className="mz-muted" style={{ display: 'flex', gap: 16 }}>
+                <span>需求人数 <b style={{ color: 'var(--tx)' }}>{dispatchSummary.open_headcount}</b></span>
+                <span>已匹配 <b style={{ color: 'var(--tx)' }}>{dispatchSummary.matched_count}</b></span>
+                <span>填满率 <b style={{ color: dispatchSummary.fill_rate >= 80 ? 'var(--gn)' : 'var(--og)' }}>{dispatchSummary.fill_rate}%</b></span>
               </div>
             </div>
-            {/* Talent funnel */}
             <div>
-              <div style={{ fontSize: 10, color: 'var(--tx3)', marginBottom: 8, fontWeight: 600 }}>人才储备 (共 {dispatchSummary.talent_total} 人)</div>
-              <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                {[
-                  ['available', '待联系', '#10b981'],
-                  ['contacted', '已联系', '#3b82f6'],
-                  ['interviewing', '面试中', '#f59e0b'],
-                  ['hired', '已录用', '#8b5cf6'],
-                ].map(([k, label, color], idx, arr) => {
-                  const count = dispatchSummary.talent_by_status?.[k] || 0;
-                  return (
-                    <div key={k} style={{ display: 'flex', alignItems: 'center' }}>
-                      <div style={{ background: color + '18', border: `1px solid ${color}44`, borderRadius: 6, padding: '4px 8px', textAlign: 'center', minWidth: 48 }}>
-                        <div style={{ fontWeight: 700, fontSize: 15, color }}>{count}</div>
-                        <div style={{ fontSize: 9, color: 'var(--tx3)' }}>{label}</div>
-                      </div>
-                      {idx < arr.length - 1 && <span style={{ color: 'var(--tx3)', margin: '0 2px', fontSize: 12 }}>›</span>}
-                    </div>
-                  );
-                })}
+              <div className="mz-muted" style={{ marginBottom: 10 }}>人才储备（共 {dispatchSummary.talent_total} 人）</div>
+              <div className="mz-stats">
+                {[['available', '待联系'], ['contacted', '已联系'], ['interviewing', '面试中'], ['hired', '已录用']].map(([k, l]) => (
+                  <div key={k} className="mz-stat"><div className="mz-stat-v">{dispatchSummary.talent_by_status?.[k] || 0}</div><div className="mz-stat-l">{l}</div></div>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       )}
+    </div>
+  );
+}
+
+function Card({ title, children }) {
+  return (
+    <div className="mz-card">
+      <div className="mz-card-h"><div className="mz-card-t">{title}</div></div>
+      {children}
+    </div>
+  );
+}
+
+function PaidPending({ paid, pending }) {
+  return (
+    <div className="mz-muted" style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <span>已付 <b className="mz-num" style={{ color: 'var(--tx)' }}>€{paid.toFixed(0)}</b></span>
+      <span>待付 <b className="mz-num" style={{ color: 'var(--og)' }}>€{pending.toFixed(0)}</b></span>
     </div>
   );
 }

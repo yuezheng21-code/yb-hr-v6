@@ -1,7 +1,7 @@
 {
   "login.title": "渊博+579 HR",
-  "login.admin": "👔 管理员登录",
-  "login.worker": "👷 工人PIN",
+  "login.admin": "管理员登录",
+  "login.worker": "工人PIN",
   "login.username": "用户名",
   "login.password": "密码",
   "login.btn": "登 录",
@@ -71,7 +71,7 @@
   "dash.abmahnung": "有效Abmahnung",
   "dash.zk_alerts": "Zeitkonto预警",
   "dash.wv_active": "WV项目进行中",
-  "dash.chart": "📊 近7日工时分布",
+  "dash.chart": "近7日工时分布",
   "dash.no_data": "暂无工时数据",
   "emp.new": "+ 新增员工",
   "emp.search": "搜索姓名/ID/电话...",

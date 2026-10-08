@@ -48,7 +48,7 @@ export default function Schedules({ token, user }) {
   };
 
   const getStatus = (z) => {
-    if (z.plus_hours > 200 || z.daily_max > 10) return { c: 'var(--rd)', label: '⛔ 违规' };
+    if (z.plus_hours > 200 || z.daily_max > 10) return { c: 'var(--rd)', label: '违规' };
     if (z.plus_hours > 150) return { c: 'var(--og)', label: '⚠ 预警' };
     if (z.minus_hours > 20) return { c: 'var(--pp)', label: '⚠ 亏时' };
     return { c: 'var(--gn)', label: '✓ 合规' };
@@ -63,7 +63,7 @@ export default function Schedules({ token, user }) {
         <div style={{ marginBottom: 12 }}>
           {alerts.map((z, i) => (
             <div key={i} className={`alert ${z.daily_max > 10 || z.plus_hours > 200 ? 'alert-rd' : 'alert-og'}`}>
-              {z.daily_max > 10 ? '⛔' : '⚠️'} <b>{z.employee_name}</b>:{' '}
+              <b>{z.employee_name}</b>:{' '}
               {z.plus_hours > 200 ? `Zeitkonto超上限 +${z.plus_hours}h`
                 : z.daily_max > 10 ? `日工时超法定上限 ${z.daily_max}h (§4 ArbZG)`
                 : `需安排Freizeitausgleich +${z.plus_hours}h`}
@@ -92,9 +92,9 @@ export default function Schedules({ token, user }) {
                 <td className="fw6">{z.employee_name}<br/><span className="mn tm">{z.employee_id}</span></td>
                 <td>{z.warehouse_code}</td>
                 <td style={{ color:'var(--pp)' }}>{z.grade}</td>
-                <td style={{ color: z.plus_hours>150?'var(--rd)':z.plus_hours>80?'var(--og)':'var(--gn)', fontFamily:'monospace',fontWeight:700 }}>+{z.plus_hours}h</td>
-                <td style={{ color: z.minus_hours>0?'var(--pp)':'var(--tx3)', fontFamily:'monospace' }}>-{z.minus_hours}h</td>
-                <td style={{ color: z.daily_max>10?'var(--rd)':z.daily_max>9?'var(--og)':'var(--tx)', fontFamily:'monospace' }}>{z.daily_max||'—'}h</td>
+                <td style={{ color: z.plus_hours>150?'var(--rd)':z.plus_hours>80?'var(--og)':'var(--gn)', fontVariantNumeric:'tabular-nums',fontWeight:500 }}>+{z.plus_hours}h</td>
+                <td style={{ color: z.minus_hours>0?'var(--pp)':'var(--tx3)', fontVariantNumeric:'tabular-nums' }}>-{z.minus_hours}h</td>
+                <td style={{ color: z.daily_max>10?'var(--rd)':z.daily_max>9?'var(--og)':'var(--tx)', fontVariantNumeric:'tabular-nums' }}>{z.daily_max||'—'}h</td>
                 <td><span className="bg" style={{ background:s.c+'22',color:s.c,border:`1px solid ${s.c}44` }}>{s.label}</span></td>
                 <td>
                   {z.plus_hours > 150 && canEdit && (
@@ -112,7 +112,7 @@ export default function Schedules({ token, user }) {
 
       {sel && selRow && (
         <div className="cd" style={{ marginTop:12 }}>
-          <div className="ct-t">📊 {selRow.employee_name} — Zeitkonto 明细</div>
+          <div className="ct-t">{selRow.employee_name} — Zeitkonto 明细</div>
           <div className="g4" style={{ marginBottom:12 }}>
             {[
               ['Plusstunden', '+'+selRow.plus_hours+'h', 'var(--gn)'],
@@ -126,9 +126,9 @@ export default function Schedules({ token, user }) {
               </div>
             ))}
           </div>
-          {selRow.plus_hours > 200 && <div className="alert alert-rd">⛔ 违规：超过+200h上限。须立即安排强制休息，否则违反 MTV DGB/GVP 规定。</div>}
+          {selRow.plus_hours > 200 && <div className="alert alert-rd">违规：超过+200h上限。须立即安排强制休息，否则违反 MTV DGB/GVP 规定。</div>}
           {selRow.plus_hours > 150 && selRow.plus_hours <= 200 && <div className="alert alert-og">⚠ 预警：超过+150h，须主动安排 Freizeitausgleich，不可等员工申请。</div>}
-          {selRow.daily_max > 10 && <div className="alert alert-rd">⛔ 发现日工时 {selRow.daily_max}h 超过法定10h（§4 ArbZG），雇主须主动阻止，违规罚款最高€30,000。</div>}
+          {selRow.daily_max > 10 && <div className="alert alert-rd">发现日工时 {selRow.daily_max}h 超过法定10h（§4 ArbZG），雇主须主动阻止，违规罚款最高€30,000。</div>}
           <div className="tw"><table>
             <thead><tr><th>日期</th><th>类型</th><th>工时</th><th>原因</th><th>录入人</th></tr></thead>
             <tbody>{logs.map((l, i) => (

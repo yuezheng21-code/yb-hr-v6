@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../../services/api.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { Loading } from '../../components/Spinner.jsx';
-import '../../styles/minimal.css';
+import { timeAgo } from './shared.js';
 
 const GROUPS = [
   { title: '公司', items: [
@@ -64,7 +64,10 @@ export default function Settings({ token, user }) {
     <div className="mz" style={{ maxWidth: 760 }}>
       <div className="mz-head">
         <div>
-          <div className="mz-sub">业务参数用于成本测算、报价与合规预警</div>
+          <div className="mz-sub">
+            业务参数用于成本测算、报价、结算与合规预警，保存后立即生效
+            {config._updated_at && <> · 上次修改：{config._updated_by} {timeAgo(config._updated_at)}</>}
+          </div>
         </div>
         <div className="mz-actions">
           <button className="mz-btn" disabled={!changed} onClick={() => setDirty({})}>撤销</button>
@@ -91,7 +94,7 @@ export default function Settings({ token, user }) {
           ))}
         </div>
       ))}
-      <div className="mz-hint">注意：当前设置保存在服务内存中，服务重启后会恢复默认值。</div>
+      <div className="mz-hint">所有修改都会写入审计日志（修改前 → 修改后）。</div>
     </div>
   );
 }

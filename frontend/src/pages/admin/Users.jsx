@@ -3,7 +3,6 @@ import { api } from '../../services/api.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { Loading } from '../../components/Spinner.jsx';
 import { ROLE_META, ROLES, initials, timeAgo } from './shared.js';
-import '../../styles/minimal.css';
 
 const LANGS = [['zh', '中文'], ['en', 'English'], ['de', 'Deutsch'], ['tr', 'Türkçe'], ['ar', 'العربية'],
   ['hu', 'Magyar'], ['vi', 'Tiếng Việt'], ['pl', 'Polski']];

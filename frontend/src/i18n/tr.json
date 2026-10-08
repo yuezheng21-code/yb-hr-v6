@@ -1,7 +1,7 @@
 {
   "login.title": "Yuanbo+579 HR",
-  "login.admin": "👔 Yönetici Girişi",
-  "login.worker": "👷 İşçi PIN",
+  "login.admin": "Yönetici Girişi",
+  "login.worker": "İşçi PIN",
   "login.username": "Kullanıcı Adı",
   "login.password": "Şifre",
   "login.btn": "Giriş Yap",
@@ -108,7 +108,7 @@
   "dash.abmahnung": "Active Abmahnungen",
   "dash.zk_alerts": "Zeitkonto Alerts",
   "dash.wv_active": "Active WV Projects",
-  "dash.chart": "📊 Last 7 Days Hours",
+  "dash.chart": "Last 7 Days Hours",
   "dash.no_data": "No timesheet data",
   "emp.f_contract_hrs": "Contract Hours/Day",
   "emp.f_tax": "Tax Method",

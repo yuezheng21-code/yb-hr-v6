@@ -116,7 +116,7 @@ export default function Messages({ token, user }) {
         )}
         {canSend && (
           <button className="b bga" style={{ marginLeft: 'auto' }} onClick={() => setSendModal(true)}>
-            ✉ 发送消息
+            发送消息
           </button>
         )}
       </div>
@@ -129,7 +129,7 @@ export default function Messages({ token, user }) {
               style={{
                 padding: '10px 12px', borderRadius: 'var(--R2)', cursor: 'pointer',
                 border: `1px solid ${selId === m.id ? 'var(--ac)' : 'var(--bd)'}`,
-                background: selId === m.id ? 'var(--ac)12' : m.is_read ? 'var(--bg)' : 'var(--bg2)',
+                background: selId === m.id ? 'color-mix(in srgb, var(--ac) 7%, transparent)' : m.is_read ? 'var(--bg)' : 'var(--bg2)',
                 borderLeft: `3px solid ${TYPE_COLORS[m.msg_type] || '#3b82f6'}`,
               }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
@@ -201,7 +201,7 @@ export default function Messages({ token, user }) {
                     <span style={{ fontSize: 10, color: 'var(--tx3)' }}>
                       发件人: <strong>{selMsg.sender_display || selMsg.sender}</strong>
                     </span>
-                    {selMsg.is_broadcast && <span style={{ fontSize: 10, color: '#8b5cf6' }}>📢 全员广播</span>}
+                    {selMsg.is_broadcast && <span style={{ fontSize: 10, color: '#8b5cf6' }}>全员广播</span>}
                     {selMsg.recipient_role && (
                       <span style={{ fontSize: 10, color: '#3b82f6' }}>→ 角色: {ROLE_LABELS[selMsg.recipient_role] || selMsg.recipient_role}</span>
                     )}

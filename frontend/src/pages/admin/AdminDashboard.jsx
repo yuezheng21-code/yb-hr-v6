@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api.js';
 import { Loading } from '../../components/Spinner.jsx';
 import { ROLE_META, ROLES, initials, timeAgo } from './shared.js';
-import '../../styles/minimal.css';
 
 export default function AdminDashboard({ token, user }) {
   const [d, setD] = useState(null);

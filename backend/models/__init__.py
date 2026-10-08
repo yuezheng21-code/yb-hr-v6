@@ -13,6 +13,7 @@ from backend.models.dispatch import DispatchDemand, TalentPool  # noqa: F401
 from backend.models.message import SystemMessage, MessageRead  # noqa: F401
 from backend.models.integration import IntegrationConfig  # noqa: F401
 from backend.models.audit_log import AuditLog  # noqa: F401
+from backend.models.system_setting import SystemSetting  # noqa: F401
 from backend.models.operation import OperationType, OperationLog, QualityEvent, OperatorAlias, IngestSource  # noqa: F401
 
 __all__ = [

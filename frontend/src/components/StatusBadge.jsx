@@ -39,10 +39,8 @@ export function StatusBadge({ value }) {
   const i18nKey = STATUS_KEY_MAP[value];
   const label = i18nKey ? t(i18nKey) : value;
   return (
-    <span
-      className="bg"
-      style={{ background: color + '1a', color, border: `1px solid ${color}33` }}
-    >
+    <span className="bg" style={{ color: 'var(--tx2)', paddingLeft: 0 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, flexShrink: 0 }} />
       {label}
     </span>
   );

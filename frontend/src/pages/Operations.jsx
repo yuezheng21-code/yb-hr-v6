@@ -20,12 +20,12 @@ const EVENT_LABELS = {
 const SEVERITY_LABELS = { minor: '轻微', major: '严重', critical: '重大', positive: '加分' };
 
 const TABS = [
-  ['logs', '📋 作业记录'],
-  ['entry', '✍️ 班组录入'],
-  ['import', '📥 文件导入'],
-  ['integration', '🔗 WMS接入/账号映射'],
-  ['types', '⚙️ 作业类型与工效标准'],
-  ['quality', '🛡️ 质量事件'],
+  ['logs', '作业记录'],
+  ['entry', '班组录入'],
+  ['import', '文件导入'],
+  ['integration', 'WMS接入/账号映射'],
+  ['types', '作业类型与工效标准'],
+  ['quality', '质量事件'],
 ];
 
 async function uploadForm(path, formData, token) {
@@ -57,7 +57,7 @@ export default function Operations({ token, user }) {
 
   return (
     <div>
-      <div className="tb" style={{ marginBottom: 12, flexWrap: 'wrap' }}>
+      <div className="tb">
         {visibleTabs.map(([k, label]) => (
           <button key={k} className={`tbn ${tab === k ? 'on' : ''}`} onClick={() => setTab(k)}>{label}</button>
         ))}
@@ -186,8 +186,8 @@ function LogsTab({ token, types, emps, canWrite }) {
                     employee_id: l.employee_id || '', op_type_id: l.op_type_id || '', work_date: l.work_date,
                     qty: l.qty, hours: l.hours, error_qty: l.error_qty, ref_no: l.ref_no || '', notes: l.notes || '',
                   },
-                })}>✎</button>}
-                {canWrite && <button className="b bgh xs" onClick={() => del(l.id)}>🗑</button>}
+                })}>编辑</button>}
+                {canWrite && <button className="b bgh xs" onClick={() => del(l.id)}>删除</button>}
               </td>
             </tr>
           ))}</tbody>
@@ -359,7 +359,7 @@ function ImportTab({ token, user, meta }) {
       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
         <button className="b bgh" onClick={() => downloadCsv('/api/v1/ops/import/template', token, 'ops_import_template.csv')}>↓ 下载模板</button>
         <div className="ml" style={{ display: 'flex', gap: 8 }}>
-          <button className="b bgs" disabled={busy} onClick={() => run(true)}>👁 预览</button>
+          <button className="b bgs" disabled={busy} onClick={() => run(true)}>预览</button>
           <button className="b bga" disabled={busy || !result?.dryRun} onClick={() => run(false)}>正式导入</button>
         </div>
       </div>
@@ -467,7 +467,7 @@ function IntegrationTab({ token, user, emps, meta, canConfig }) {
     <div>
       {/* Container sync */}
       <div className="cd" style={{ padding: 14, marginBottom: 14 }}>
-        <div className="fw6" style={{ marginBottom: 6 }}>📦 卸柜记录 → 作业记录</div>
+        <div className="fw6" style={{ marginBottom: 6 }}>卸柜记录 → 作业记录</div>
         <div className="tm" style={{ fontSize: 11, marginBottom: 8 }}>把已审批的装/卸柜记录按人头分摊（每人 1/n 柜），计入绩效。可重复执行，不会重复计数。</div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <input className="fi" type="date" style={{ width: 140 }} value={syncRange.date_from} onChange={e => setSyncRange({ ...syncRange, date_from: e.target.value })} />
@@ -480,7 +480,7 @@ function IntegrationTab({ token, user, emps, meta, canConfig }) {
       {isAdmin && (
         <div className="cd" style={{ padding: 14, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-            <div className="fw6">🔑 WMS 推送接入（API Key）</div>
+            <div className="fw6">WMS 推送接入（API Key）</div>
             <button className="b bga xs ml" onClick={() => setSrcForm({ name: '', system: 'generic', default_warehouse: '', default_client: '', field_mapping: '', auto_confirm: false, enabled: true })}>+ 新建接入源</button>
           </div>
           <div className="tm" style={{ fontSize: 11, lineHeight: 1.7, marginBottom: 8 }}>
@@ -497,13 +497,13 @@ function IntegrationTab({ token, user, emps, meta, canConfig }) {
             <tbody>{sources.map(s => (
               <tr key={s.id}>
                 <td className="fw6">{s.name}</td><td>{systems[s.system] || s.system}</td><td className="mn">{s.key_prefix}…</td>
-                <td>{s.default_warehouse || '—'} / {s.default_client || '—'}</td><td>{s.auto_confirm ? '✅' : '—'}</td>
+                <td>{s.default_warehouse || '—'} / {s.default_client || '—'}</td><td>{s.auto_confirm ? '✓' : '—'}</td>
                 <td className="mn">{s.total_received}</td><td className="tm">{s.last_used_at ? s.last_used_at.slice(0, 16).replace('T', ' ') : '—'}</td>
                 <td style={{ color: s.enabled ? 'var(--gn)' : 'var(--rd)' }}>{s.enabled ? '启用' : '停用'}</td>
                 <td style={{ whiteSpace: 'nowrap' }}>
-                  <button className="b bgh xs" onClick={() => setSrcForm({ ...s, field_mapping: s.field_mapping ? JSON.stringify(s.field_mapping) : '' })}>✎</button>
+                  <button className="b bgh xs" onClick={() => setSrcForm({ ...s, field_mapping: s.field_mapping ? JSON.stringify(s.field_mapping) : '' })}>编辑</button>
                   <button className="b bgh xs" onClick={() => rotate(s.id)}>↻ 密钥</button>
-                  <button className="b bgh xs" onClick={() => delSource(s.id)}>🗑</button>
+                  <button className="b bgh xs" onClick={() => delSource(s.id)}>删除</button>
                 </td>
               </tr>
             ))}</tbody>
@@ -513,7 +513,7 @@ function IntegrationTab({ token, user, emps, meta, canConfig }) {
 
       {/* Alias mapping */}
       <div className="cd" style={{ padding: 14 }}>
-        <div className="fw6" style={{ marginBottom: 6 }}>👤 WMS 操作员账号 ↔ 员工 映射</div>
+        <div className="fw6" style={{ marginBottom: 6 }}>WMS 操作员账号 ↔ 员工 映射</div>
         <div className="tm" style={{ fontSize: 11, marginBottom: 8 }}>WMS 里的操作员账号（如 zhang01）与花名册员工不一致时，在此映射；保存后自动重新匹配历史未匹配记录。</div>
         {unmatched.length > 0 && (
           <div className="alert alert-og" style={{ fontSize: 11, marginBottom: 8 }}>
@@ -550,7 +550,7 @@ function IntegrationTab({ token, user, emps, meta, canConfig }) {
             <tr key={a.id}>
               <td>{a.system === '*' ? '所有系统' : (systems[a.system] || a.system)}</td><td className="mn">{a.alias}</td>
               <td className="fw6">{a.emp_no} {a.emp_name}</td>
-              <td>{canConfig && <button className="b bgh xs" onClick={() => delAlias(a.id)}>🗑</button>}</td>
+              <td>{canConfig && <button className="b bgh xs" onClick={() => delAlias(a.id)}>删除</button>}</td>
             </tr>
           ))}</tbody>
         </table></div></div>
@@ -625,8 +625,8 @@ function TypesTab({ token, types, meta, canConfig, reloadTypes }) {
             <td className="tm" style={{ maxWidth: 160, fontSize: 10 }}>{t.keywords}</td>
             <td style={{ color: t.is_active ? 'var(--gn)' : 'var(--tx3)' }}>{t.is_active ? '启用' : '停用'}</td>
             <td style={{ whiteSpace: 'nowrap' }}>{canConfig && <>
-              <button className="b bgh xs" onClick={() => setForm({ ...empty, ...t, client: t.client || '', warehouse_code: t.warehouse_code || '', name_de: t.name_de || '', keywords: t.keywords || '' })}>✎</button>
-              <button className="b bgh xs" onClick={() => del(t)}>🗑</button>
+              <button className="b bgh xs" onClick={() => setForm({ ...empty, ...t, client: t.client || '', warehouse_code: t.warehouse_code || '', name_de: t.name_de || '', keywords: t.keywords || '' })}>编辑</button>
+              <button className="b bgh xs" onClick={() => del(t)}>删除</button>
             </>}</td>
           </tr>
         ))}</tbody>
@@ -716,7 +716,7 @@ function QualityTab({ token, user, emps, canWrite, canConfig }) {
             <td className="mn">{q.qty}</td><td className="mn">{q.deduction ? `€${q.deduction}` : '—'}</td>
             <td>{q.warehouse_code || '—'}</td><td>{q.client || '—'}</td><td className="tm">{q.ref_no}</td>
             <td style={{ maxWidth: 220 }}>{q.description}</td><td className="tm">{q.created_by}</td>
-            <td>{canConfig && <button className="b bgh xs" onClick={() => del(q.id)}>🗑</button>}</td>
+            <td>{canConfig && <button className="b bgh xs" onClick={() => del(q.id)}>删除</button>}</td>
           </tr>
         ))}</tbody>
       </table></div></div>
