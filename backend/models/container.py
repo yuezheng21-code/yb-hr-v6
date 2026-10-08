@@ -40,4 +40,7 @@ class ContainerRecord(Base):
     seal_no: Mapped[Optional[str]] = mapped_column(String(50))
     video_recorded: Mapped[bool] = mapped_column(Boolean, default=False)
     notes: Mapped[Optional[str]] = mapped_column(Text)
+    # 外部系统推送（卸柜记录软件 / ybkpi）：source_system + external_ref 幂等
+    source_system: Mapped[Optional[str]] = mapped_column(String(20))
+    external_ref: Mapped[Optional[str]] = mapped_column(String(100), index=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())

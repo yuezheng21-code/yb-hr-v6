@@ -83,6 +83,19 @@ SYSTEM_PRESETS: dict[str, dict[str, Any]] = {
             "qty": ["操作数量"],
         },
     },
+    "ybkpi": {
+        "label": "YBKPI（ybkpi.com）",
+        "aliases": {
+            "operator": ["员工账号", "工号/账号", "人员"],
+            "ref_no": ["单据号", "批次号"],
+        },
+    },
+    "container_app": {
+        "label": "卸柜记录软件",
+        "aliases": {
+            "ref_no": ["柜号", "集装箱号", "Containernummer"],
+        },
+    },
 }
 
 DEFAULT_SYSTEMS = list(SYSTEM_PRESETS.keys())

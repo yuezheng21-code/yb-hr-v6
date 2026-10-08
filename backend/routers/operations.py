@@ -135,6 +135,7 @@ def meta(user: User = Depends(get_current_user)):
         "event_types": EVENT_TYPES,
         "severities": SEVERITIES,
         "group_by": list(GROUP_BY_OPTIONS),
+        "api_scopes": API_SCOPES,
     }
 
 
@@ -562,6 +563,32 @@ def _hash_key(key: str) -> str:
     return hashlib.sha256(key.encode()).hexdigest()
 
 
+API_SCOPES = {"ops:write": "推送作业记录", "containers:write": "推送卸柜记录", "employees:read": "读取人员信息"}
+
+
+def source_scopes(s: IngestSource) -> list[str]:
+    return [x for x in (s.scopes or "ops:write").split(",") if x]
+
+
+def _scopes_str(scopes: list[str]) -> str:
+    bad = [x for x in scopes if x not in API_SCOPES]
+    if bad or not scopes:
+        raise HTTPException(400, f"权限范围无效：{', '.join(bad) or '至少选择一项'}")
+    return ",".join(dict.fromkeys(scopes))
+
+
+def authenticate_source(db: Session, x_api_key: Optional[str], scope: Optional[str]) -> IngestSource:
+    """校验 X-API-Key 并检查权限范围（供 /ops/ingest 与 /api/v1/ext/* 共用）。"""
+    if not x_api_key:
+        raise HTTPException(401, "Missing X-API-Key")
+    src = db.scalar(select(IngestSource).where(IngestSource.key_hash == _hash_key(x_api_key)))
+    if src is None or not src.enabled:
+        raise HTTPException(401, "Invalid or disabled API key")
+    if scope and scope not in source_scopes(src):
+        raise HTTPException(403, f"API key 没有权限：{scope}")
+    return src
+
+
 @router.post("/ingest")
 def ingest(
     payload: dict | list = Body(...),
@@ -574,11 +601,7 @@ def ingest(
     Body: {"records": [ {...}, ... ]} 或直接数组。字段名可用中/英/德常见列名，或在接入源上配置 field_mapping。
     以 external_ref（作业单号/任务ID）做幂等，重复推送自动跳过。
     """
-    if not x_api_key:
-        raise HTTPException(401, "Missing X-API-Key")
-    src = db.scalar(select(IngestSource).where(IngestSource.key_hash == _hash_key(x_api_key)))
-    if src is None or not src.enabled:
-        raise HTTPException(401, "Invalid or disabled API key")
+    src = authenticate_source(db, x_api_key, "ops:write")
     records = payload.get("records") if isinstance(payload, dict) else payload
     if not isinstance(records, list) or not all(isinstance(r, dict) for r in records):
         raise HTTPException(400, "records must be a list of objects")
@@ -604,6 +627,7 @@ def _source_dict(s: IngestSource) -> dict:
         "default_warehouse": s.default_warehouse, "default_client": s.default_client,
         "field_mapping": parse_mapping(s.field_mapping), "auto_confirm": s.auto_confirm, "enabled": s.enabled,
         "last_used_at": s.last_used_at, "total_received": s.total_received, "created_at": s.created_at,
+        "scopes": source_scopes(s),
     }
 
 
@@ -625,6 +649,7 @@ def create_source(body: IngestSourceIn, user: User = Depends(get_current_user), 
     key = _new_key()
     data = body.model_dump()
     data["field_mapping"] = json.dumps(body.field_mapping, ensure_ascii=False) if body.field_mapping else None
+    data["scopes"] = _scopes_str(body.scopes)
     s = IngestSource(**data, key_prefix=key[:10], key_hash=_hash_key(key))
     db.add(s)
     db.commit()
@@ -644,6 +669,8 @@ def update_source(source_id: int, body: IngestSourceUpdate, user: User = Depends
         raise HTTPException(400, f"未知系统: {data['system']}")
     if "field_mapping" in data:
         data["field_mapping"] = json.dumps(data["field_mapping"], ensure_ascii=False) if data["field_mapping"] else None
+    if "scopes" in data:
+        data["scopes"] = _scopes_str(data["scopes"] or [])
     for k, v in data.items():
         setattr(s, k, v)
     db.commit()
