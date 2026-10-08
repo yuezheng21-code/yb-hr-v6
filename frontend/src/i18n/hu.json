@@ -274,5 +274,8 @@
   "status.wh_approved": "Raktár jóváhagyta",
   "status.fin_approved": "Pénzügy jóváhagyta",
   "status.confirmed": "Megerősített",
-  "status.paid": "Kifizetve"
+  "status.paid": "Kifizetve",
+  "nav.operations": "Műveleti napló",
+  "nav.performance": "Teljesítmény",
+  "status.unmatched": "Nincs párosítva"
 }

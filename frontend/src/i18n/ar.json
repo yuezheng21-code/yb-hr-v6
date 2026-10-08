@@ -274,5 +274,8 @@
   "status.wh_approved": "معتمد (المستودع)",
   "status.fin_approved": "معتمد (المالية)",
   "status.confirmed": "مؤكد",
-  "status.paid": "مدفوع"
+  "status.paid": "مدفوع",
+  "nav.operations": "سجل العمليات",
+  "nav.performance": "الأداء",
+  "status.unmatched": "غير مطابق"
 }

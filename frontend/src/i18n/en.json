@@ -274,5 +274,8 @@
   "status.wh_approved": "WH Approved",
   "status.fin_approved": "Fin Approved",
   "status.confirmed": "Confirmed",
-  "status.paid": "Paid"
+  "status.paid": "Paid",
+  "nav.operations": "Operations Log",
+  "nav.performance": "Performance",
+  "status.unmatched": "Unmatched"
 }

@@ -10,6 +10,8 @@ export const NAV_ITEMS = [
   { key: 'schedules',       icon: '⏳', labelKey: 'nav.schedules',        roles: ['admin','hr','mgr'] },
   { key: 'settlements',     icon: '💰', labelKey: 'nav.settlement',       roles: ['admin','hr','fin','sup','mgr'] },
   { key: 'containers',      icon: '📦', labelKey: 'nav.containers',       roles: ['admin','hr','wh','mgr'] },
+  { key: 'operations',      icon: '🏗️', labelKey: 'nav.operations',       roles: ['admin','hr','wh','fin','mgr','sup'] },
+  { key: 'performance',     icon: '🏆', labelKey: 'nav.performance',      roles: ['admin','hr','wh','fin','mgr','sup','worker'] },
   { sep: true },
   { key: 'dispatch',        icon: '🚀', labelKey: 'nav.dispatch',         roles: ['admin','hr','mgr'] },
   { key: 'talent',          icon: '🌟', labelKey: 'nav.talent',           roles: ['admin','hr','mgr'] },

@@ -274,5 +274,8 @@
   "status.wh_approved": "Zatwierdzone (mag.)",
   "status.fin_approved": "Zatwierdzone (fin.)",
   "status.confirmed": "Potwierdzone",
-  "status.paid": "Opłacone"
+  "status.paid": "Opłacone",
+  "nav.operations": "Rejestr operacji",
+  "nav.performance": "Wydajność",
+  "status.unmatched": "Niedopasowane"
 }

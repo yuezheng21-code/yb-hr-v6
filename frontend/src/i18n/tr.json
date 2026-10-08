@@ -274,5 +274,8 @@
   "status.wh_approved": "Depo Onaylandı",
   "status.fin_approved": "Finans Onaylandı",
   "status.confirmed": "Onaylandı",
-  "status.paid": "Ödendi"
+  "status.paid": "Ödendi",
+  "nav.operations": "İş Kayıtları",
+  "nav.performance": "Performans",
+  "status.unmatched": "Eşleşmedi"
 }

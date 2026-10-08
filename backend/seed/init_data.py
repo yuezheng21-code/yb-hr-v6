@@ -29,6 +29,7 @@ from backend.models.user import User
 from backend.models.supplier import Supplier
 from backend.models.warehouse import Warehouse
 from backend.models.employee import Employee
+from backend.models.operation import OperationType
 
 
 def _hash(pw: str) -> str:
@@ -160,6 +161,43 @@ TEAM_MARK_TO_SUPPLIER = {
 }
 
 
+# ── 作业类型 (工效标准) ───────────────────────────────────────────────────────
+# standard_uph = 每人每小时标准产量；以下为行业经验起始值，请按各仓实测（时间研究）调整。
+# 卸/装柜的单位为「柜」，标准 UPH 为 柜/人时（例如 20GP 4人约 1.7h 完成 ≈ 0.15）。
+OPERATION_TYPES = [
+    {"code": "RECV",  "name": "收货/入库",   "name_de": "Wareneingang",     "category": "inbound",   "unit": "件", "standard_uph": 250,
+     "keywords": "收货,入库,到货,inbound,receiv,wareneingang"},
+    {"code": "PUT",   "name": "上架",        "name_de": "Einlagerung",      "category": "putaway",   "unit": "件", "standard_uph": 200,
+     "keywords": "上架,putaway,einlager"},
+    {"code": "PICK",  "name": "拣货",        "name_de": "Kommissionierung", "category": "picking",   "unit": "件", "standard_uph": 120,
+     "keywords": "拣货,配货,拣选,pick,kommission"},
+    {"code": "PACK",  "name": "打包/复核",   "name_de": "Verpackung",       "category": "packing",   "unit": "件", "standard_uph": 80,
+     "keywords": "打包,包装,复核,称重,pack,verpack"},
+    {"code": "LABEL", "name": "贴标/换标",   "name_de": "Etikettierung",    "category": "labeling",  "unit": "件", "standard_uph": 300,
+     "keywords": "贴标,换标,label,etikett"},
+    {"code": "OUT",   "name": "出库/装车交接", "name_de": "Warenausgang",    "category": "outbound",  "unit": "箱", "standard_uph": 60,
+     "keywords": "出库,发货,交接,outbound,ship,warenausgang"},
+    {"code": "RET",   "name": "退货处理",    "name_de": "Retourenbearbeitung", "category": "returns", "unit": "件", "standard_uph": 60,
+     "keywords": "退货,退件,return,retour"},
+    {"code": "INV",   "name": "盘点",        "name_de": "Inventur",         "category": "inventory", "unit": "件", "standard_uph": 400,
+     "keywords": "盘点,inventur,inventory,count"},
+    {"code": "AMZ_FBA", "name": "Amazon FBA 备货(贴FNSKU/装箱)", "name_de": "FBA-Vorbereitung", "category": "labeling",
+     "unit": "件", "client": "Amazon", "standard_uph": 150, "keywords": "fba,fnsku,备货"},
+    {"code": "TEMU_SORT", "name": "TEMU 分拣打包", "name_de": "TEMU Sortierung", "category": "packing",
+     "unit": "件", "client": "TEMU", "standard_uph": 150, "keywords": "temu,分拣"},
+    {"code": "CNT_U20",  "name": "卸柜 20GP", "name_de": "Entladung 20'",  "category": "container", "unit": "柜", "standard_uph": 0.15},
+    {"code": "CNT_U40",  "name": "卸柜 40GP/HC", "name_de": "Entladung 40'", "category": "container", "unit": "柜", "standard_uph": 0.08},
+    {"code": "CNT_U45",  "name": "卸柜 45HC", "name_de": "Entladung 45'",  "category": "container", "unit": "柜", "standard_uph": 0.07},
+    {"code": "CNT_ULKW", "name": "卸货 LKW",  "name_de": "Entladung LKW",  "category": "container", "unit": "柜", "standard_uph": 0.25},
+    {"code": "CNT_L20",  "name": "装柜 20GP", "name_de": "Beladung 20'",   "category": "container", "unit": "柜", "standard_uph": 0.15},
+    {"code": "CNT_L40",  "name": "装柜 40GP/HC", "name_de": "Beladung 40'", "category": "container", "unit": "柜", "standard_uph": 0.08},
+    {"code": "CNT_L45",  "name": "装柜 45HC", "name_de": "Beladung 45'",   "category": "container", "unit": "柜", "standard_uph": 0.07},
+    {"code": "CNT_LLKW", "name": "装货 LKW",  "name_de": "Beladung LKW",   "category": "container", "unit": "柜", "standard_uph": 0.25},
+    {"code": "PROJ",  "name": "项目作业(计时)", "name_de": "Projektarbeit", "category": "project", "unit": "小时", "standard_uph": 0,
+     "keywords": "项目,project,projekt"},
+]
+
+
 def run_seed(db: Session) -> None:
     force_reseed = os.environ.get("FORCE_RESEED", "").strip() == "1"
 
@@ -208,3 +246,8 @@ def run_seed(db: Session) -> None:
         if existing is None:
             emp = Employee(**e)
             db.add(emp)
+
+    # ── Operation types ─────────────────────────────────────────────────────
+    for t in OPERATION_TYPES:
+        if db.scalar(select(OperationType).where(OperationType.code == t["code"])) is None:
+            db.add(OperationType(**t))

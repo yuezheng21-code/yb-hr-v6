@@ -274,5 +274,8 @@
   "status.wh_approved": "Kho đã duyệt",
   "status.fin_approved": "Tài chính đã duyệt",
   "status.confirmed": "Đã xác nhận",
-  "status.paid": "Đã thanh toán"
+  "status.paid": "Đã thanh toán",
+  "nav.operations": "Nhật ký tác nghiệp",
+  "nav.performance": "Hiệu suất",
+  "status.unmatched": "Chưa khớp"
 }

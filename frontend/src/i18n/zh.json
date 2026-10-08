@@ -274,5 +274,8 @@
   "status.wh_approved": "仓库已批",
   "status.fin_approved": "财务已批",
   "status.confirmed": "已确认",
-  "status.paid": "已付款"
+  "status.paid": "已付款",
+  "nav.operations": "作业记录",
+  "nav.performance": "绩效看板",
+  "status.unmatched": "未匹配"
 }

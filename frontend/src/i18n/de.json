@@ -274,5 +274,8 @@
   "status.wh_approved": "Lager genehmigt",
   "status.fin_approved": "Finanz genehmigt",
   "status.confirmed": "Bestätigt",
-  "status.paid": "Bezahlt"
+  "status.paid": "Bezahlt",
+  "nav.operations": "Tätigkeitserfassung",
+  "nav.performance": "Leistungsauswertung",
+  "status.unmatched": "Nicht zugeordnet"
 }
