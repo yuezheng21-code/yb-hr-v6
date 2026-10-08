@@ -283,5 +283,7 @@
   "nav.client_bi": "仓库运营看板",
   "nav.client_preview": "甲方看板预览",
   "nav.templates": "文书模板",
-  "nav.sop": "SOP 学习资料"
+  "nav.sop": "SOP 学习资料",
+  "nav.leads": "客户线索",
+  "login.back_site": "返回官网"
 }

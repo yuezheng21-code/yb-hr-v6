@@ -283,5 +283,7 @@
   "nav.client_bi": "Depo Operasyonları",
   "nav.client_preview": "Müşteri Görünümü",
   "nav.templates": "Belge Şablonları",
-  "nav.sop": "SOP Kütüphanesi"
+  "nav.sop": "SOP Kütüphanesi",
+  "nav.leads": "Potansiyel Müşteriler",
+  "login.back_site": "Web sitesine dön"
 }

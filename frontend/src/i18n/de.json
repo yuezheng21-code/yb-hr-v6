@@ -283,5 +283,7 @@
   "nav.client_bi": "Lagerbetrieb",
   "nav.client_preview": "Kundenansicht (Vorschau)",
   "nav.templates": "Vorlagen",
-  "nav.sop": "SOP-Bibliothek"
+  "nav.sop": "SOP-Bibliothek",
+  "nav.leads": "Anfragen / Leads",
+  "login.back_site": "Zur Website"
 }

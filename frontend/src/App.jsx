@@ -33,6 +33,8 @@ import Performance from './pages/Performance.jsx';
 import PersonnelFile from './pages/PersonnelFile.jsx';
 import Templates from './pages/Templates.jsx';
 import Sop from './pages/Sop.jsx';
+import Landing from './pages/Landing.jsx';
+import Leads from './pages/Leads.jsx';
 
 const PATH_TO_KEY = {
   '/': 'dashboard', '/employees': 'employees', '/timesheets': 'timesheets',
@@ -43,7 +45,7 @@ const PATH_TO_KEY = {
   '/logs': 'logs', '/dispatch': 'dispatch', '/talent': 'talent',
   '/recruit': 'recruit', '/messages': 'messages', '/integrations': 'integrations', '/admin': 'admin',
   '/operations': 'operations', '/performance': 'performance',
-  '/templates': 'templates', '/sop': 'sop',
+  '/templates': 'templates', '/sop': 'sop', '/leads': 'leads',
   '/users': 'users', '/settings': 'settings',
   '/client-bi': 'client_bi', '/client-preview': 'client_preview',
 };
@@ -86,6 +88,12 @@ export default function App() {
     navigate('/login');
   };
 
+  // Public website: '/' for visitors, '/site' always
+  const isPublicPath = location.pathname === '/site' || (location.pathname === '/' && (!token || !user));
+  if (isPublicPath) {
+    return <Landing onLogin={() => navigate(token && user ? '/' : '/login')} />;
+  }
+
   if (!token || !user) {
     return <Login onLogin={onLogin} srvReady={srvReady} srvStatus={srvStatus} srvErrDetail={srvErrDetail} />;
   }
@@ -121,6 +129,7 @@ export default function App() {
         <Route path="/" element={<ProtectedRoute><Dashboard {...props} /></ProtectedRoute>} />
         <Route path="/employees" element={<ProtectedRoute><Attendance {...props} /></ProtectedRoute>} />
         <Route path="/employees/:id" element={<ProtectedRoute><PersonnelFile {...props} /></ProtectedRoute>} />
+        <Route path="/leads" element={<ProtectedRoute><Leads {...props} /></ProtectedRoute>} />
         <Route path="/templates" element={<ProtectedRoute><Templates {...props} /></ProtectedRoute>} />
         <Route path="/sop" element={<ProtectedRoute><Sop {...props} /></ProtectedRoute>} />
         <Route path="/timesheets" element={<ProtectedRoute><Timesheets {...props} /></ProtectedRoute>} />

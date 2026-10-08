@@ -283,5 +283,7 @@
   "nav.client_bi": "Warehouse Operations",
   "nav.client_preview": "Client View Preview",
   "nav.templates": "Document Templates",
-  "nav.sop": "SOP Library"
+  "nav.sop": "SOP Library",
+  "nav.leads": "Leads",
+  "login.back_site": "Back to website"
 }

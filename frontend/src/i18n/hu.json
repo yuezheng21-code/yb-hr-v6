@@ -283,5 +283,7 @@
   "nav.client_bi": "Raktárműveletek",
   "nav.client_preview": "Ügyfélnézet előnézet",
   "nav.templates": "Dokumentumsablonok",
-  "nav.sop": "SOP-könyvtár"
+  "nav.sop": "SOP-könyvtár",
+  "nav.leads": "Érdeklődők",
+  "login.back_site": "Vissza a weboldalra"
 }

@@ -59,6 +59,9 @@ class TalentPool(Base):
     match_score: Mapped[Optional[float]] = mapped_column(Float)
     referrer: Mapped[Optional[str]] = mapped_column(String(50))
     notes: Mapped[Optional[str]] = mapped_column(Text)
+    email: Mapped[Optional[str]] = mapped_column(String(120))
+    source: Mapped[Optional[str]] = mapped_column(String(20))  # website / manual / referral
+    cv_file_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # file_blobs.id（官网投递的简历）
     created_by: Mapped[Optional[str]] = mapped_column(String(50))
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())
     updated_at: Mapped[datetime] = mapped_column(

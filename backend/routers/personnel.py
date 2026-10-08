@@ -246,8 +246,12 @@ def hire_from_talent(talent_id: int, body: HireIn, user: User = Depends(get_curr
     db.flush()
     t.pool_status = "hired"
     t.notes = ((t.notes + "\n") if t.notes else "") + f"→ 员工 {emp.emp_no}（{date.today():%Y-%m-%d} {user.display_name}）"
-    _event(db, emp, "hired", "录用入职", user, event_date=body.join_date,
-           details={"from_talent_id": t.id, "referrer": t.referrer, "position": emp.position})
+    ev = _event(db, emp, "hired", "录用入职", user, event_date=body.join_date,
+                details={"from_talent_id": t.id, "referrer": t.referrer, "position": emp.position, "source": t.source})
+    if t.cv_file_id:  # 官网投递的简历归入员工档案
+        db.add(EmployeeDocument(employee_id=emp.id, category="application", title="简历 / Lebenslauf",
+                                file_id=t.cv_file_id, event_id=ev.id, uploaded_by=user.display_name))
+    emp.email = emp.email or t.email
     db.commit()
     return {"employee_id": emp.id, "emp_no": emp.emp_no}
 

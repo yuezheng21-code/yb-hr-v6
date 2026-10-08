@@ -32,6 +32,9 @@ DEFAULTS: dict[str, Any] = {
     "company_address": "",
     "company_representative": "",
     "company_timezone": "Europe/Berlin",
+    # 官网（公开页面）联系方式
+    "company_email": "",
+    "company_phone": "",
 }
 
 # (min, max) for numeric keys; strings must be non-empty

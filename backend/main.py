@@ -197,6 +197,7 @@ from backend.routers import integrations as integrations_v7
 from backend.routers import operations as operations_v7
 from backend.routers import client_bi as client_bi_v7
 from backend.routers import personnel as personnel_v7
+from backend.routers import website as website_v7
 
 app.include_router(auth_v7.router)
 app.include_router(employees_v7.router)
@@ -219,6 +220,8 @@ app.include_router(integrations_v7.router)
 app.include_router(operations_v7.router)
 app.include_router(client_bi_v7.router)
 app.include_router(personnel_v7.router)
+app.include_router(website_v7.public_router)
+app.include_router(website_v7.leads_router)
 
 # ── Static files + catch-all ─────────────────────────────────────────
 _REPO_ROOT = os.path.dirname(os.path.dirname(__file__))
