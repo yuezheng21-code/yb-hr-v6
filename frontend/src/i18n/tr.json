@@ -58,7 +58,7 @@
   "nav.talent": "Yetenek Havuzu",
   "nav.recruit": "İşe Alım",
   "nav.messages": "Mesajlar",
-  "nav.admin": "Sistem Yönetimi",
+  "nav.admin": "Yönetim Paneli",
   "nav.integrations": "Entegrasyonlar",
   "emp.new": "+ Yeni Personel",
   "emp.search": "Ad/ID/Telefon ara...",
@@ -277,5 +277,7 @@
   "status.paid": "Ödendi",
   "nav.operations": "İş Kayıtları",
   "nav.performance": "Performans",
-  "status.unmatched": "Eşleşmedi"
+  "status.unmatched": "Eşleşmedi",
+  "nav.users": "Kullanıcılar",
+  "nav.settings": "Ayarlar"
 }

@@ -58,7 +58,7 @@
   "nav.talent": "Hồ bơi nhân tài",
   "nav.recruit": "Phễu tuyển dụng",
   "nav.messages": "Tin nhắn",
-  "nav.admin": "Quản trị hệ thống",
+  "nav.admin": "Bảng quản trị",
   "nav.integrations": "Tích hợp",
   "emp.new": "+ Nhân viên mới",
   "emp.search": "Tìm tên/ID/điện thoại...",
@@ -277,5 +277,7 @@
   "status.paid": "Đã thanh toán",
   "nav.operations": "Nhật ký tác nghiệp",
   "nav.performance": "Hiệu suất",
-  "status.unmatched": "Chưa khớp"
+  "status.unmatched": "Chưa khớp",
+  "nav.users": "Người dùng",
+  "nav.settings": "Cài đặt"
 }

@@ -63,7 +63,7 @@
   "nav.talent": "Talent Pool",
   "nav.recruit": "Recruit Funnel",
   "nav.messages": "Messages",
-  "nav.admin": "System Admin",
+  "nav.admin": "Admin Dashboard",
   "nav.integrations": "Integrations",
   "dash.employees": "Active Staff",
   "dash.pending_ts": "Pending Approval",
@@ -277,5 +277,7 @@
   "status.paid": "Paid",
   "nav.operations": "Operations Log",
   "nav.performance": "Performance",
-  "status.unmatched": "Unmatched"
+  "status.unmatched": "Unmatched",
+  "nav.users": "Users",
+  "nav.settings": "Settings"
 }

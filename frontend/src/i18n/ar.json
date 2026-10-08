@@ -58,7 +58,7 @@
   "nav.talent": "مجموعة المواهب",
   "nav.recruit": "قمع التوظيف",
   "nav.messages": "الرسائل",
-  "nav.admin": "إدارة النظام",
+  "nav.admin": "لوحة الإدارة",
   "nav.integrations": "التكاملات",
   "emp.new": "+ موظف جديد",
   "emp.search": "بحث عن الاسم/المعرف/الهاتف...",
@@ -277,5 +277,7 @@
   "status.paid": "مدفوع",
   "nav.operations": "سجل العمليات",
   "nav.performance": "الأداء",
-  "status.unmatched": "غير مطابق"
+  "status.unmatched": "غير مطابق",
+  "nav.users": "المستخدمون",
+  "nav.settings": "الإعدادات"
 }

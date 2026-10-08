@@ -63,7 +63,7 @@
   "nav.talent": "Talentpool",
   "nav.recruit": "Recruiting-Trichter",
   "nav.messages": "Nachrichten",
-  "nav.admin": "Systemverwaltung",
+  "nav.admin": "Admin-Übersicht",
   "nav.integrations": "Integrationen",
   "dash.employees": "Aktive Mitarbeiter",
   "dash.pending_ts": "Ausstehende Genehmigungen",
@@ -277,5 +277,7 @@
   "status.paid": "Bezahlt",
   "nav.operations": "Tätigkeitserfassung",
   "nav.performance": "Leistungsauswertung",
-  "status.unmatched": "Nicht zugeordnet"
+  "status.unmatched": "Nicht zugeordnet",
+  "nav.users": "Benutzerverwaltung",
+  "nav.settings": "Einstellungen"
 }

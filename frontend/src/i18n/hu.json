@@ -58,7 +58,7 @@
   "nav.talent": "Tehetségbázis",
   "nav.recruit": "Toborzási tölcsér",
   "nav.messages": "Üzenetek",
-  "nav.admin": "Rendszerfelügyelet",
+  "nav.admin": "Admin áttekintés",
   "nav.integrations": "Integrációk",
   "emp.new": "+ Új munkavállaló",
   "emp.search": "Keresés névben/ID-ban/telefonban...",
@@ -277,5 +277,7 @@
   "status.paid": "Kifizetve",
   "nav.operations": "Műveleti napló",
   "nav.performance": "Teljesítmény",
-  "status.unmatched": "Nincs párosítva"
+  "status.unmatched": "Nincs párosítva",
+  "nav.users": "Felhasználók",
+  "nav.settings": "Beállítások"
 }

@@ -58,7 +58,7 @@
   "nav.talent": "Baza Talentów",
   "nav.recruit": "Lejek Rekrutacyjny",
   "nav.messages": "Wiadomości",
-  "nav.admin": "Administracja Systemu",
+  "nav.admin": "Panel administratora",
   "nav.integrations": "Integracje",
   "emp.new": "+ Nowy Pracownik",
   "emp.search": "Szukaj imię/ID/telefon...",
@@ -277,5 +277,7 @@
   "status.paid": "Opłacone",
   "nav.operations": "Rejestr operacji",
   "nav.performance": "Wydajność",
-  "status.unmatched": "Niedopasowane"
+  "status.unmatched": "Niedopasowane",
+  "nav.users": "Użytkownicy",
+  "nav.settings": "Ustawienia"
 }

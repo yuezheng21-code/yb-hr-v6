@@ -63,7 +63,7 @@
   "nav.talent": "人才储备池",
   "nav.recruit": "招聘漏斗",
   "nav.messages": "系统消息",
-  "nav.admin": "系统管理",
+  "nav.admin": "后台看板",
   "nav.integrations": "集成管理",
   "dash.employees": "在职员工",
   "dash.pending_ts": "待审批工时",
@@ -277,5 +277,7 @@
   "status.paid": "已付款",
   "nav.operations": "作业记录",
   "nav.performance": "绩效看板",
-  "status.unmatched": "未匹配"
+  "status.unmatched": "未匹配",
+  "nav.users": "用户管理",
+  "nav.settings": "系统设置"
 }
