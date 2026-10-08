@@ -58,6 +58,7 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErr
     <div style={{ position:'fixed',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)',zIndex:9999 }}>
       <div style={{ position:'relative',width:380,background:'var(--bg2)',border:'1px solid var(--bd)',borderRadius:'var(--R3)',padding:'32px',boxShadow:'var(--shadow)',animation:'fadeUp .3s ease' }}>
         <div style={{ position:'absolute',top:16,right:16 }}><LangSwitcher /></div>
+        <a href="/" style={{ position:'absolute',top:-32,left:0,fontSize:12,color:'var(--tx3)',textDecoration:'none' }}>← {t('login.back_site')}</a>
         <div style={{ display:'flex',alignItems:'center',gap:12,marginBottom:24 }}>
           <div className="sb-logo" style={{ width:44,height:44,fontSize:20 }}>渊</div>
           <div>

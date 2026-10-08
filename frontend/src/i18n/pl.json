@@ -279,5 +279,11 @@
   "nav.performance": "Wydajność",
   "status.unmatched": "Niedopasowane",
   "nav.users": "Użytkownicy",
-  "nav.settings": "Ustawienia"
+  "nav.settings": "Ustawienia",
+  "nav.client_bi": "Operacje magazynowe",
+  "nav.client_preview": "Podgląd widoku klienta",
+  "nav.templates": "Szablony dokumentów",
+  "nav.sop": "Biblioteka SOP",
+  "nav.leads": "Leady",
+  "login.back_site": "Powrót do strony"
 }

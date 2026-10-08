@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api.js';
 import { useLang } from '../context/LangContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
+import { openFile } from './PersonnelFile.jsx';
 
 const STATUS_COLORS = {
   available: '#10b981', contacted: '#3b82f6', interviewing: '#f59e0b',
@@ -71,6 +73,16 @@ export default function Talent({ token, user }) {
     } catch (e) { showToast(e.message, 'err'); }
   };
 
+  const navigate = useNavigate();
+  const hireToEmployee = async (tl) => {
+    const join = window.prompt(`将「${tl.name}」转为正式员工并建立人事档案。\n入职日期（YYYY-MM-DD）：`, new Date().toISOString().slice(0, 10));
+    if (!join) return;
+    try {
+      const r = await api(`/api/v1/personnel/talent/${tl.id}/hire`, { method: 'POST', body: { join_date: join }, token });
+      showToast(`已创建员工 ${r.emp_no}，请在档案中签订合同`);
+      navigate(`/employees/${r.employee_id}`);
+    } catch (e) { showToast(e.message, 'err'); }
+  };
   const updateStatus = async (id, pool_status) => {
     try {
       await api(`/api/v1/talent/${id}`, { method: 'PUT', body: { pool_status }, token });
@@ -163,7 +175,7 @@ export default function Talent({ token, user }) {
                 background: selId === t.id ? 'color-mix(in srgb, var(--ac) 7%, transparent)' : 'var(--bg2)',
               }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontWeight: 700, fontSize: 13 }}>{t.name}</span>
+                <span style={{ fontWeight: 700, fontSize: 13 }}>{t.name}{t.source === 'website' && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 500, color: 'var(--ac2)' }}>官网投递</span>}</span>
                 <span style={{
                   fontSize: 9, padding: '2px 6px', borderRadius: 4,
                   background: (STATUS_COLORS[t.pool_status] || '#94a3b8') + '25',
@@ -208,6 +220,9 @@ export default function Talent({ token, user }) {
                     {selT.pool_status === 'interviewing' && (
                       <button className="b bga" onClick={() => openMatchModal()}>录用 & 匹配</button>
                     )}
+                    {['admin', 'hr'].includes(user?.role) && ['interviewing', 'hired'].includes(selT.pool_status) && !(selT.notes || '').includes('→ 员工') && (
+                      <button className="b bga" onClick={() => hireToEmployee(selT)}>转为员工 · 建档</button>
+                    )}
                     {selT.pool_status !== 'rejected' && selT.pool_status !== 'hired' && (
                       <button className="b" style={{ background: '#ef444420', color: '#ef4444', border: '1px solid #ef4444' }}
                         onClick={() => updateStatus(selT.id, 'rejected')}>拒绝</button>
@@ -220,6 +235,7 @@ export default function Talent({ token, user }) {
                 {[
                   ['姓名', selT.name],
                   ['电话', selT.phone || '-'],
+                  ['邮箱', selT.email || '-'],
                   ['国籍', selT.nationality || '-'],
                   ['来源', SOURCE_LABELS[selT.source_type] || selT.source_type],
                   ['意向业务线', BIZ_LABELS[selT.preferred_biz_line] || selT.preferred_biz_line || '-'],
@@ -228,6 +244,7 @@ export default function Talent({ token, user }) {
                   ['语言', selT.languages || '-'],
                   ['技能', selT.skills || '-'],
                   ['推荐人', selT.referrer || '-'],
+                  ['渠道', selT.source === 'website' ? '官网投递' : (selT.source || '手动录入')],
                   ['匹配评分', selT.match_score != null ? `${selT.match_score}分` : '-'],
                   ['创建人', selT.created_by || '-'],
                   ['创建时间', selT.created_at?.slice(0, 10) || '-'],
@@ -237,10 +254,15 @@ export default function Talent({ token, user }) {
                     <div style={{ fontWeight: 600, fontSize: 13 }}>{val}</div>
                   </div>
                 ))}
+                {selT.cv_file_id && (
+                  <div style={{ gridColumn: '1/-1' }}>
+                    <button className="b bgh" onClick={() => openFile(`/api/v1/leads/talent/${selT.id}/cv`, token).catch(e => showToast(e.message, 'err'))}>查看简历</button>
+                  </div>
+                )}
                 {selT.notes && (
                   <div style={{ gridColumn: '1/-1' }}>
                     <div style={{ fontSize: 10, color: 'var(--tx3)' }}>备注</div>
-                    <div style={{ fontSize: 12, color: 'var(--tx2)' }}>{selT.notes}</div>
+                    <div style={{ fontSize: 12, color: 'var(--tx2)', whiteSpace: 'pre-wrap' }}>{selT.notes}</div>
                   </div>
                 )}
               </div>

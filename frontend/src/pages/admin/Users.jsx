@@ -10,7 +10,7 @@ const BIZ_LINES = ['渊博', '579'];
 
 const EMPTY = {
   username: '', display_name: '', password: '', role: 'worker', lang: 'zh',
-  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', pin: '', is_active: true,
+  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', client_warehouses: '', pin: '', is_active: true,
 };
 
 export default function Users({ token, user }) {
@@ -51,6 +51,7 @@ export default function Users({ token, user }) {
     form: {
       ...EMPTY, ...u, password: '', pin: u.pin || '',
       bound_warehouse: u.bound_warehouse || '', bound_supplier_id: u.bound_supplier_id || '', bound_biz_line: u.bound_biz_line || '',
+      client_warehouses: u.client_warehouses || '',
     },
   });
 
@@ -58,12 +59,14 @@ export default function Users({ token, user }) {
     const f = drawer.form;
     if (!f.display_name) { showToast('请填写显示名称', 'err'); return; }
     if (f.role === 'sup' && !f.bound_supplier_id) { showToast('供应商账号必须绑定供应商', 'err'); return; }
+    if (f.role === 'client' && !f.client_warehouses) { showToast('甲方账号至少选择一个仓库', 'err'); return; }
     if (f.role === 'wh' && !f.bound_warehouse) { showToast('仓管账号必须绑定仓库', 'err'); return; }
     const body = {
       display_name: f.display_name, role: f.role, lang: f.lang, is_active: f.is_active,
       bound_warehouse: f.bound_warehouse || null,
       bound_supplier_id: f.bound_supplier_id ? parseInt(f.bound_supplier_id) : null,
       bound_biz_line: f.bound_biz_line || null,
+      client_warehouses: f.role === 'client' ? f.client_warehouses : null,
       pin: f.pin,
     };
     try {
@@ -92,6 +95,7 @@ export default function Users({ token, user }) {
   const scope = (u) => {
     const parts = [];
     if (u.bound_warehouse) parts.push(`仓库 ${u.bound_warehouse}`);
+    if (u.role === 'client') return u.client_warehouses ? `可见仓库 ${u.client_warehouses.split(',').join('、')}` : <span style={{ color: 'var(--og)' }}>未绑定仓库</span>;
     if (u.bound_supplier_id) parts.push(supName[u.bound_supplier_id] || `供应商 #${u.bound_supplier_id}`);
     if (u.bound_biz_line) parts.push(`业务线 ${u.bound_biz_line}`);
     if (parts.length) return parts.join(' · ');
@@ -215,6 +219,23 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
                 {warehouses.map(w => <option key={w.code} value={w.code}>{w.code} · {w.name}</option>)}
               </select></div>
           )}
+          {f.role === 'client' && (
+            <div className="mz-field"><label>可见仓库（必选，可多选）</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {warehouses.map(w => {
+                  const sel = (f.client_warehouses || '').split(',').filter(Boolean);
+                  const on = sel.includes(w.code);
+                  return (
+                    <button key={w.code} type="button" className={`mz-role ${on ? 'on' : ''}`} style={{ padding: '6px 10px' }}
+                      onClick={() => set('client_warehouses', (on ? sel.filter(c => c !== w.code) : [...sel, w.code]).join(','))}>
+                      {w.code}<small>{w.name}</small>
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="mz-hint">甲方只能看到所选仓库已确认的作业汇总，看不到员工个人信息、工资和供应商成本。</span>
+            </div>
+          )}
           {(f.role === 'sup' || f.bound_supplier_id) && (
             <div className="mz-field"><label>绑定供应商{f.role === 'sup' ? '（必填）' : ''}</label>
               <select className="mz-select" value={f.bound_supplier_id} onChange={e => set('bound_supplier_id', e.target.value)}>
@@ -222,12 +243,14 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
                 {suppliers.map(s => <option key={s.id} value={s.id}>{s.code} · {s.name}</option>)}
               </select></div>
           )}
-          <div className="mz-field"><label>业务线</label>
-            <select className="mz-select" value={f.bound_biz_line} onChange={e => set('bound_biz_line', e.target.value)}>
-              <option value="">不限</option>
-              {BIZ_LINES.map(b => <option key={b} value={b}>{b}</option>)}
-            </select></div>
-          {f.role !== 'wh' && f.role !== 'sup' && !f.bound_warehouse && !f.bound_supplier_id && (
+          {f.role !== 'client' && (
+            <div className="mz-field"><label>业务线</label>
+              <select className="mz-select" value={f.bound_biz_line} onChange={e => set('bound_biz_line', e.target.value)}>
+                <option value="">不限</option>
+                {BIZ_LINES.map(b => <option key={b} value={b}>{b}</option>)}
+              </select></div>
+          )}
+          {f.role !== 'wh' && f.role !== 'sup' && f.role !== 'client' && !f.bound_warehouse && !f.bound_supplier_id && (
             <span className="mz-hint">{f.role === 'worker' ? '工人只能看到自己的数据。' : '该角色默认可查看全部仓库与供应商数据。'}</span>
           )}
 

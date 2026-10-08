@@ -107,3 +107,15 @@
 .mz-role small { display: block; color: var(--tx3); font-size: 10px; margin-top: 2px; }
 .mz-switch { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
 .mz-empty { text-align: center; color: var(--tx3); font-size: 12px; padding: 32px 0; }
+
+/* Generated document preview (A4-like paper) */
+.doc-paper { max-width: 720px; margin: 0 auto; background: #fff; color: #1a1a1a; padding: 48px 56px; border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12); font: 13px/1.6 Georgia, 'Times New Roman', serif; }
+.doc-paper h1 { font-size: 20px; margin: 0 0 18px; text-align: center; }
+.doc-paper h2 { font-size: 14px; margin: 18px 0 6px; }
+.doc-paper p { margin: 0 0 10px; white-space: pre-wrap; }
+.doc-paper .ph { background: #fff3c4; color: #8a5a00; padding: 0 3px; border-radius: 2px; }
+.doc-paper hr { border: none; border-top: 1px dashed #bbb; margin: 24px 0; }
+@media (max-width: 700px) { .doc-paper { padding: 24px 18px; } .mz-drawer { width: 100% !important; } }
+@media (max-width: 800px) { .tpl-grid { grid-template-columns: 1fr !important; } }
+@media (max-width: 800px) { .gen-grid { grid-template-columns: 1fr !important; overflow-y: auto; } }

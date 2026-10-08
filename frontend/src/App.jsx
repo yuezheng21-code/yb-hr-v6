@@ -28,7 +28,13 @@ import Users from './pages/admin/Users.jsx';
 import Settings from './pages/admin/Settings.jsx';
 import Integrations from './pages/Integrations.jsx';
 import Operations from './pages/Operations.jsx';
+import ClientBI from './pages/ClientBI.jsx';
 import Performance from './pages/Performance.jsx';
+import PersonnelFile from './pages/PersonnelFile.jsx';
+import Templates from './pages/Templates.jsx';
+import Sop from './pages/Sop.jsx';
+import Landing from './pages/Landing.jsx';
+import Leads from './pages/Leads.jsx';
 
 const PATH_TO_KEY = {
   '/': 'dashboard', '/employees': 'employees', '/timesheets': 'timesheets',
@@ -39,7 +45,9 @@ const PATH_TO_KEY = {
   '/logs': 'logs', '/dispatch': 'dispatch', '/talent': 'talent',
   '/recruit': 'recruit', '/messages': 'messages', '/integrations': 'integrations', '/admin': 'admin',
   '/operations': 'operations', '/performance': 'performance',
+  '/templates': 'templates', '/sop': 'sop', '/leads': 'leads',
   '/users': 'users', '/settings': 'settings',
+  '/client-bi': 'client_bi', '/client-preview': 'client_preview',
 };
 const KEY_TO_PATH = Object.fromEntries(Object.entries(PATH_TO_KEY).map(([p, k]) => [k, p]));
 
@@ -58,7 +66,8 @@ export default function App() {
   const [srvStatus, setSrvStatus] = useState('');
   const [srvErrDetail, setSrvErrDetail] = useState('');
 
-  const currentPage = PATH_TO_KEY[location.pathname] || 'dashboard';
+  const currentPage = PATH_TO_KEY[location.pathname]
+    || PATH_TO_KEY['/' + location.pathname.split('/')[1]] || 'dashboard';
   const props = { token, user };
 
   useEffect(() => {
@@ -70,7 +79,7 @@ export default function App() {
 
   const onLogin = (tk, u) => {
     setAuth(tk, u);
-    navigate(u.role === 'worker' ? '/clock' : '/');
+    navigate(u.role === 'worker' ? '/clock' : u.role === 'client' ? '/client-bi' : '/');
   };
 
   const onLogout = async () => {
@@ -78,6 +87,12 @@ export default function App() {
     clearAuth();
     navigate('/login');
   };
+
+  // Public website: '/' for visitors, '/site' always
+  const isPublicPath = location.pathname === '/site' || (location.pathname === '/' && (!token || !user));
+  if (isPublicPath) {
+    return <Landing onLogin={() => navigate(token && user ? '/' : '/login')} />;
+  }
 
   if (!token || !user) {
     return <Login onLogin={onLogin} srvReady={srvReady} srvStatus={srvStatus} srvErrDetail={srvErrDetail} />;
@@ -98,6 +113,11 @@ export default function App() {
     );
   }
 
+  // External client accounts only have the warehouse dashboard
+  if (user.role === 'client' && location.pathname !== '/client-bi') {
+    return <Navigate to="/client-bi" replace />;
+  }
+
   return (
     <AppShell
       user={user}
@@ -108,6 +128,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<ProtectedRoute><Dashboard {...props} /></ProtectedRoute>} />
         <Route path="/employees" element={<ProtectedRoute><Attendance {...props} /></ProtectedRoute>} />
+        <Route path="/employees/:id" element={<ProtectedRoute><PersonnelFile {...props} /></ProtectedRoute>} />
+        <Route path="/leads" element={<ProtectedRoute><Leads {...props} /></ProtectedRoute>} />
+        <Route path="/templates" element={<ProtectedRoute><Templates {...props} /></ProtectedRoute>} />
+        <Route path="/sop" element={<ProtectedRoute><Sop {...props} /></ProtectedRoute>} />
         <Route path="/timesheets" element={<ProtectedRoute><Timesheets {...props} /></ProtectedRoute>} />
         <Route path="/schedules" element={<ProtectedRoute><Schedules {...props} /></ProtectedRoute>} />
         <Route path="/clock" element={<ProtectedRoute><Clock {...props} /></ProtectedRoute>} />
@@ -125,6 +149,8 @@ export default function App() {
         <Route path="/recruit" element={<ProtectedRoute><Recruit {...props} /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages {...props} /></ProtectedRoute>} />
         <Route path="/integrations" element={<ProtectedRoute><Integrations {...props} /></ProtectedRoute>} />
+        <Route path="/client-bi" element={<ProtectedRoute><ClientBI {...props} /></ProtectedRoute>} />
+        <Route path="/client-preview" element={<ProtectedRoute><ClientBI {...props} /></ProtectedRoute>} />
         <Route path="/operations" element={<ProtectedRoute><Operations {...props} /></ProtectedRoute>} />
         <Route path="/performance" element={<ProtectedRoute><Performance {...props} /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard {...props} /></ProtectedRoute>} />

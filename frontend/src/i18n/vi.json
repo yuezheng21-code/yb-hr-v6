@@ -279,5 +279,11 @@
   "nav.performance": "Hiệu suất",
   "status.unmatched": "Chưa khớp",
   "nav.users": "Người dùng",
-  "nav.settings": "Cài đặt"
+  "nav.settings": "Cài đặt",
+  "nav.client_bi": "Vận hành kho",
+  "nav.client_preview": "Xem trước giao diện khách hàng",
+  "nav.templates": "Mẫu văn bản",
+  "nav.sop": "Tài liệu SOP",
+  "nav.leads": "Khách hàng tiềm năng",
+  "login.back_site": "Về trang web"
 }

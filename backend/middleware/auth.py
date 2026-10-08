@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Optional
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 import backend.config as cfg
@@ -14,7 +14,10 @@ from backend.models.user import User
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
-ROLES = {"admin", "hr", "fin", "wh", "sup", "mgr", "worker"}
+ROLES = {"admin", "hr", "fin", "wh", "sup", "mgr", "worker", "client"}
+
+# External client accounts (warehouse operators) may only reach these API prefixes.
+CLIENT_ALLOWED_PREFIXES = ("/api/v1/auth/", "/api/v1/client-bi")
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -34,6 +37,7 @@ def _decode_token(token: str) -> dict:
 
 
 def get_current_user(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
@@ -46,6 +50,8 @@ def get_current_user(
     user = db.get(User, int(user_id))
     if user is None or not user.is_active:
         raise HTTPException(status_code=401, detail="User not found or inactive")
+    if user.role == "client" and not request.url.path.startswith(CLIENT_ALLOWED_PREFIXES):
+        raise HTTPException(status_code=403, detail="Client accounts can only access the warehouse dashboard")
     return user
 
 

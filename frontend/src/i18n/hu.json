@@ -279,5 +279,11 @@
   "nav.performance": "Teljesítmény",
   "status.unmatched": "Nincs párosítva",
   "nav.users": "Felhasználók",
-  "nav.settings": "Beállítások"
+  "nav.settings": "Beállítások",
+  "nav.client_bi": "Raktárműveletek",
+  "nav.client_preview": "Ügyfélnézet előnézet",
+  "nav.templates": "Dokumentumsablonok",
+  "nav.sop": "SOP-könyvtár",
+  "nav.leads": "Érdeklődők",
+  "login.back_site": "Vissza a weboldalra"
 }

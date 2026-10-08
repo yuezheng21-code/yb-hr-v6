@@ -377,8 +377,10 @@ def create_cost_calc(
 
 
 @cost_router.get("/grades-table")
-def grades_table():
-    """Return P1-P9 cost table for all grades (no auth - read-only public data)."""
+def grades_table(user: User = Depends(get_current_user)):
+    """Return P1-P9 cost table for all grades (internal: contains pay and cost structure)."""
+    if user.role not in {"admin", "fin", "mgr", "hr"}:
+        raise HTTPException(403, "Forbidden")
     import backend.config as cfg
     rows = []
     for grade, coeff in cfg.COEFFICIENTS.items():

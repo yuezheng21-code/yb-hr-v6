@@ -14,6 +14,7 @@ class Employee(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     phone: Mapped[Optional[str]] = mapped_column(String(30))
     email: Mapped[Optional[str]] = mapped_column(String(100))
+    address: Mapped[Optional[str]] = mapped_column(String(300))
     nationality: Mapped[Optional[str]] = mapped_column(String(50))
     gender: Mapped[Optional[str]] = mapped_column(String(10))
     birth_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)

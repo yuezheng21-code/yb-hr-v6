@@ -8,6 +8,7 @@ class EmployeeBase(BaseModel):
     name: str
     phone: Optional[str] = None
     email: Optional[str] = None
+    address: Optional[str] = None
     nationality: Optional[str] = None
     gender: Optional[str] = None
     birth_date: Optional[date] = None
@@ -44,6 +45,7 @@ class EmployeeUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    address: Optional[str] = None
     nationality: Optional[str] = None
     gender: Optional[str] = None
     birth_date: Optional[date] = None

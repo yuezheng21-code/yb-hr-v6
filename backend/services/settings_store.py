@@ -29,7 +29,12 @@ DEFAULTS: dict[str, Any] = {
     "zeitkonto_max_negative": -40.0,
     "session_timeout_minutes": cfg.ACCESS_TOKEN_EXPIRE_MINUTES,
     "company_name": "渊博579 GmbH",
+    "company_address": "",
+    "company_representative": "",
     "company_timezone": "Europe/Berlin",
+    # 官网（公开页面）联系方式
+    "company_email": "",
+    "company_phone": "",
 }
 
 # (min, max) for numeric keys; strings must be non-empty
@@ -43,6 +48,8 @@ _RANGES: dict[str, tuple[float, float]] = {
 }
 
 PRICE_MATRIX_KEY = "price_matrix"  # quotation price matrix override (JSON), see quotation_builder
+
+_REQUIRED_TEXT = {"company_name", "company_timezone"}
 
 _lock = threading.Lock()
 _cache: dict[str, Any] = dict(DEFAULTS)
@@ -142,7 +149,7 @@ def validate(updates: dict[str, Any]) -> dict[str, Any]:
             continue
         default = DEFAULTS[k]
         if isinstance(default, str):
-            if not isinstance(v, str) or not v.strip():
+            if not isinstance(v, str) or (not v.strip() and k in _REQUIRED_TEXT):
                 raise ValueError(f"{k} 不能为空")
             clean[k] = v.strip()
             continue

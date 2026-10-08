@@ -279,5 +279,11 @@
   "nav.performance": "الأداء",
   "status.unmatched": "غير مطابق",
   "nav.users": "المستخدمون",
-  "nav.settings": "الإعدادات"
+  "nav.settings": "الإعدادات",
+  "nav.client_bi": "عمليات المستودع",
+  "nav.client_preview": "معاينة عرض العميل",
+  "nav.templates": "قوالب المستندات",
+  "nav.sop": "مكتبة SOP",
+  "nav.leads": "العملاء المحتملون",
+  "login.back_site": "العودة إلى الموقع"
 }

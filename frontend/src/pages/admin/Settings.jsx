@@ -7,6 +7,8 @@ import { timeAgo } from './shared.js';
 const GROUPS = [
   { title: '公司', items: [
     ['company_name', '公司名称', 'text'],
+    ['company_address', '公司地址（用于合同抬头）', 'text'],
+    ['company_representative', '公司代表 / 签字人', 'text'],
     ['company_timezone', '时区', 'text'],
   ] },
   { title: '薪资与成本', items: [
