@@ -281,5 +281,7 @@
   "nav.users": "Người dùng",
   "nav.settings": "Cài đặt",
   "nav.client_bi": "Vận hành kho",
-  "nav.client_preview": "Xem trước giao diện khách hàng"
+  "nav.client_preview": "Xem trước giao diện khách hàng",
+  "nav.templates": "Mẫu văn bản",
+  "nav.sop": "Tài liệu SOP"
 }

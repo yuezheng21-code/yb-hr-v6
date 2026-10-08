@@ -4,7 +4,7 @@
  */
 
 import {
-  BadgePercent, BarChart3, Building2, Calculator, ClipboardList, Clock3, Container, FileText, Gauge, Gift, Hourglass, LayoutDashboard, Link2, Mail, ScrollText, Send, Settings, Star, Target, Timer, Trophy, UserCog, Users, Wallet, Warehouse,
+  BadgePercent, BarChart3, BookOpen, FileSignature, Building2, Calculator, ClipboardList, Clock3, Container, FileText, Gauge, Gift, Hourglass, LayoutDashboard, Link2, Mail, ScrollText, Send, Settings, Star, Target, Timer, Trophy, UserCog, Users, Wallet, Warehouse,
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
@@ -22,6 +22,8 @@ export const NAV_ITEMS = [
   { key: 'dispatch',        icon: Send, labelKey: 'nav.dispatch',         roles: ['admin','hr','mgr'] },
   { key: 'talent',          icon: Star, labelKey: 'nav.talent',           roles: ['admin','hr','mgr'] },
   { key: 'recruit',         icon: Target, labelKey: 'nav.recruit',          roles: ['admin','hr','mgr'] },
+  { key: 'templates',       icon: FileSignature, labelKey: 'nav.templates',  roles: ['admin','hr'] },
+  { key: 'sop',             icon: BookOpen, labelKey: 'nav.sop',            roles: ['admin','hr','wh','fin','mgr','sup','worker'] },
   { sep: true },
   { key: 'quotations',      icon: FileText, labelKey: 'nav.quotations',       roles: ['admin','hr','mgr','fin'] },
   { key: 'referrals',       icon: Gift, labelKey: 'nav.referrals',        roles: ['admin','hr','mgr'] },

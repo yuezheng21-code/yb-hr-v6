@@ -14,6 +14,7 @@ from backend.models.message import SystemMessage, MessageRead  # noqa: F401
 from backend.models.integration import IntegrationConfig  # noqa: F401
 from backend.models.audit_log import AuditLog  # noqa: F401
 from backend.models.system_setting import SystemSetting  # noqa: F401
+from backend.models.personnel import FileBlob, EmployeeDocument, EmployeeContract, LeaveRecord, EmployeeEvent, DocTemplate, SopDocument, SopAck  # noqa: F401
 from backend.models.operation import OperationType, OperationLog, QualityEvent, OperatorAlias, IngestSource  # noqa: F401
 
 __all__ = [

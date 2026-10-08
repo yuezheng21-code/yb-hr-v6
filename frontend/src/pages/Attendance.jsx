@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api.js';
 import { useLang } from '../context/LangContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -20,6 +21,12 @@ export default function Attendance({ token, user }) {
   const showToast = useToast();
 
   const canEdit = ['admin','hr','mgr'].includes(user?.role);
+  const isHR = ['admin','hr'].includes(user?.role);
+  const navigate = useNavigate();
+  const [reminders, setReminders] = useState([]);
+  useEffect(() => {
+    if (isHR) api('/api/v1/personnel/reminders?days=45', { token }).then(setReminders).catch(() => {});
+  }, [token, isHR]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -66,6 +73,20 @@ export default function Attendance({ token, user }) {
         </div>
       </div>
 
+      {reminders.length > 0 && (
+        <div className="mz-card" style={{ marginBottom: 12, padding: '10px 14px' }}>
+          <div className="mz-hint" style={{ marginBottom: 6, color: 'var(--og)' }}>45 天内到期提醒（{reminders.length}）</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
+            {reminders.slice(0, 12).map((r, i) => (
+              <button key={i} className="mz-link" style={{ fontSize: 12, color: 'var(--tx2)' }} onClick={() => navigate(`/employees/${r.employee_id}`)}>
+                <span className="mz-num">{r.date}</span> · {r.employee} · {{ contract_end: '合同到期', probation_end: '试用期结束', document_expiry: '证件到期' }[r.kind]}{r.kind === 'document_expiry' ? `（${r.ref}）` : ''}
+              </button>
+            ))}
+            {reminders.length > 12 && <span className="mz-muted">…还有 {reminders.length - 12} 条</span>}
+          </div>
+        </div>
+      )}
+
       {loading ? <Loading /> : (
         <div className="tw"><div className="ts"><table>
           <thead><tr>
@@ -78,7 +99,7 @@ export default function Attendance({ token, user }) {
           <tbody>{emps.map(e => (
             <tr key={e.id}>
               <td className="mn gn">{e.id}</td>
-              <td className="fw6">{e.name}</td>
+              <td className="fw6">{isHR ? <button className="mz-link" style={{ fontWeight: 600, color: 'var(--ac2)' }} onClick={() => navigate(`/employees/${e.id}`)}>{e.name}</button> : e.name}</td>
               <td><StatusBadge value={e.biz_line} /></td>
               <td>{e.primary_warehouse}</td>
               <td>{e.position}</td>
@@ -87,7 +108,9 @@ export default function Attendance({ token, user }) {
               <td className="mn">€{fmt(e.hourly_rate)}/h</td>
               <td><StatusBadge value={e.status} /></td>
               <td className="tm">{e.join_date}</td>
-              {canEdit && <td><button className="b bgh" onClick={() => openEdit(e)}>{t('c.edit')}</button></td>}
+              {canEdit && <td style={{ whiteSpace:'nowrap' }}>
+                {isHR && <button className="b bgh" onClick={() => navigate(`/employees/${e.id}`)}>档案</button>}{' '}
+                <button className="b bgh" onClick={() => openEdit(e)}>{t('c.edit')}</button></td>}
             </tr>
           ))}</tbody>
         </table></div></div>
@@ -149,6 +172,8 @@ export default function Attendance({ token, user }) {
             <div className="fg"><label className="fl">{t('emp.f_pin')}</label>
               <input className="fi" maxLength={4} value={form.pin||''}
                 onChange={e => setForm({...form,pin:e.target.value.replace(/\D/g,'')})} /></div>
+            <div className="fg ful"><label className="fl">住址 Anschrift（用于合同）</label>
+              <input className="fi" value={form.address||''} onChange={e => setForm({...form,address:e.target.value})} /></div>
             <div className="fg ful"><label className="fl">{t('emp.f_notes')}</label>
               <textarea className="fta" value={form.notes||''} onChange={e => setForm({...form,notes:e.target.value})} /></div>
           </div>

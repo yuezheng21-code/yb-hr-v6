@@ -281,5 +281,7 @@
   "nav.users": "用户管理",
   "nav.settings": "系统设置",
   "nav.client_bi": "仓库运营看板",
-  "nav.client_preview": "甲方看板预览"
+  "nav.client_preview": "甲方看板预览",
+  "nav.templates": "文书模板",
+  "nav.sop": "SOP 学习资料"
 }

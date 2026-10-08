@@ -281,5 +281,7 @@
   "nav.users": "Felhasználók",
   "nav.settings": "Beállítások",
   "nav.client_bi": "Raktárműveletek",
-  "nav.client_preview": "Ügyfélnézet előnézet"
+  "nav.client_preview": "Ügyfélnézet előnézet",
+  "nav.templates": "Dokumentumsablonok",
+  "nav.sop": "SOP-könyvtár"
 }

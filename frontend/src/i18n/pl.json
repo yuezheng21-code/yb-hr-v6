@@ -281,5 +281,7 @@
   "nav.users": "Użytkownicy",
   "nav.settings": "Ustawienia",
   "nav.client_bi": "Operacje magazynowe",
-  "nav.client_preview": "Podgląd widoku klienta"
+  "nav.client_preview": "Podgląd widoku klienta",
+  "nav.templates": "Szablony dokumentów",
+  "nav.sop": "Biblioteka SOP"
 }

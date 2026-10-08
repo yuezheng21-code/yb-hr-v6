@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api.js';
 import { useLang } from '../context/LangContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
@@ -71,6 +72,16 @@ export default function Talent({ token, user }) {
     } catch (e) { showToast(e.message, 'err'); }
   };
 
+  const navigate = useNavigate();
+  const hireToEmployee = async (tl) => {
+    const join = window.prompt(`将「${tl.name}」转为正式员工并建立人事档案。\n入职日期（YYYY-MM-DD）：`, new Date().toISOString().slice(0, 10));
+    if (!join) return;
+    try {
+      const r = await api(`/api/v1/personnel/talent/${tl.id}/hire`, { method: 'POST', body: { join_date: join }, token });
+      showToast(`已创建员工 ${r.emp_no}，请在档案中签订合同`);
+      navigate(`/employees/${r.employee_id}`);
+    } catch (e) { showToast(e.message, 'err'); }
+  };
   const updateStatus = async (id, pool_status) => {
     try {
       await api(`/api/v1/talent/${id}`, { method: 'PUT', body: { pool_status }, token });
@@ -207,6 +218,9 @@ export default function Talent({ token, user }) {
                     )}
                     {selT.pool_status === 'interviewing' && (
                       <button className="b bga" onClick={() => openMatchModal()}>录用 & 匹配</button>
+                    )}
+                    {['admin', 'hr'].includes(user?.role) && ['interviewing', 'hired'].includes(selT.pool_status) && !(selT.notes || '').includes('→ 员工') && (
+                      <button className="b bga" onClick={() => hireToEmployee(selT)}>转为员工 · 建档</button>
                     )}
                     {selT.pool_status !== 'rejected' && selT.pool_status !== 'hired' && (
                       <button className="b" style={{ background: '#ef444420', color: '#ef4444', border: '1px solid #ef4444' }}

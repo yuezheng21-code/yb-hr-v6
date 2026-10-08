@@ -281,5 +281,7 @@
   "nav.users": "Users",
   "nav.settings": "Settings",
   "nav.client_bi": "Warehouse Operations",
-  "nav.client_preview": "Client View Preview"
+  "nav.client_preview": "Client View Preview",
+  "nav.templates": "Document Templates",
+  "nav.sop": "SOP Library"
 }

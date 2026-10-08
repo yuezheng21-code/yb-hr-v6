@@ -30,6 +30,8 @@ from backend.models.supplier import Supplier
 from backend.models.warehouse import Warehouse
 from backend.models.employee import Employee
 from backend.models.operation import OperationType
+from backend.models.personnel import DocTemplate
+from backend.seed.templates import TEMPLATES
 
 
 def _hash(pw: str) -> str:
@@ -262,3 +264,8 @@ def run_seed(db: Session) -> None:
     for t in OPERATION_TYPES:
         if db.scalar(select(OperationType).where(OperationType.code == t["code"])) is None:
             db.add(OperationType(**t))
+
+    # ── Document templates (only created once; HR edits are never overwritten) ──
+    for t in TEMPLATES:
+        if db.scalar(select(DocTemplate).where(DocTemplate.code == t["code"])) is None:
+            db.add(DocTemplate(**t, updated_by="system"))

@@ -30,6 +30,9 @@ import Integrations from './pages/Integrations.jsx';
 import Operations from './pages/Operations.jsx';
 import ClientBI from './pages/ClientBI.jsx';
 import Performance from './pages/Performance.jsx';
+import PersonnelFile from './pages/PersonnelFile.jsx';
+import Templates from './pages/Templates.jsx';
+import Sop from './pages/Sop.jsx';
 
 const PATH_TO_KEY = {
   '/': 'dashboard', '/employees': 'employees', '/timesheets': 'timesheets',
@@ -40,6 +43,7 @@ const PATH_TO_KEY = {
   '/logs': 'logs', '/dispatch': 'dispatch', '/talent': 'talent',
   '/recruit': 'recruit', '/messages': 'messages', '/integrations': 'integrations', '/admin': 'admin',
   '/operations': 'operations', '/performance': 'performance',
+  '/templates': 'templates', '/sop': 'sop',
   '/users': 'users', '/settings': 'settings',
   '/client-bi': 'client_bi', '/client-preview': 'client_preview',
 };
@@ -60,7 +64,8 @@ export default function App() {
   const [srvStatus, setSrvStatus] = useState('');
   const [srvErrDetail, setSrvErrDetail] = useState('');
 
-  const currentPage = PATH_TO_KEY[location.pathname] || 'dashboard';
+  const currentPage = PATH_TO_KEY[location.pathname]
+    || PATH_TO_KEY['/' + location.pathname.split('/')[1]] || 'dashboard';
   const props = { token, user };
 
   useEffect(() => {
@@ -115,6 +120,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<ProtectedRoute><Dashboard {...props} /></ProtectedRoute>} />
         <Route path="/employees" element={<ProtectedRoute><Attendance {...props} /></ProtectedRoute>} />
+        <Route path="/employees/:id" element={<ProtectedRoute><PersonnelFile {...props} /></ProtectedRoute>} />
+        <Route path="/templates" element={<ProtectedRoute><Templates {...props} /></ProtectedRoute>} />
+        <Route path="/sop" element={<ProtectedRoute><Sop {...props} /></ProtectedRoute>} />
         <Route path="/timesheets" element={<ProtectedRoute><Timesheets {...props} /></ProtectedRoute>} />
         <Route path="/schedules" element={<ProtectedRoute><Schedules {...props} /></ProtectedRoute>} />
         <Route path="/clock" element={<ProtectedRoute><Clock {...props} /></ProtectedRoute>} />

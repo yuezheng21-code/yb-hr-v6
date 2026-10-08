@@ -281,5 +281,7 @@
   "nav.users": "المستخدمون",
   "nav.settings": "الإعدادات",
   "nav.client_bi": "عمليات المستودع",
-  "nav.client_preview": "معاينة عرض العميل"
+  "nav.client_preview": "معاينة عرض العميل",
+  "nav.templates": "قوالب المستندات",
+  "nav.sop": "مكتبة SOP"
 }
