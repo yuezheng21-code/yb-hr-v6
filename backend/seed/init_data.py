@@ -216,9 +216,20 @@ def run_seed(db: Session) -> None:
             )
             db.add(user)
         else:
-            if force_reseed:
+            # Accounts left over from an older schema may lack a password hash / role / name
+            # (columns were just added by the migration). Repair them so they can log in.
+            if force_reseed or not existing.password_hash:
                 existing.password_hash = _hash(u["password"])
                 existing.is_active = True
+                existing.role = u["role"]
+            if not existing.display_name:
+                existing.display_name = u["display_name"]
+            if u["username"] == "admin" and existing.role != "admin":
+                existing.role = "admin"
+            if existing.is_active is None:
+                existing.is_active = True
+            if u.get("bound_warehouse") and not existing.bound_warehouse:
+                existing.bound_warehouse = u["bound_warehouse"]
             if u.get("pin") and not existing.pin:
                 existing.pin = u["pin"]
 

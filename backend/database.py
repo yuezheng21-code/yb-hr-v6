@@ -75,7 +75,7 @@ def _migrate_schema() -> None:
             if non_numeric_count > 0:
                 print(
                     f"⚠  employees.id has {non_numeric_count} non-castable value(s) "
-                    f"(e.g. 'YB-001').  Dropping incompatible tables for a clean V7 rebuild …"
+                    f"(e.g. 'YB-001').  Archiving incompatible tables for a clean V7 rebuild …"
                 )
                 _LEGACY_CHILD_TABLES = [
                     "commission_monthly",
@@ -85,12 +85,9 @@ def _migrate_schema() -> None:
                     "clock_events",
                     "timesheets",
                 ]
-                for tbl in _LEGACY_CHILD_TABLES:
-                    conn.execute(text(f"DROP TABLE IF EXISTS {quoted_name(tbl, quote=True)} CASCADE"))
-                    print(f"   dropped {tbl}")
-                conn.execute(text("DROP TABLE IF EXISTS employees CASCADE"))
-                print("   dropped employees")
-                print("✅ Incompatible tables dropped — create_all() will rebuild with correct V7 schema")
+                for tbl in _LEGACY_CHILD_TABLES + ["employees"]:
+                    _archive_table(conn, tbl)
+                print("✅ Incompatible tables archived (*_legacy) — create_all() will rebuild with correct V7 schema")
                 return  # Early return; create_all() will build from scratch
 
             print(f"⚠  employees.id is '{row[0]}' — migrating numeric values to INTEGER …")
@@ -187,10 +184,127 @@ def _add_column_if_missing(conn, table: str, column: str, col_type: str) -> None
             print(f"   added column {table}.{column} ({col_type})")
 
 
+def _archive_table(conn, table: str) -> None:
+    """
+    Rename an incompatible legacy table to <table>_legacy (keeping its data) so create_all()
+    can build the current schema. Indexes and owned sequences are renamed too, because their
+    names are schema-global in PostgreSQL and would clash with the new table's.
+    """
+    exists = conn.execute(text(
+        "SELECT 1 FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = :t"
+    ), {"t": table}).fetchone()
+    if not exists:
+        return
+    taken = {r[0] for r in conn.execute(text("SELECT relname FROM pg_class")).fetchall()}
+    suffix, n = "_legacy", 1
+    while f"{table}{suffix}" in taken:
+        n += 1
+        suffix = f"_legacy{n}"
+    q = engine.dialect.identifier_preparer.quote
+    seqs = [r[0] for r in conn.execute(text(
+        "SELECT s.relname FROM pg_class s JOIN pg_depend d ON d.objid = s.oid "
+        "JOIN pg_class t ON d.refobjid = t.oid WHERE s.relkind = 'S' AND t.relname = :t"
+    ), {"t": table}).fetchall()]
+    idxs = [r[0] for r in conn.execute(text(
+        "SELECT indexname FROM pg_indexes WHERE schemaname = current_schema() AND tablename = :t"
+    ), {"t": table}).fetchall()]
+    conn.execute(text(f"ALTER TABLE {q(table)} RENAME TO {q(table + suffix)}"))
+    for name in idxs:
+        conn.execute(text(f"ALTER INDEX {q(name)} RENAME TO {q((name + suffix)[:63])}"))
+    for name in seqs:
+        conn.execute(text(f"ALTER SEQUENCE {q(name)} RENAME TO {q((name + suffix)[:63])}"))
+    print(f"   archived incompatible legacy table {table} → {table + suffix} (data kept)")
+
+
+def _archive_incompatible_tables() -> None:
+    """Archive existing tables whose integer primary key is stored as another type (e.g. TEXT ids)."""
+    if _is_sqlite:
+        return
+    from sqlalchemy import Integer, inspect
+    insp = inspect(engine)
+    existing = set(insp.get_table_names())
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing:
+                continue
+            db_cols = {c["name"]: c for c in insp.get_columns(table.name)}
+            for col in table.primary_key.columns:
+                info = db_cols.get(col.name)
+                if isinstance(col.type, Integer) and (info is None or "INT" not in str(info["type"]).upper()):
+                    _archive_table(conn, table.name)
+                    break
+
+
+def _column_default_sql(col):
+    """Server-side DEFAULT used when adding a missing column, so existing rows get a value."""
+    from sqlalchemy import Boolean, Date, DateTime, Float, Integer, Numeric, String, Text
+    d = col.default
+    if d is not None and getattr(d, "is_scalar", False):
+        v = d.arg
+        if isinstance(v, bool):
+            return ("1" if v else "0") if _is_sqlite else ("TRUE" if v else "FALSE")
+        if isinstance(v, (int, float)):
+            return repr(v)
+        if isinstance(v, str):
+            return "'" + v.replace("'", "''") + "'"
+    if isinstance(col.type, DateTime) and d is not None:
+        return "CURRENT_TIMESTAMP"
+    if col.nullable:
+        return None
+    # NOT NULL without a scalar default: pick a neutral value so the column can be added to a populated table
+    if isinstance(col.type, Boolean):
+        return "0" if _is_sqlite else "FALSE"
+    if isinstance(col.type, (Integer, Float, Numeric)):
+        return "0"
+    if isinstance(col.type, (String, Text)):
+        return "''"
+    if isinstance(col.type, DateTime):
+        return "CURRENT_TIMESTAMP"
+    if isinstance(col.type, Date):
+        return "CURRENT_DATE"
+    return None
+
+
+def _sync_columns() -> None:
+    """
+    Bring tables created by older versions (or other tools) in line with the models:
+      · add every model column that is missing (existing rows are back-filled with a default)
+      · relax NOT NULL on leftover legacy columns the models don't know, so inserts don't fail
+    Nothing is dropped or renamed; existing data is kept.
+    """
+    from sqlalchemy import inspect
+    insp = inspect(engine)
+    existing = set(insp.get_table_names())
+    q = engine.dialect.identifier_preparer.quote
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing:
+                continue
+            db_cols = {c["name"]: c for c in insp.get_columns(table.name)}
+            for col in table.columns:
+                if col.name in db_cols or col.primary_key:
+                    continue
+                ddl = f"ALTER TABLE {q(table.name)} ADD COLUMN {q(col.name)} {col.type.compile(dialect=engine.dialect)}"
+                default = _column_default_sql(col)
+                if default is not None:
+                    ddl += f" DEFAULT {default}"
+                conn.execute(text(ddl))
+                print(f"   added missing column {table.name}.{col.name}")
+            if _is_sqlite:
+                continue  # SQLite cannot ALTER COLUMN; dev databases are always created fresh
+            model_cols = {c.name for c in table.columns}
+            for name, info in db_cols.items():
+                if name not in model_cols and not info.get("nullable", True) and info.get("default") is None:
+                    conn.execute(text(f"ALTER TABLE {q(table.name)} ALTER COLUMN {q(name)} DROP NOT NULL"))
+                    print(f"   relaxed NOT NULL on legacy column {table.name}.{name}")
+
+
 def init_db() -> None:
-    """Create all tables (if not exist). Called at startup."""
+    """Create all tables (if not exist) and reconcile existing ones. Called at startup."""
     from backend.models import user, employee, supplier, warehouse, timesheet, container, clock, settlement, referral, commission, quotation, dispatch, message, integration, audit_log, operation, system_setting  # noqa: F401
     _migrate_schema()
+    _archive_incompatible_tables()
+    _sync_columns()
     Base.metadata.create_all(bind=engine)
 
 

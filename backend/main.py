@@ -93,7 +93,8 @@ def _init_db_background():
             _db_status = "ok"
         print("🚀 Application fully ready — V7.0")
     except Exception as exc:
-        err_msg = str(exc)
+        # Public summary only (shown on the login page); the full traceback is in the logs.
+        err_msg = str(exc).strip().splitlines()[0][:200] if str(exc).strip() else type(exc).__name__
         with _db_lock:
             _db_error = err_msg
             _db_status = err_msg

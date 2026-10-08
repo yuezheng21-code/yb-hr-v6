@@ -21,12 +21,22 @@ from backend.services import login_guard
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
+def _password_ok(user: User, password: str) -> bool:
+    """bcrypt check that tolerates empty or non-bcrypt hashes left by older schemas."""
+    if not user.password_hash:
+        return False
+    try:
+        return bcrypt.checkpw(password.encode(), user.password_hash.encode())
+    except ValueError:
+        return False
+
+
 @router.post("/login", response_model=TokenOut)
 def login(body: LoginIn, request: Request, db: Session = Depends(get_db)):
     key = f"pw:{login_guard.client_ip(request)}:{body.username.lower()}"
     login_guard.check(key)
     user = db.scalar(select(User).where(User.username == body.username))
-    if user is None or not user.is_active or not bcrypt.checkpw(body.password.encode(), user.password_hash.encode()):
+    if user is None or not user.is_active or not _password_ok(user, body.password):
         login_guard.fail(key)
         raise HTTPException(status_code=401, detail="用户名或密码错误")
     login_guard.success(key)
@@ -67,7 +77,7 @@ def change_password(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if not bcrypt.checkpw(body.old_password.encode(), user.password_hash.encode()):
+    if not _password_ok(user, body.old_password):
         raise HTTPException(status_code=400, detail="旧密码错误")
     user.password_hash = bcrypt.hashpw(body.new_password.encode(), bcrypt.gensalt()).decode()
     db.commit()
