@@ -24,7 +24,7 @@ from backend.services import settings_store
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
-ROLES_ALLOWED = {"admin", "hr", "fin", "wh", "sup", "mgr", "worker"}
+ROLES_ALLOWED = {"admin", "hr", "fin", "wh", "sup", "mgr", "worker", "client"}
 
 
 def _admin_only(user: User):
@@ -99,6 +99,7 @@ def create_user(
         bound_supplier_id=body.bound_supplier_id,
         bound_warehouse=body.bound_warehouse,
         bound_biz_line=body.bound_biz_line,
+        client_warehouses=body.client_warehouses,
         is_active=body.is_active,
     )
     db.add(new_user)
@@ -374,6 +375,7 @@ def _user_dict(u: User) -> dict:
         "bound_supplier_id": u.bound_supplier_id,
         "bound_warehouse": u.bound_warehouse,
         "bound_biz_line": u.bound_biz_line,
+        "client_warehouses": u.client_warehouses,
         "is_active": u.is_active,
         "pin": u.pin,
         "created_at": u.created_at.isoformat() if u.created_at else None,

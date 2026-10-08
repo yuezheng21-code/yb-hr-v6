@@ -279,5 +279,7 @@
   "nav.performance": "Performans",
   "status.unmatched": "Eşleşmedi",
   "nav.users": "Kullanıcılar",
-  "nav.settings": "Ayarlar"
+  "nav.settings": "Ayarlar",
+  "nav.client_bi": "Depo Operasyonları",
+  "nav.client_preview": "Müşteri Görünümü"
 }

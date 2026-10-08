@@ -2,7 +2,7 @@ import { useLang } from '../../context/LangContext.jsx';
 import { NAV_ITEMS } from '../../router/index.jsx';
 import { Menu } from 'lucide-react';
 
-const ROLE_COLORS = { admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
+const ROLE_COLORS = { client:'#0ea5a4',admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
 
 export default function Header({ user, currentPage, onMobileMenuOpen }) {
   const { t } = useLang();

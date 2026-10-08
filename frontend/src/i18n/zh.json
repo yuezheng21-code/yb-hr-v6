@@ -279,5 +279,7 @@
   "nav.performance": "绩效看板",
   "status.unmatched": "未匹配",
   "nav.users": "用户管理",
-  "nav.settings": "系统设置"
+  "nav.settings": "系统设置",
+  "nav.client_bi": "仓库运营看板",
+  "nav.client_preview": "甲方看板预览"
 }

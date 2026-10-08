@@ -279,5 +279,7 @@
   "nav.performance": "Performance",
   "status.unmatched": "Unmatched",
   "nav.users": "Users",
-  "nav.settings": "Settings"
+  "nav.settings": "Settings",
+  "nav.client_bi": "Warehouse Operations",
+  "nav.client_preview": "Client View Preview"
 }

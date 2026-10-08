@@ -28,6 +28,7 @@ import Users from './pages/admin/Users.jsx';
 import Settings from './pages/admin/Settings.jsx';
 import Integrations from './pages/Integrations.jsx';
 import Operations from './pages/Operations.jsx';
+import ClientBI from './pages/ClientBI.jsx';
 import Performance from './pages/Performance.jsx';
 
 const PATH_TO_KEY = {
@@ -40,6 +41,7 @@ const PATH_TO_KEY = {
   '/recruit': 'recruit', '/messages': 'messages', '/integrations': 'integrations', '/admin': 'admin',
   '/operations': 'operations', '/performance': 'performance',
   '/users': 'users', '/settings': 'settings',
+  '/client-bi': 'client_bi', '/client-preview': 'client_preview',
 };
 const KEY_TO_PATH = Object.fromEntries(Object.entries(PATH_TO_KEY).map(([p, k]) => [k, p]));
 
@@ -70,7 +72,7 @@ export default function App() {
 
   const onLogin = (tk, u) => {
     setAuth(tk, u);
-    navigate(u.role === 'worker' ? '/clock' : '/');
+    navigate(u.role === 'worker' ? '/clock' : u.role === 'client' ? '/client-bi' : '/');
   };
 
   const onLogout = async () => {
@@ -96,6 +98,11 @@ export default function App() {
         {isErr && <button className="b bga" style={{ marginTop:8,fontSize:11 }} onClick={() => window.location.reload()}>{t('c.retry')}</button>}
       </div>
     );
+  }
+
+  // External client accounts only have the warehouse dashboard
+  if (user.role === 'client' && location.pathname !== '/client-bi') {
+    return <Navigate to="/client-bi" replace />;
   }
 
   return (
@@ -125,6 +132,8 @@ export default function App() {
         <Route path="/recruit" element={<ProtectedRoute><Recruit {...props} /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages {...props} /></ProtectedRoute>} />
         <Route path="/integrations" element={<ProtectedRoute><Integrations {...props} /></ProtectedRoute>} />
+        <Route path="/client-bi" element={<ProtectedRoute><ClientBI {...props} /></ProtectedRoute>} />
+        <Route path="/client-preview" element={<ProtectedRoute><ClientBI {...props} /></ProtectedRoute>} />
         <Route path="/operations" element={<ProtectedRoute><Operations {...props} /></ProtectedRoute>} />
         <Route path="/performance" element={<ProtectedRoute><Performance {...props} /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard {...props} /></ProtectedRoute>} />

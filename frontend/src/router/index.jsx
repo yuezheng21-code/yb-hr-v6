@@ -4,10 +4,11 @@
  */
 
 import {
-  BadgePercent, Building2, Calculator, ClipboardList, Clock3, Container, FileText, Gauge, Gift, Hourglass, LayoutDashboard, Link2, Mail, ScrollText, Send, Settings, Star, Target, Timer, Trophy, UserCog, Users, Wallet, Warehouse,
+  BadgePercent, BarChart3, Building2, Calculator, ClipboardList, Clock3, Container, FileText, Gauge, Gift, Hourglass, LayoutDashboard, Link2, Mail, ScrollText, Send, Settings, Star, Target, Timer, Trophy, UserCog, Users, Wallet, Warehouse,
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
+  { key: 'client_bi',       icon: BarChart3, labelKey: 'nav.client_bi',      roles: ['client'] },
   { key: 'dashboard',       icon: LayoutDashboard, labelKey: 'nav.dashboard',       roles: ['admin','hr','wh','fin','mgr','sup'] },
   { key: 'employees',       icon: Users, labelKey: 'nav.employees',       roles: ['admin','hr','wh','fin','mgr','sup'] },
   { key: 'timesheets',      icon: Clock3, labelKey: 'nav.timesheets',       roles: ['admin','hr','wh','fin','mgr','sup'] },
@@ -16,6 +17,7 @@ export const NAV_ITEMS = [
   { key: 'containers',      icon: Container, labelKey: 'nav.containers',       roles: ['admin','hr','wh','mgr'] },
   { key: 'operations',      icon: ClipboardList, labelKey: 'nav.operations',       roles: ['admin','hr','wh','fin','mgr','sup'] },
   { key: 'performance',     icon: Trophy, labelKey: 'nav.performance',      roles: ['admin','hr','wh','fin','mgr','sup','worker'] },
+  { key: 'client_preview',  icon: BarChart3, labelKey: 'nav.client_preview', roles: ['admin','hr','mgr'] },
   { sep: true },
   { key: 'dispatch',        icon: Send, labelKey: 'nav.dispatch',         roles: ['admin','hr','mgr'] },
   { key: 'talent',          icon: Star, labelKey: 'nav.talent',           roles: ['admin','hr','mgr'] },

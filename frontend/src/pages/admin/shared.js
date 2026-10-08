@@ -6,6 +6,7 @@ export const ROLE_META = {
   wh:     { label: '仓库管理', desc: '仅绑定仓库的数据', color: '#f5a623' },
   sup:    { label: '劳务供应商', desc: '仅本供应商员工', color: '#f0526c' },
   worker: { label: '工人',     desc: '打卡、报工、个人绩效', color: '#38bdf8' },
+  client: { label: '甲方（仓库方）', desc: '仅看绑定仓库的运营看板', color: '#0ea5a4' },
 };
 export const ROLES = Object.keys(ROLE_META);
 

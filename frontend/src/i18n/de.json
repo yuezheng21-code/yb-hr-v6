@@ -279,5 +279,7 @@
   "nav.performance": "Leistungsauswertung",
   "status.unmatched": "Nicht zugeordnet",
   "nav.users": "Benutzerverwaltung",
-  "nav.settings": "Einstellungen"
+  "nav.settings": "Einstellungen",
+  "nav.client_bi": "Lagerbetrieb",
+  "nav.client_preview": "Kundenansicht (Vorschau)"
 }

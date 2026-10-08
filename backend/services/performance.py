@@ -84,7 +84,7 @@ def compute_performance(
     date_to: date,
     *,
     group_by: str = "employee",
-    warehouse_code: Optional[str] = None,
+    warehouse_code: Optional[str | list] = None,  # one code or a list (client portal)
     client: Optional[str] = None,
     supplier_id: Optional[int] = None,
     employee_id: Optional[int] = None,
@@ -98,7 +98,9 @@ def compute_performance(
     stmt = select(OperationLog).where(
         OperationLog.work_date >= date_from, OperationLog.work_date <= date_to,
         OperationLog.status.in_(statuses), OperationLog.employee_id.is_not(None))
-    if warehouse_code:
+    if isinstance(warehouse_code, (list, tuple, set)):
+        stmt = stmt.where(OperationLog.warehouse_code.in_(list(warehouse_code) or [""]))
+    elif warehouse_code:
         stmt = stmt.where(OperationLog.warehouse_code == warehouse_code)
     if client:
         stmt = stmt.where(OperationLog.client == client)
@@ -181,7 +183,9 @@ def compute_performance(
 
     # ── 3. Quality events ────────────────────────────────────────────────
     qstmt = select(QualityEvent).where(QualityEvent.event_date >= date_from, QualityEvent.event_date <= date_to)
-    if warehouse_code:
+    if isinstance(warehouse_code, (list, tuple, set)):
+        qstmt = qstmt.where(QualityEvent.warehouse_code.in_(list(warehouse_code) or [""]))
+    elif warehouse_code:
         qstmt = qstmt.where(QualityEvent.warehouse_code == warehouse_code)
     if client:
         qstmt = qstmt.where(QualityEvent.client == client)
