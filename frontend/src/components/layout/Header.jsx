@@ -13,7 +13,7 @@ export default function Header({ user, currentPage, onMobileMenuOpen }) {
   return (
     <>
       <div className="mob-hdr">
-        <button className="mob-menu-btn" onClick={onMobileMenuOpen}><Menu size={20} strokeWidth={1.75} /></button>
+        <button type="button" className="mob-menu-btn" aria-label="打开菜单" onClick={onMobileMenuOpen}><Menu size={20} strokeWidth={1.75} /></button>
         <h1 style={{ fontSize:14,fontWeight:600 }}>{pageLabel}</h1>
       </div>
       <div className="hdr">
