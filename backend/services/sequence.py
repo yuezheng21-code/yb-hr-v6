@@ -21,22 +21,31 @@ def next_sequence_no(db: Session, model_class: Type, column_attr, prefix: str, w
 
     Args:
         db: SQLAlchemy session
-        model_class: The ORM model class (unused; kept for type hints)
+        model_class: The ORM model class (used to find pending, unflushed rows)
         column_attr: The SQLAlchemy column attribute to MAX over (e.g. Timesheet.ts_no)
         prefix: Full prefix including the separator (e.g. "TS-202603-")
         width: Zero-padding width for the sequence number (default 4)
     """
+    def _seq(val) -> int:
+        try:
+            return int(str(val).rsplit("-", 1)[-1])
+        except (ValueError, IndexError):
+            return 0
+
     max_val = db.scalar(
         select(func.max(column_attr)).where(column_attr.like(f"{prefix}%"))
     )
-    if max_val:
-        try:
-            seq = int(max_val.rsplit("-", 1)[-1]) + 1
-        except (ValueError, IndexError):
-            seq = 1
-    else:
-        seq = 1
-    return f"{prefix}{seq:0{width}d}"
+    seq = _seq(max_val) if max_val else 0
+    # Also consider objects added to the session but not yet flushed, so that
+    # callers generating several numbers inside one transaction (batch create,
+    # container split, settlement generation) never get duplicates.
+    attr = column_attr.key
+    for obj in db.new:
+        if isinstance(obj, model_class):
+            val = getattr(obj, attr, None)
+            if val and str(val).startswith(prefix):
+                seq = max(seq, _seq(val))
+    return f"{prefix}{seq + 1:0{width}d}"
 
 
 def make_prefix(code: str) -> str:

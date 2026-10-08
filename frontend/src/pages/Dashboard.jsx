@@ -24,7 +24,9 @@ export default function Dashboard({ token, user }) {
       api('/api/v1/dashboard/margin-analysis?months=' + MARGIN_ANALYSIS_MONTHS, { token }),
       api('/api/v1/dashboard/referral-summary', { token }),
       api('/api/v1/dashboard/commission-summary', { token }),
-      api('/api/v1/dashboard/dispatch-summary', { token }).catch(() => null),
+      ['admin', 'hr', 'mgr', 'fin'].includes(user?.role)
+        ? api('/api/v1/dashboard/dispatch-summary', { token }).catch(() => null)
+        : Promise.resolve(null),
     ])
       .then(([s, c, m, r, com, dis]) => { setStats(s); setCharts(c); setMargin(m); setReferralSummary(r); setCommissionSummary(com); setDispatchSummary(dis); })
       .catch(() => {})

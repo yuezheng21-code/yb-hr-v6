@@ -88,7 +88,7 @@ function LogsTab({ token, types, emps, canWrite }) {
   };
   const load = () => {
     setLoading(true);
-    api(`/api/v1/ops/logs?${qs()}`, { token }).then(d => { setData(d); setSel([]); }).finally(() => setLoading(false));
+    api(`/api/v1/ops/logs?${qs()}`, { token }).then(d => { setData(d); setSel([]); }).catch(e => showToast(e.message, 'err')).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, [f.status, f.op_type_id, f.source, f.date_from, f.date_to]); // eslint-disable-line react-hooks/exhaustive-deps
 

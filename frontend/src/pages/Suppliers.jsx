@@ -21,7 +21,7 @@ export default function Suppliers({ token, user }) {
 
   const load = () => {
     setLoading(true);
-    api('/api/v1/suppliers', { token }).then(setSuppliers).finally(() => setLoading(false));
+    api('/api/v1/suppliers', { token }).then(setSuppliers).catch(() => setSuppliers([])).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

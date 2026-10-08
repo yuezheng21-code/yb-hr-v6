@@ -50,3 +50,4 @@ class ReferralCreate(BaseModel):
     is_off_season: bool = False
     is_cross_region: bool = False
     notes: Optional[str] = None
+    referrer_emp_id: Optional[int] = None  # admin/hr/mgr submit on behalf of this employee

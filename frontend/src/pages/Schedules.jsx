@@ -27,7 +27,7 @@ export default function Schedules({ token, user }) {
 
   const load = () => {
     setLoading(true);
-    api('/api/v1/timesheets/zeitkonto-summary', { token }).then(setZK).finally(() => setLoading(false));
+    api('/api/v1/timesheets/zeitkonto-summary', { token }).then(setZK).catch(() => setZK([])).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

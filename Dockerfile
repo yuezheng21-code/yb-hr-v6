@@ -1,25 +1,30 @@
+# ── Stage 1: build the React + Vite frontend ─────────────────────────
+# Uses the official Node image instead of installing Node via apt/NodeSource,
+# so the build does not depend on Debian mirrors or a curl|bash installer.
+FROM node:20-slim AS frontend
+WORKDIR /fe
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend/ ./
+RUN npm run build
+
+# ── Stage 2: Python runtime ──────────────────────────────────────────
 FROM python:3.11.8-slim
 WORKDIR /app
 
-# Install Node.js 20.x (LTS) via NodeSource — ensures Vite 5 compatibility
-# regardless of which Debian release the python:slim image uses.
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gnupg && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y --no-install-recommends nodejs && \
-    rm -rf /var/lib/apt/lists/*
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PORT=8000
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY . .
-RUN mkdir -p uploads static && chmod +x start.sh
+# backend/main.py serves frontend/dist when present
+COPY --from=frontend /fe/dist ./frontend/dist
+RUN mkdir -p uploads && chmod +x start.sh
 
-# Build the React + Vite frontend → output lands in frontend/dist/
-# backend/main.py auto-detects frontend/dist and serves it instead of legacy static/
-RUN cd frontend && npm ci && npm run build && rm -rf node_modules
-
-ENV PORT=8000
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
 EXPOSE 8000
 CMD ["sh", "start.sh"]

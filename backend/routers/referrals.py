@@ -54,9 +54,15 @@ def submit_referral(
     db: Session = Depends(get_db),
 ):
     """Submit a new referral. Referrer must be a P1-P5 active employee."""
-    referrer = db.scalar(select(Employee).where(Employee.user_id == user.id))
+    if body.referrer_emp_id and user.role in {"admin", "hr", "mgr"}:
+        referrer = db.get(Employee, body.referrer_emp_id)
+        if referrer is None:
+            raise HTTPException(404, "推荐人员工不存在")
+    else:
+        referrer = db.scalar(select(Employee).where(Employee.user_id == user.id))
     if referrer is None:
-        raise HTTPException(400, "当前账号未关联员工档案，无法提交推荐")
+        detail = "请选择推荐人（员工）" if user.role in {"admin", "hr", "mgr"} else "当前账号未关联员工档案，无法提交推荐"
+        raise HTTPException(400, detail)
 
     ok, reason = referral_engine.check_eligibility(referrer)
     if not ok:

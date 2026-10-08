@@ -33,12 +33,12 @@ export default function Containers({ token, user }) {
 
   const load = () => {
     setLoading(true);
-    api('/api/v1/containers', { token }).then(setContainers).finally(() => setLoading(false));
+    api('/api/v1/containers', { token }).then(setContainers).catch(() => setContainers([])).finally(() => setLoading(false));
   };
 
   useEffect(() => {
     load();
-    api('/api/v1/employees?status=active', { token }).then(setEmps);
+    api('/api/v1/employees?status=active', { token }).then(setEmps).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addContainer = async () => {

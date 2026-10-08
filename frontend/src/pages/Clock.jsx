@@ -38,18 +38,32 @@ export default function Clock({ token, user }) {
     return () => clearInterval(timer);
   }, []);
 
+  const [unlinked, setUnlinked] = useState(false);
   useEffect(() => {
-    api('/api/v1/clock/today', { token }).then(setLogs).catch(() => {});
+    api('/api/v1/clock/today', { token }).then(setLogs).catch(() => setUnlinked(true));
   }, [token]);
 
   const last = logs[logs.length - 1];
   const isIn = last?.clock_type === 'in';
 
   const punch = async (type) => {
-    await api('/api/v1/clock', { method:'POST', body:{ clock_type:type }, token });
-    const r = await api('/api/v1/clock/today', { token });
-    setLogs(r);
+    try {
+      await api('/api/v1/clock', { method:'POST', body:{ clock_type:type }, token });
+      setLogs(await api('/api/v1/clock/today', { token }));
+    } catch (e) { showToast(e.message, 'err'); }
   };
+
+  if (unlinked) {
+    return (
+      <div style={{ maxWidth:420,margin:'60px auto',textAlign:'center' }}>
+        <div style={{ fontSize:15,fontWeight:500,marginBottom:8 }}>当前账号未关联员工档案</div>
+        <div className="tm" style={{ fontSize:12,lineHeight:1.7 }}>
+          打卡与报工仅适用于员工账号。请在「员工花名册」为员工设置 PIN（会自动生成工人账号），
+          或确保账号显示名称与员工姓名一致。
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display:'flex',flexDirection:'column',alignItems:'center',padding:'40px 0' }}>
