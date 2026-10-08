@@ -15,7 +15,12 @@ def _build_url() -> str:
     if not DATABASE_URL:
         db_path = os.path.join(os.path.dirname(__file__), "hr_v7.db")
         return f"sqlite:///{db_path}"
-    return DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    # Pin the psycopg2 driver explicitly: SQLAlchemy 2.1 changed the default
+    # PostgreSQL driver to psycopg (v3), which is not installed.
+    if url.startswith("postgresql://"):
+        url = "postgresql+psycopg2://" + url[len("postgresql://"):]
+    return url
 
 _url = _build_url()
 _is_sqlite = _url.startswith("sqlite")

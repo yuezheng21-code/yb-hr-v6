@@ -24,36 +24,40 @@
 
 ## 快速部署：Railway（推荐）
 
-### 第一次部署（约5分钟）
+### 第一次部署（约 5 分钟）
 
-1. **Fork 本仓库**到你的 GitHub 账号
+1. 登录 [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**，选择本仓库。
+   Railway 读取 `railway.toml`，用仓库里的 `Dockerfile` 构建（Node 构建前端 → Python 运行后端），无需额外配置。
+2. 在同一项目里 **+ New → Database → PostgreSQL**。
+3. 打开应用服务 → **Variables**，添加：
+   - `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`（引用变量，Railway 会自动填入连接串）
+   - `JWT_SECRET` = 32 位以上随机串（如 `openssl rand -hex 32` 的输出）
+   - `ADMIN_PASSWORD` = admin 账号的初始密码
+   - `CORS_ORIGINS` = 你的访问域名（如 `https://xxx.up.railway.app`）
+4. **Settings → Networking → Generate Domain** 获取访问地址。
+5. 部署完成后打开域名，用 `admin` + `ADMIN_PASSWORD` 登录，进入 **后台看板** 查看「系统健康」，所有项应为 ✓。
 
-2. 登录 [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
-
-3. 选择 fork 的仓库，Railway 自动识别 Python 项目
-
-4. 点击 **Deploy** — 等待2-3分钟，绿色 ✅ = 部署成功
-
-5. 点击 **Settings → Domains** → **Generate Domain** 获取访问地址
+> 首次启动会自动建表与写入初始数据（约 1–3 分钟），期间页面显示「系统正在启动」；
+> `/health` 始终返回 200，Railway 健康检查不会因数据库初始化而失败。
 
 ### 环境变量
 
-在 Railway → Variables 中设置：
-
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
-| `DATABASE_URL` | PostgreSQL 连接串（Railway 自动注入） | 空（使用 SQLite） |
+| `DATABASE_URL` | PostgreSQL 连接串（`postgres://` / `postgresql://` 均可） | 空（使用 SQLite，仅限本地开发） |
 | `PORT` | 服务端口（Railway 自动设置） | `8000` |
-| `JWT_SECRET` | **生产必须设置** — JWT 签名密钥，请使用32位以上随机字符串 | ⚠️ 内置弱密钥 |
-| `ADMIN_PASSWORD` | 首次部署时 admin 账号的初始密码 | `admin123` |
-| `CORS_ORIGINS` | 允许的前端域名，逗号分隔。例：`https://app.example.com` | `*`（全放行，仅开发用） |
+| `JWT_SECRET` | **生产必须设置** — 不设置则每次重启/重新部署后所有用户需重新登录 | 每次启动随机生成 |
+| `ADMIN_PASSWORD` | 首次部署时 admin 账号的初始密码（之后在「用户管理」修改） | `admin123` |
+| `CORS_ORIGINS` | 允许的前端域名，逗号分隔 | `*`（全放行，仅开发用） |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | 登录有效期初始值（之后以「系统设置 → 会话超时」为准） | `480` |
 | `FORCE_RESEED` | 设为 `1` 则每次启动重置所有默认账号密码（**仅测试环境**） | 空 |
 
 > **生产部署清单：**
-> 1. 设置强随机 `JWT_SECRET`（例：`openssl rand -hex 32`）
-> 2. 设置 `ADMIN_PASSWORD` 为安全密码，首次登录后立即在管理后台修改
-> 3. 设置 `CORS_ORIGINS` 为您的实际域名
-> 4. 确保 `DATABASE_URL` 指向 PostgreSQL（不要在生产使用 SQLite）
+> 1. 设置强随机 `JWT_SECRET`
+> 2. 设置 `ADMIN_PASSWORD`，首次登录后在「用户管理」修改其他默认账号（hr/finance/…）的密码或停用它们
+> 3. 设置 `CORS_ORIGINS` 为实际域名
+> 4. `DATABASE_URL` 指向 PostgreSQL；系统设置、用户、业务数据都存在数据库里，重新部署不会丢失
+> 5. 登录接口带失败限流（同一来源 15 分钟内失败 10 次即临时锁定），工人 PIN 也受保护
 
 ---
 

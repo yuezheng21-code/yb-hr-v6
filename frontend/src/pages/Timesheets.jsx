@@ -39,7 +39,7 @@ export default function Timesheets({ token, user }) {
 
   useEffect(() => {
     load();
-    api('/api/v1/employees?status=active', { token }).then(setEmps);
+    api('/api/v1/employees?status=active', { token }).then(setEmps).catch(() => {});
   }, [filterStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = async (id) => {

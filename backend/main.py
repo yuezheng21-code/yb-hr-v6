@@ -30,7 +30,7 @@ def _init_db_background():
         db_url = os.environ.get("DATABASE_URL", "")
         if db_url:
             import psycopg2
-            url = db_url.replace("postgres://", "postgresql://", 1)
+            url = db_url.replace("postgres://", "postgresql://", 1).replace("postgresql+psycopg2://", "postgresql://", 1)
             print("⏳ Waiting for database to become reachable...")
             with _db_lock:
                 _db_status = "waiting_for_database"
@@ -146,7 +146,14 @@ async def db_readiness_gate(request: Request, call_next):
                 headers={"Retry-After": "5"},
                 content={"detail": "系统正在启动，请稍候…"},
             )
-    return await call_next(request)
+    try:
+        return await call_next(request)
+    except Exception:
+        # Unhandled errors would otherwise drop the connection; return a readable 500
+        # so the frontend can show a message, and log the traceback for Railway logs.
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(status_code=500, content={"detail": "服务器内部错误，请稍后重试或联系管理员"})
 
 
 @app.get("/health")

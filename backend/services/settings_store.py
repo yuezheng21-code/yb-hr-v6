@@ -42,6 +42,8 @@ _RANGES: dict[str, tuple[float, float]] = {
     "session_timeout_minutes": (5, 7 * 24 * 60),
 }
 
+PRICE_MATRIX_KEY = "price_matrix"  # quotation price matrix override (JSON), see quotation_builder
+
 _lock = threading.Lock()
 _cache: dict[str, Any] = dict(DEFAULTS)
 _meta: dict[str, Any] = {"updated_at": None, "updated_by": None}
@@ -64,6 +66,9 @@ def load(db: Session) -> dict[str, Any]:
     values = dict(DEFAULTS)
     latest = None
     for row in db.scalars(select(SystemSetting)).all():
+        if row.key == PRICE_MATRIX_KEY:
+            _restore_price_matrix(row.value)
+            continue
         if row.key not in DEFAULTS:
             continue
         try:
@@ -80,6 +85,25 @@ def load(db: Session) -> dict[str, Any]:
         _loaded = True
         _apply_side_effects()
     return dict(values)
+
+
+def _restore_price_matrix(raw: str) -> None:
+    from backend.services import quotation_builder
+    try:
+        quotation_builder.update_price_matrix(json.loads(raw))
+    except (ValueError, TypeError):
+        pass
+
+
+def save_price_matrix(db: Session, matrix: dict, username: str) -> None:
+    """Persist the quotation price matrix override. Caller commits."""
+    from backend.models.system_setting import SystemSetting
+    row = db.get(SystemSetting, PRICE_MATRIX_KEY)
+    value = json.dumps(matrix, ensure_ascii=False)
+    if row is None:
+        db.add(SystemSetting(key=PRICE_MATRIX_KEY, value=value, updated_by=username, updated_at=datetime.utcnow()))
+    else:
+        row.value, row.updated_by, row.updated_at = value, username, datetime.utcnow()
 
 
 def _ensure_loaded() -> None:

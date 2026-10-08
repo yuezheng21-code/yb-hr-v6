@@ -43,7 +43,7 @@ def list_quotations(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user.role not in {"admin", "fin", "mgr"}:
+    if user.role not in {"admin", "fin", "mgr", "hr"}:
         raise HTTPException(403, "Forbidden")
     stmt = select(Quotation).order_by(Quotation.created_at.desc())
     if status:
@@ -59,7 +59,7 @@ def create_quotation(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user.role not in {"admin", "mgr"}:
+    if user.role not in {"admin", "mgr", "hr"}:
         raise HTTPException(403, "Forbidden")
     q = Quotation(
         quote_no=_next_qt_no(db),
@@ -88,7 +88,7 @@ def update_quotation(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user.role not in {"admin", "mgr", "fin"}:
+    if user.role not in {"admin", "mgr", "fin", "hr"}:
         raise HTTPException(403, "Forbidden")
     q = db.get(Quotation, quotation_id)
     if not q:
@@ -116,7 +116,7 @@ def calculate_cost_for_quotation(
     db: Session = Depends(get_db),
 ):
     """Run cost calculator and link result to quotation."""
-    if user.role not in {"admin", "fin", "mgr"}:
+    if user.role not in {"admin", "fin", "mgr", "hr"}:
         raise HTTPException(403, "Forbidden")
     q = db.get(Quotation, quotation_id)
     if not q:
@@ -203,7 +203,7 @@ def get_price_matrix(
     user: User = Depends(get_current_user),
 ):
     """Return v7.0 price matrix."""
-    if user.role not in {"admin", "fin", "mgr"}:
+    if user.role not in {"admin", "fin", "mgr", "hr"}:
         raise HTTPException(403, "Forbidden")
     return quotation_builder.get_price_matrix()
 
@@ -212,15 +212,18 @@ def get_price_matrix(
 def update_price_matrix(
     body: dict = Body(...),
     user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    """Update the in-memory price matrix (admin only, resets on server restart)."""
+    """Update the price matrix (admin only). Persisted in system_settings."""
     if user.role != "admin":
         raise HTTPException(403, "Forbidden")
     try:
         result = quotation_builder.update_price_matrix(body)
-        return {"status": "updated", "matrix": result}
     except ValueError as e:
         raise HTTPException(400, str(e))
+    settings_store.save_price_matrix(db, result, user.display_name or user.username)
+    db.commit()
+    return {"status": "updated", "matrix": result}
 
 
 @router.post("/{quotation_id}/build-items")
@@ -234,7 +237,7 @@ def build_quote_items(
     Calculate quotation line items using the price matrix.
     Body: [{"biz_line": "9A", "volume": 80000}, ...]
     """
-    if user.role not in {"admin", "fin", "mgr"}:
+    if user.role not in {"admin", "fin", "mgr", "hr"}:
         raise HTTPException(403, "Forbidden")
     q = db.get(Quotation, quotation_id)
     if not q:
@@ -260,7 +263,7 @@ def get_quotation_cost_calcs(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user.role not in {"admin", "fin", "mgr"}:
+    if user.role not in {"admin", "fin", "mgr", "hr"}:
         raise HTTPException(403, "Forbidden")
     return db.scalars(
         select(CostCalculation)
@@ -276,7 +279,7 @@ def export_quotation_xlsx(
     db: Session = Depends(get_db),
 ):
     """Export quotation as German-format Excel workbook."""
-    if user.role not in {"admin", "fin", "mgr"}:
+    if user.role not in {"admin", "fin", "mgr", "hr"}:
         raise HTTPException(403, "Forbidden")
     q = db.get(Quotation, quotation_id)
     if not q:
@@ -301,7 +304,7 @@ def get_quotation(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user.role not in {"admin", "fin", "mgr"}:
+    if user.role not in {"admin", "fin", "mgr", "hr"}:
         raise HTTPException(403, "Forbidden")
     q = db.get(Quotation, quotation_id)
     if not q:
@@ -333,7 +336,7 @@ def create_cost_calc(
     db: Session = Depends(get_db),
 ):
     """Standalone cost calculation (not linked to a quotation)."""
-    if user.role not in {"admin", "fin", "mgr"}:
+    if user.role not in {"admin", "fin", "mgr", "hr"}:
         raise HTTPException(403, "Forbidden")
     calc_result = cost_calculator.calc_full(
         grade=body.avg_grade,

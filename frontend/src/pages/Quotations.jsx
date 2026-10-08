@@ -54,7 +54,7 @@ export default function Quotations({ token, user }) {
 
   const load = () => {
     setLoading(true);
-    api('/api/v1/quotations', { token }).then(setQuotes).finally(() => setLoading(false));
+    api('/api/v1/quotations', { token }).then(setQuotes).catch(e => showToast(e.message, 'err')).finally(() => setLoading(false));
   };
 
   useEffect(() => {

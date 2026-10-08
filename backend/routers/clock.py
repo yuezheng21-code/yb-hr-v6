@@ -25,10 +25,13 @@ def _resolve_employee(user: User, db: Session) -> Employee:
     """
     Resolve the Employee record for the current user.
     Strategy (in order):
-      1. Match employee.name == user.display_name
-      2. If none found, raise 404 — do NOT silently fall back to a random employee.
+      1. Employee linked via employee.user_id (set when an employee is created with a PIN)
+      2. Match employee.name == user.display_name
+      3. If none found, raise 404 — do NOT silently fall back to a random employee.
     """
-    emp = db.scalar(select(Employee).where(Employee.name == user.display_name, Employee.status == "active"))
+    emp = db.scalar(select(Employee).where(Employee.user_id == user.id, Employee.status == "active"))
+    if emp is None:
+        emp = db.scalar(select(Employee).where(Employee.name == user.display_name, Employee.status == "active"))
     if emp is None:
         raise HTTPException(
             status_code=404,

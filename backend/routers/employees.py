@@ -158,7 +158,12 @@ def create_employee(
     if user.role not in {"admin", "hr"}:
         raise HTTPException(403, "Forbidden")
 
-    pin = body.pin
+    pin = (body.pin or "").strip() or None
+    if pin is not None:
+        if not (len(pin) == 4 and pin.isdigit()):
+            raise HTTPException(400, "PIN 必须是 4 位数字")
+        if db.scalar(select(User.id).where(User.pin == pin)):
+            raise HTTPException(409, "PIN 已被其他账号使用")
     emp_no = _next_emp_no(db)
     emp_data = body.model_dump(exclude={"pin"})
     emp = Employee(**emp_data, emp_no=emp_no)
@@ -166,7 +171,7 @@ def create_employee(
     db.flush()  # get emp.id without committing
 
     # If a 4-digit PIN is provided, auto-create a linked worker User account
-    if pin and len(pin) == 4 and pin.isdigit():
+    if pin:
         placeholder_hash = bcrypt.hashpw(os.urandom(24), bcrypt.gensalt()).decode()
         worker_user = User(
             username=f"worker_{emp.id}",

@@ -45,6 +45,11 @@ export default function Referrals({ token, user }) {
   const isHR = ['admin','hr'].includes(user?.role);
   const isFin = ['admin','fin'].includes(user?.role);
   const isWorker = !isHR && !isFin;
+  const canOnBehalf = ['admin','hr','mgr'].includes(user?.role);
+  const [emps, setEmps] = useState([]);
+  useEffect(() => {
+    if (canOnBehalf) api('/api/v1/employees?status=active&limit=1000', { token }).then(setEmps).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [form, setForm] = useState({
     referee_name: '', referee_phone: '', referee_target_grade: 'P1',
@@ -66,8 +71,10 @@ export default function Referrals({ token, user }) {
 
   const submitReferral = async () => {
     if (!form.referee_name.trim()) { showToast('请填写被推荐人姓名', 'err'); return; }
+    if (canOnBehalf && !form.referrer_emp_id) { showToast('请选择推荐人', 'err'); return; }
     try {
-      await api('/api/v1/referrals', { method: 'POST', body: form, token });
+      const body = { ...form, referrer_emp_id: form.referrer_emp_id ? parseInt(form.referrer_emp_id) : null };
+      await api('/api/v1/referrals', { method: 'POST', body, token });
       setAddModal(false);
       setForm({ referee_name:'', referee_phone:'', referee_target_grade:'P1',
         is_scarce_position:false, is_off_season:false, is_cross_region:false, notes:'' });
@@ -205,6 +212,13 @@ export default function Referrals({ token, user }) {
             推荐奖励按被推荐人入职留存里程碑分期发放。推荐人须在职且试用期满3个月（P1-P5）。
           </div>
           <div className="fr">
+            {canOnBehalf && (
+              <div className="fg ful"><label className="fl">推荐人（员工）*</label>
+                <select className="fsl" value={form.referrer_emp_id || ''} onChange={e => setForm({...form, referrer_emp_id:e.target.value})}>
+                  <option value="">请选择</option>
+                  {emps.map(e => <option key={e.id} value={e.id}>{e.emp_no} {e.name} · {e.grade}</option>)}
+                </select></div>
+            )}
             <div className="fg"><label className="fl">被推荐人姓名 *</label>
               <input className="fi" value={form.referee_name}
                 onChange={e => setForm({...form, referee_name:e.target.value})} placeholder="全名" /></div>
