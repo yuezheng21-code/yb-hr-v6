@@ -1,7 +1,7 @@
 {
   "login.title": "يوانبو+579 HR",
-  "login.admin": "👔 تسجيل المشرف",
-  "login.worker": "👷 PIN العامل",
+  "login.admin": "تسجيل المشرف",
+  "login.worker": "PIN العامل",
   "login.username": "اسم المستخدم",
   "login.password": "كلمة المرور",
   "login.btn": "تسجيل الدخول",
@@ -58,7 +58,7 @@
   "nav.talent": "مجموعة المواهب",
   "nav.recruit": "قمع التوظيف",
   "nav.messages": "الرسائل",
-  "nav.admin": "إدارة النظام",
+  "nav.admin": "لوحة الإدارة",
   "nav.integrations": "التكاملات",
   "emp.new": "+ موظف جديد",
   "emp.search": "بحث عن الاسم/المعرف/الهاتف...",
@@ -108,7 +108,7 @@
   "dash.abmahnung": "Active Abmahnungen",
   "dash.zk_alerts": "Zeitkonto Alerts",
   "dash.wv_active": "Active WV Projects",
-  "dash.chart": "📊 Last 7 Days Hours",
+  "dash.chart": "Last 7 Days Hours",
   "dash.no_data": "No timesheet data",
   "emp.f_contract_hrs": "Contract Hours/Day",
   "emp.f_tax": "Tax Method",
@@ -274,5 +274,10 @@
   "status.wh_approved": "معتمد (المستودع)",
   "status.fin_approved": "معتمد (المالية)",
   "status.confirmed": "مؤكد",
-  "status.paid": "مدفوع"
+  "status.paid": "مدفوع",
+  "nav.operations": "سجل العمليات",
+  "nav.performance": "الأداء",
+  "status.unmatched": "غير مطابق",
+  "nav.users": "المستخدمون",
+  "nav.settings": "الإعدادات"
 }

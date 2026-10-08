@@ -101,7 +101,7 @@ export default function Integrations({ token, user }) {
   useEffect(() => { load(); }, [load]);
 
   if (!isAdmin) {
-    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--tx3)' }}>⛔ 仅管理员可访问</div>;
+    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--tx3)' }}>仅管理员可访问</div>;
   }
 
   const catMap = Object.fromEntries(catalogue.map(c => [c.platform, c]));
@@ -139,13 +139,13 @@ export default function Integrations({ token, user }) {
     setTesting(platform);
     try {
       const res = await api(`/api/v1/integrations/${platform}/test`, { method: 'POST', token });
-      showToast(`✅ ${cfg.label || platform} 连接成功`);
+      showToast(`${cfg.label || platform} 连接成功`);
       setConfigs(prev => ({
         ...prev,
         [platform]: { ...prev[platform], last_test_status: 'ok', last_tested_at: new Date().toISOString() },
       }));
     } catch (e) {
-      showToast(`❌ ${e.message}`, 'err');
+      showToast(e.message, 'err');
       setConfigs(prev => ({
         ...prev,
         [platform]: { ...prev[platform], last_test_status: 'fail', last_tested_at: new Date().toISOString() },
@@ -204,7 +204,7 @@ export default function Integrations({ token, user }) {
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 24 }}>{p.icon}</span>
+                  <span className="mz-av" style={{ background: 'var(--bg3)', color: 'var(--tx2)', borderRadius: 8 }}>{(p.label || p.platform || '?').slice(0, 1)}</span>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>{p.label}</div>
                     <div style={{ fontSize: 10, color: 'var(--tx3)', marginTop: 1 }}>{p.platform}</div>
@@ -253,13 +253,13 @@ export default function Integrations({ token, user }) {
               {/* Actions */}
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 <button className="b bgs" style={{ fontSize: 11 }} onClick={() => openEdit(p.platform)}>
-                  ⚙ 配置
+                  配置
                 </button>
                 {isEnabled && (
                   <button className="b bga" style={{ fontSize: 11 }}
                     onClick={() => testConnection(p.platform)}
                     disabled={isTesting}>
-                    {isTesting ? '测试中…' : '🔌 测试连接'}
+                    {isTesting ? '测试中…' : '测试连接'}
                   </button>
                 )}
                 {isEnabled && cfg.last_test_status === 'ok' && (
@@ -267,13 +267,13 @@ export default function Integrations({ token, user }) {
                     fontSize: 11, background: '#10b98120', color: '#10b981',
                     border: '1px solid #10b981',
                   }} onClick={() => { setSendModal(p.platform); setSendText(''); }}>
-                    ✉ 发送消息
+                    发送消息
                   </button>
                 )}
                 {p.doc_url && (
                   <a href={p.doc_url} target="_blank" rel="noopener noreferrer"
                     style={{ fontSize: 10, color: 'var(--ac)', alignSelf: 'center', marginLeft: 'auto' }}>
-                    📖 文档
+                    文档
                   </a>
                 )}
               </div>
@@ -284,7 +284,7 @@ export default function Integrations({ token, user }) {
 
       {/* Config modal */}
       {selPlatform && cat && (
-        <Modal title={`配置 ${cat.icon} ${cat.label}`} onClose={() => setSelPlatform(null)} wide>
+        <Modal title={`配置 ${cat.label}`} onClose={() => setSelPlatform(null)} wide>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             {/* Left: fields */}
             <div>
@@ -335,7 +335,7 @@ export default function Integrations({ token, user }) {
 
             {/* Right: setup guide */}
             <div style={{ background: 'var(--bg)', borderRadius: 'var(--R2)', padding: 14 }}>
-              <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 8, color: 'var(--tx2)' }}>📋 配置指南</div>
+              <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 8, color: 'var(--tx2)' }}>配置指南</div>
               {(docs?.steps || []).map((s, i) => (
                 <div key={i} style={{ fontSize: 11, lineHeight: 1.7, color: 'var(--tx2)', marginBottom: 4 }}>
                   {s}
@@ -344,7 +344,7 @@ export default function Integrations({ token, user }) {
               {cat.doc_url && (
                 <a href={cat.doc_url} target="_blank" rel="noopener noreferrer"
                   style={{ fontSize: 11, color: 'var(--ac)', display: 'block', marginTop: 10 }}>
-                  🔗 查看官方文档
+                  查看官方文档
                 </a>
               )}
             </div>

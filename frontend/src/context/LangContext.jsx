@@ -37,11 +37,7 @@ export function useLang() {
 export function LangSwitcher() {
   const { lang, setLang } = useContext(LangCtx);
   return (
-    <select
-      value={lang}
-      onChange={e => setLang(e.target.value)}
-      style={{ fontSize: 10, padding: '2px 4px', borderRadius: 4, border: '1px solid var(--bd)', background: 'var(--bg2)', color: 'var(--tx)', cursor: 'pointer' }}
-    >
+    <select className="fsl lang-sw" value={lang} onChange={e => setLang(e.target.value)}>
       {LANG_OPTIONS.map(([code, label]) => (
         <option key={code} value={code}>{label}</option>
       ))}

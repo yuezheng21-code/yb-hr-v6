@@ -1,7 +1,7 @@
 {
   "login.title": "Yuanbo+579 HR",
-  "login.admin": "👔 Admin Login",
-  "login.worker": "👷 Worker PIN",
+  "login.admin": "Admin Login",
+  "login.worker": "Worker PIN",
   "login.username": "Username",
   "login.password": "Password",
   "login.btn": "Sign In",
@@ -63,7 +63,7 @@
   "nav.talent": "Talent Pool",
   "nav.recruit": "Recruit Funnel",
   "nav.messages": "Messages",
-  "nav.admin": "System Admin",
+  "nav.admin": "Admin Dashboard",
   "nav.integrations": "Integrations",
   "dash.employees": "Active Staff",
   "dash.pending_ts": "Pending Approval",
@@ -71,7 +71,7 @@
   "dash.abmahnung": "Active Abmahnungen",
   "dash.zk_alerts": "Zeitkonto Alerts",
   "dash.wv_active": "Active WV Projects",
-  "dash.chart": "📊 Last 7 Days Hours",
+  "dash.chart": "Last 7 Days Hours",
   "dash.no_data": "No timesheet data",
   "emp.new": "+ New Employee",
   "emp.search": "Search name/ID/phone...",
@@ -274,5 +274,10 @@
   "status.wh_approved": "WH Approved",
   "status.fin_approved": "Fin Approved",
   "status.confirmed": "Confirmed",
-  "status.paid": "Paid"
+  "status.paid": "Paid",
+  "nav.operations": "Operations Log",
+  "nav.performance": "Performance",
+  "status.unmatched": "Unmatched",
+  "nav.users": "Users",
+  "nav.settings": "Settings"
 }

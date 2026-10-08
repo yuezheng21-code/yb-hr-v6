@@ -10,6 +10,7 @@
 """
 from __future__ import annotations
 import backend.config as cfg
+from backend.services import settings_store
 
 
 def calc_hourly_cost(
@@ -26,12 +27,13 @@ def calc_hourly_cost(
     """
     grade = grade.upper()
     coeff = cfg.COEFFICIENTS.get(grade, 1.0)
-    gross = round(cfg.P1_HOURLY * coeff, 4)
+    p1 = float(settings_store.get("p1_hourly_rate"))
+    gross = round(p1 * coeff, 4)
 
-    soc = social_rate if social_rate is not None else cfg.SOCIAL_RATE
-    vac = vacation_rate if vacation_rate is not None else cfg.VACATION_RATE
-    sick = sick_rate if sick_rate is not None else cfg.SICK_RATE
-    mgmt = mgmt_rate if mgmt_rate is not None else cfg.MGMT_OVERHEAD
+    soc = social_rate if social_rate is not None else settings_store.get("social_rate")
+    vac = vacation_rate if vacation_rate is not None else settings_store.get("vacation_rate")
+    sick = sick_rate if sick_rate is not None else settings_store.get("sick_rate")
+    mgmt = mgmt_rate if mgmt_rate is not None else settings_store.get("mgmt_overhead")
 
     social_abs = round(gross * soc, 4)
     vacation_abs = round(gross * vac, 4)
@@ -42,7 +44,7 @@ def calc_hourly_cost(
 
     return {
         "grade": grade,
-        "base_hourly": cfg.P1_HOURLY,
+        "base_hourly": p1,
         "grade_coefficient": coeff,
         "gross_hourly": gross,
         "social_insurance_rate": soc,

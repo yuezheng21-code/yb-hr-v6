@@ -118,7 +118,7 @@ export default function Containers({ token, user }) {
               <td className="mn">{c.total_hours != null ? c.total_hours + 'h' : '—'}</td>
               <td className="mn">{c.worker_count ?? parseWorkerCount(c.worker_ids)}</td>
               <td className="mn">€{(c.client_revenue || 0).toFixed(0)}</td>
-              <td>{c.video_recorded ? '✅' : '—'}</td>
+              <td>{c.video_recorded ? '✓' : '—'}</td>
               <td><StatusBadge value={c.approval_status} /></td>
               <td>
                 <div style={{ display: 'flex', gap: 4 }}>
@@ -193,7 +193,7 @@ export default function Containers({ token, user }) {
                   <label key={e.id} style={{
                     display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, cursor: 'pointer',
                     padding: '3px 8px', borderRadius: 6, border: '1px solid var(--bd)',
-                    background: form.worker_ids.includes(e.id) ? 'var(--ac)20' : 'var(--bg3)',
+                    background: form.worker_ids.includes(e.id) ? 'color-mix(in srgb, var(--ac) 13%, transparent)' : 'var(--bg3)',
                     color: form.worker_ids.includes(e.id) ? 'var(--ac2)' : 'var(--tx3)',
                   }}>
                     <input type="checkbox" style={{ display: 'none' }}
@@ -234,7 +234,7 @@ export default function Containers({ token, user }) {
           footer={<button className="b bga" onClick={() => setSplitResult(null)}>{t('c.close')}</button>}
         >
           <div style={{ textAlign: 'center', padding: '16px 0' }}>
-            <div style={{ fontSize: 40, marginBottom: 8 }}>✅</div>
+            <div style={{ fontSize: 28, marginBottom: 8, color: 'var(--gn)' }}>✓</div>
             <div style={{ fontWeight: 700, marginBottom: 8 }}>已成功拆分 {splitResult.created_timesheets} 条工时记录</div>
             {splitResult.ts_nos?.length > 0 && (
               <div style={{ fontSize: 11, color: 'var(--tx3)' }}>

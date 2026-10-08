@@ -3,6 +3,8 @@ import { useLang, LangSwitcher } from '../../context/LangContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { api } from '../../services/api.js';
 import { NAV_ITEMS } from '../../router/index.jsx';
+import { useTheme } from '../../context/ThemeContext.jsx';
+import { LogOut, Moon, Sun } from 'lucide-react';
 
 const ROLE_COLORS = { admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
 
@@ -27,6 +29,7 @@ export default function Sidebar({ user, currentPage, onNavigate, onLogout }) {
   const { token } = useAuth();
   const roleColor = user ? (ROLE_COLORS[user.role] || '#6a7498') : '#6a7498';
   const unreadCount = useUnreadCount(token);
+  const { theme, toggle } = useTheme();
 
   const navItems = user
     ? NAV_ITEMS.filter(n => n.sep || !n.roles || n.roles.includes(user.role))
@@ -36,35 +39,38 @@ export default function Sidebar({ user, currentPage, onNavigate, onLogout }) {
     <>
       <div className="sb-hd">
         <div className="sb-logo">渊</div>
-        <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V7 · LIVE</div></div>
+        <div><div className="sb-t">渊博+579</div><div className="sb-s">HR V7</div></div>
       </div>
       <div className="nav">
-        {navItems.map((n, i) =>
-          n.sep
-            ? <div key={i} className="nsep" />
-            : <button key={n.key} className={`ni ${currentPage === n.key ? 'on' : ''}`} onClick={() => onNavigate(n.key)}>
-                <span className="ni-i">{n.icon}</span>
-                <span style={{ flex:1 }}>{t(n.labelKey)}</span>
-                {n.key === 'messages' && unreadCount > 0 && (
-                  <span style={{
-                    background: 'var(--rd)', color: '#fff', borderRadius: 10,
-                    fontSize: 9, fontWeight: 700, padding: '1px 5px', minWidth: 16,
-                    textAlign: 'center', lineHeight: '14px',
-                  }}>{unreadCount > 99 ? '99+' : unreadCount}</span>
-                )}
-              </button>
-        )}
+        {navItems.map((n, i) => {
+          if (n.sep) return <div key={i} className="nsep" />;
+          const Icon = n.icon;
+          return (
+            <button key={n.key} className={`ni ${currentPage === n.key ? 'on' : ''}`} onClick={() => onNavigate(n.key)}>
+              <span className="ni-i">{Icon && <Icon size={16} strokeWidth={1.75} />}</span>
+              <span style={{ flex: 1 }}>{t(n.labelKey)}</span>
+              {n.key === 'messages' && unreadCount > 0 && (
+                <span className="ni-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+              )}
+            </button>
+          );
+        })}
       </div>
       <div className="sb-ft">
-        <div className="sb-btn" style={{ cursor:'default',marginBottom:6 }}>
-          <div className="ua" style={{ background:roleColor }}>{user?.display_name?.[0] || '?'}</div>
-          <div>
-            <div style={{ fontSize:10,fontWeight:600,color:'var(--tx)' }}>{user?.display_name}</div>
-            <div style={{ fontSize:8,color:'var(--tx3)' }}>{user?.role}</div>
+        <div className="sb-user">
+          <div className="ua" style={{ background: roleColor }}>{user?.display_name?.[0] || '?'}</div>
+          <div style={{ minWidth: 0 }}>
+            <div className="un" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.display_name}</div>
+            <div className="ur">{user?.role}</div>
           </div>
         </div>
-        <div style={{ padding:'4px 8px 8px' }}><LangSwitcher /></div>
-        <button className="sb-btn dg" onClick={onLogout}>🚪 {t('c.logout')}</button>
+        <div className="sb-tools">
+          <LangSwitcher />
+          <button className="icon-btn" onClick={toggle} title={theme === 'light' ? '深色模式' : '浅色模式'}>
+            {theme === 'light' ? <Moon size={15} strokeWidth={1.75} /> : <Sun size={15} strokeWidth={1.75} />}
+          </button>
+        </div>
+        <button className="sb-btn dg" onClick={onLogout}><LogOut size={15} strokeWidth={1.75} />{t('c.logout')}</button>
       </div>
     </>
   );

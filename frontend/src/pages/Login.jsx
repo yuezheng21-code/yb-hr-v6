@@ -56,21 +56,18 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErr
 
   return (
     <div style={{ position:'fixed',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg)',zIndex:9999 }}>
-      <div style={{ position:'absolute',inset:0,overflow:'hidden' }}>
-        <div style={{ position:'absolute',width:500,height:500,borderRadius:'50%',background:'radial-gradient(circle,#4f6ef720,transparent 70%)',top:-100,right:-100 }}/>
-      </div>
-      <div style={{ position:'relative',width:380,background:'var(--bg2)',border:'1px solid var(--bd)',borderRadius:'var(--R3)',padding:'32px',boxShadow:'0 8px 40px #0008',animation:'fadeUp .4s ease' }}>
+      <div style={{ position:'relative',width:380,background:'var(--bg2)',border:'1px solid var(--bd)',borderRadius:'var(--R3)',padding:'32px',boxShadow:'var(--shadow)',animation:'fadeUp .3s ease' }}>
         <div style={{ position:'absolute',top:16,right:16 }}><LangSwitcher /></div>
         <div style={{ display:'flex',alignItems:'center',gap:12,marginBottom:24 }}>
           <div className="sb-logo" style={{ width:44,height:44,fontSize:20 }}>渊</div>
           <div>
-            <div style={{ fontSize:18,fontWeight:700 }}>{t('login.title')}</div>
-            <div style={{ fontSize:10,color:'var(--tx3)',letterSpacing:2 }}>V7 · HR Dispatch System</div>
+            <div style={{ fontSize:17,fontWeight:600 }}>{t('login.title')}</div>
+            <div style={{ fontSize:11,color:'var(--tx3)' }}>HR Dispatch System</div>
           </div>
         </div>
 
         {(!srvReady || isSrvError) && (
-          <div style={{ marginBottom:16,padding:'8px 12px',background: isSrvError ? 'var(--rd)15' : 'var(--og)15',border:`1px solid ${isSrvError ? 'var(--rd)40' : 'var(--og)40'}`,borderRadius:'var(--R2)',display:'flex',alignItems:'center',gap:8 }}>
+          <div style={{ marginBottom:16,padding:'8px 12px',background: isSrvError ? 'color-mix(in srgb, var(--rd) 8%, transparent)' : 'color-mix(in srgb, var(--og) 8%, transparent)',border:`1px solid ${isSrvError ? 'color-mix(in srgb, var(--rd) 25%, transparent)' : 'color-mix(in srgb, var(--og) 25%, transparent)'}`,borderRadius:'var(--R2)',display:'flex',alignItems:'center',gap:8 }}>
             <span style={{ animation: isSrvError ? 'none' : 'spin 1s linear infinite',display:'inline-block',fontSize:14 }}>{isSrvError ? '⚠' : '⟳'}</span>
             <div style={{ flex:1 }}>
               <div style={{ fontSize:11,color: isSrvError ? 'var(--rd)' : 'var(--og)',fontWeight:600 }}>{isSrvError ? t('c.srv_error') : t('c.starting')}</div>
@@ -89,33 +86,33 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErr
         {mode === 'admin' ? (
           <>
             <div style={{ marginBottom:12 }}>
-              <label className="fl">{t('login.username')}</label>
+              <label className="fl" style={{ display:'block',marginBottom:6 }}>{t('login.username')}</label>
               <input className="fi" value={username} onChange={e => { setUsername(e.target.value); setErr(''); }}
                 onKeyDown={e => e.key === 'Enter' && doLogin()} autoFocus />
             </div>
             <div style={{ marginBottom:16 }}>
-              <label className="fl">{t('login.password')}</label>
+              <label className="fl" style={{ display:'block',marginBottom:6 }}>{t('login.password')}</label>
               <input className="fi" type="password" value={password} onChange={e => { setPassword(e.target.value); setErr(''); }}
                 onKeyDown={e => e.key === 'Enter' && doLogin()} />
             </div>
             <button className="b bga bl" style={{ width:'100%' }} onClick={doLogin} disabled={loading || !srvReady}>
               {loading ? <Spinner /> : t('login.btn')}
             </button>
-            <div style={{ marginTop:10,fontSize:9,color:'var(--tx3)',textAlign:'center' }}>{t('login.hint')}</div>
+            <div style={{ marginTop:10,fontSize:11,color:'var(--tx3)',textAlign:'center' }}>{t('login.hint')}</div>
           </>
         ) : (
           <>
             <div style={{ marginBottom:16 }}>
-              <label className="fl">{t('login.pin_label')}</label>
+              <label className="fl" style={{ display:'block',marginBottom:6 }}>{t('login.pin_label')}</label>
               <input className="fi" type="tel" maxLength={4}
-                style={{ fontSize:24,textAlign:'center',letterSpacing:12 }}
+                style={{ fontSize:22,height:48,textAlign:'center',letterSpacing:12 }}
                 value={pin} onChange={e => { setPin(e.target.value.replace(/\D/g,'')); setErr(''); }}
                 onKeyDown={e => e.key === 'Enter' && doPin()} placeholder="••••" />
             </div>
             <button className="b bga bl" style={{ width:'100%' }} onClick={doPin} disabled={loading || !srvReady}>
               {loading ? <Spinner /> : t('login.pin_btn')}
             </button>
-            <div style={{ marginTop:10,fontSize:9,color:'var(--tx3)',textAlign:'center' }}>{t('login.pin_hint')}</div>
+            <div style={{ marginTop:10,fontSize:11,color:'var(--tx3)',textAlign:'center' }}>{t('login.pin_hint')}</div>
           </>
         )}
 

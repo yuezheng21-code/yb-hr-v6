@@ -1,7 +1,7 @@
 {
   "login.title": "Yuanbo+579 HR",
-  "login.admin": "👔 Logowanie Admina",
-  "login.worker": "👷 PIN Pracownika",
+  "login.admin": "Logowanie Admina",
+  "login.worker": "PIN Pracownika",
   "login.username": "Nazwa użytkownika",
   "login.password": "Hasło",
   "login.btn": "Zaloguj",
@@ -58,7 +58,7 @@
   "nav.talent": "Baza Talentów",
   "nav.recruit": "Lejek Rekrutacyjny",
   "nav.messages": "Wiadomości",
-  "nav.admin": "Administracja Systemu",
+  "nav.admin": "Panel administratora",
   "nav.integrations": "Integracje",
   "emp.new": "+ Nowy Pracownik",
   "emp.search": "Szukaj imię/ID/telefon...",
@@ -108,7 +108,7 @@
   "dash.abmahnung": "Active Abmahnungen",
   "dash.zk_alerts": "Zeitkonto Alerts",
   "dash.wv_active": "Active WV Projects",
-  "dash.chart": "📊 Last 7 Days Hours",
+  "dash.chart": "Last 7 Days Hours",
   "dash.no_data": "No timesheet data",
   "emp.f_contract_hrs": "Contract Hours/Day",
   "emp.f_tax": "Tax Method",
@@ -274,5 +274,10 @@
   "status.wh_approved": "Zatwierdzone (mag.)",
   "status.fin_approved": "Zatwierdzone (fin.)",
   "status.confirmed": "Potwierdzone",
-  "status.paid": "Opłacone"
+  "status.paid": "Opłacone",
+  "nav.operations": "Rejestr operacji",
+  "nav.performance": "Wydajność",
+  "status.unmatched": "Niedopasowane",
+  "nav.users": "Użytkownicy",
+  "nav.settings": "Ustawienia"
 }

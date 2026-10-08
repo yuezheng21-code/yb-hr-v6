@@ -1,5 +1,6 @@
 import { useLang } from '../../context/LangContext.jsx';
 import { NAV_ITEMS } from '../../router/index.jsx';
+import { Menu } from 'lucide-react';
 
 const ROLE_COLORS = { admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
 
@@ -12,8 +13,8 @@ export default function Header({ user, currentPage, onMobileMenuOpen }) {
   return (
     <>
       <div className="mob-hdr">
-        <button className="mob-menu-btn" onClick={onMobileMenuOpen}>☰</button>
-        <h1 style={{ fontSize:14,fontWeight:700 }}>{pageLabel}</h1>
+        <button className="mob-menu-btn" onClick={onMobileMenuOpen}><Menu size={20} strokeWidth={1.75} /></button>
+        <h1 style={{ fontSize:14,fontWeight:600 }}>{pageLabel}</h1>
       </div>
       <div className="hdr">
         <h1>{pageLabel}</h1>

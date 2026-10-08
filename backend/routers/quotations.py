@@ -19,7 +19,7 @@ from backend.schemas.quotation import (
 )
 from backend.middleware.auth import get_current_user
 from backend.services.sequence import next_sequence_no, make_prefix
-from backend.services import cost_calculator, quotation_builder
+from backend.services import cost_calculator, quotation_builder, settings_store
 
 router = APIRouter(prefix="/api/v1/quotations", tags=["quotations"])
 cost_router = APIRouter(prefix="/api/v1/cost-calculations", tags=["cost-calculations"])
@@ -379,7 +379,7 @@ def grades_table():
     import backend.config as cfg
     rows = []
     for grade, coeff in cfg.COEFFICIENTS.items():
-        r = cost_calculator.calc_full(grade=grade, target_margin=0.20)
+        r = cost_calculator.calc_full(grade=grade, target_margin=settings_store.get("default_margin"))
         rows.append({
             "grade": grade,
             "gross_hourly": r["gross_hourly"],

@@ -1,7 +1,7 @@
 {
   "login.title": "渊博+579 HR",
-  "login.admin": "👔 管理员登录",
-  "login.worker": "👷 工人PIN",
+  "login.admin": "管理员登录",
+  "login.worker": "工人PIN",
   "login.username": "用户名",
   "login.password": "密码",
   "login.btn": "登 录",
@@ -63,7 +63,7 @@
   "nav.talent": "人才储备池",
   "nav.recruit": "招聘漏斗",
   "nav.messages": "系统消息",
-  "nav.admin": "系统管理",
+  "nav.admin": "后台看板",
   "nav.integrations": "集成管理",
   "dash.employees": "在职员工",
   "dash.pending_ts": "待审批工时",
@@ -71,7 +71,7 @@
   "dash.abmahnung": "有效Abmahnung",
   "dash.zk_alerts": "Zeitkonto预警",
   "dash.wv_active": "WV项目进行中",
-  "dash.chart": "📊 近7日工时分布",
+  "dash.chart": "近7日工时分布",
   "dash.no_data": "暂无工时数据",
   "emp.new": "+ 新增员工",
   "emp.search": "搜索姓名/ID/电话...",
@@ -274,5 +274,10 @@
   "status.wh_approved": "仓库已批",
   "status.fin_approved": "财务已批",
   "status.confirmed": "已确认",
-  "status.paid": "已付款"
+  "status.paid": "已付款",
+  "nav.operations": "作业记录",
+  "nav.performance": "绩效看板",
+  "status.unmatched": "未匹配",
+  "nav.users": "用户管理",
+  "nav.settings": "系统设置"
 }

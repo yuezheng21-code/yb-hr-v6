@@ -25,7 +25,7 @@ from backend.schemas.settlement import EmployeeSettlementOut, SupplierSettlement
 from backend.middleware.auth import get_current_user
 from backend.services.sequence import next_sequence_no, make_prefix
 from backend.services import export_service
-from backend.config import SOCIAL_RATE, VACATION_RATE, SICK_RATE, MGMT_OVERHEAD
+from backend.services import settings_store
 
 router = APIRouter(prefix="/api/v1/settlements", tags=["settlements"])
 
@@ -62,10 +62,10 @@ def _next_ps_no(db: Session) -> str:
 
 def _compute_costs(gross: float) -> dict:
     """Compute cost breakdown from gross pay using configured rates."""
-    social = round(gross * SOCIAL_RATE, 2)
-    vacation = round(gross * VACATION_RATE, 2)
-    sick = round(gross * SICK_RATE, 2)
-    mgmt = round(gross * MGMT_OVERHEAD, 2)
+    social = round(gross * settings_store.get("social_rate"), 2)
+    vacation = round(gross * settings_store.get("vacation_rate"), 2)
+    sick = round(gross * settings_store.get("sick_rate"), 2)
+    mgmt = round(gross * settings_store.get("mgmt_overhead"), 2)
     total_cost = round(gross + social + vacation + sick + mgmt, 2)
     return {
         "social_cost": social,

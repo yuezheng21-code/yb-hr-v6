@@ -1,7 +1,7 @@
 {
   "login.title": "Yuanbo+579 HR",
-  "login.admin": "👔 Đăng nhập Quản trị",
-  "login.worker": "👷 PIN Công nhân",
+  "login.admin": "Đăng nhập Quản trị",
+  "login.worker": "PIN Công nhân",
   "login.username": "Tên đăng nhập",
   "login.password": "Mật khẩu",
   "login.btn": "Đăng nhập",
@@ -58,7 +58,7 @@
   "nav.talent": "Hồ bơi nhân tài",
   "nav.recruit": "Phễu tuyển dụng",
   "nav.messages": "Tin nhắn",
-  "nav.admin": "Quản trị hệ thống",
+  "nav.admin": "Bảng quản trị",
   "nav.integrations": "Tích hợp",
   "emp.new": "+ Nhân viên mới",
   "emp.search": "Tìm tên/ID/điện thoại...",
@@ -108,7 +108,7 @@
   "dash.abmahnung": "Active Abmahnungen",
   "dash.zk_alerts": "Zeitkonto Alerts",
   "dash.wv_active": "Active WV Projects",
-  "dash.chart": "📊 Last 7 Days Hours",
+  "dash.chart": "Last 7 Days Hours",
   "dash.no_data": "No timesheet data",
   "emp.f_contract_hrs": "Contract Hours/Day",
   "emp.f_tax": "Tax Method",
@@ -274,5 +274,10 @@
   "status.wh_approved": "Kho đã duyệt",
   "status.fin_approved": "Tài chính đã duyệt",
   "status.confirmed": "Đã xác nhận",
-  "status.paid": "Đã thanh toán"
+  "status.paid": "Đã thanh toán",
+  "nav.operations": "Nhật ký tác nghiệp",
+  "nav.performance": "Hiệu suất",
+  "status.unmatched": "Chưa khớp",
+  "nav.users": "Người dùng",
+  "nav.settings": "Cài đặt"
 }

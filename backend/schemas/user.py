@@ -18,6 +18,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    pin: Optional[str] = None
 
 
 class UserUpdate(BaseModel):
@@ -30,6 +31,7 @@ class UserUpdate(BaseModel):
     bound_biz_line: Optional[str] = None
     is_active: Optional[bool] = None
     password: Optional[str] = None
+    pin: Optional[str] = None
 
 
 class UserOut(UserBase):

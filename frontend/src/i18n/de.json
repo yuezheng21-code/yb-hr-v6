@@ -1,7 +1,7 @@
 {
   "login.title": "Yuanbo+579 HR",
-  "login.admin": "👔 Admin-Login",
-  "login.worker": "👷 Arbeiter-PIN",
+  "login.admin": "Admin-Login",
+  "login.worker": "Arbeiter-PIN",
   "login.username": "Benutzername",
   "login.password": "Passwort",
   "login.btn": "Anmelden",
@@ -63,7 +63,7 @@
   "nav.talent": "Talentpool",
   "nav.recruit": "Recruiting-Trichter",
   "nav.messages": "Nachrichten",
-  "nav.admin": "Systemverwaltung",
+  "nav.admin": "Admin-Übersicht",
   "nav.integrations": "Integrationen",
   "dash.employees": "Aktive Mitarbeiter",
   "dash.pending_ts": "Ausstehende Genehmigungen",
@@ -71,7 +71,7 @@
   "dash.abmahnung": "Aktive Abmahnungen",
   "dash.zk_alerts": "Zeitkonto-Warnungen",
   "dash.wv_active": "Aktive WV-Projekte",
-  "dash.chart": "📊 Arbeitsstunden letzte 7 Tage",
+  "dash.chart": "Arbeitsstunden letzte 7 Tage",
   "dash.no_data": "Keine Zeitdaten vorhanden",
   "emp.new": "+ Neuer Mitarbeiter",
   "emp.search": "Name/ID/Telefon suchen...",
@@ -274,5 +274,10 @@
   "status.wh_approved": "Lager genehmigt",
   "status.fin_approved": "Finanz genehmigt",
   "status.confirmed": "Bestätigt",
-  "status.paid": "Bezahlt"
+  "status.paid": "Bezahlt",
+  "nav.operations": "Tätigkeitserfassung",
+  "nav.performance": "Leistungsauswertung",
+  "status.unmatched": "Nicht zugeordnet",
+  "nav.users": "Benutzerverwaltung",
+  "nav.settings": "Einstellungen"
 }

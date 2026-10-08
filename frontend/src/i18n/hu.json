@@ -1,7 +1,7 @@
 {
   "login.title": "Yuanbo+579 HR",
-  "login.admin": "👔 Rendszergazda bejelentkezés",
-  "login.worker": "👷 Dolgozó PIN",
+  "login.admin": "Rendszergazda bejelentkezés",
+  "login.worker": "Dolgozó PIN",
   "login.username": "Felhasználónév",
   "login.password": "Jelszó",
   "login.btn": "Bejelentkezés",
@@ -58,7 +58,7 @@
   "nav.talent": "Tehetségbázis",
   "nav.recruit": "Toborzási tölcsér",
   "nav.messages": "Üzenetek",
-  "nav.admin": "Rendszerfelügyelet",
+  "nav.admin": "Admin áttekintés",
   "nav.integrations": "Integrációk",
   "emp.new": "+ Új munkavállaló",
   "emp.search": "Keresés névben/ID-ban/telefonban...",
@@ -108,7 +108,7 @@
   "dash.abmahnung": "Active Abmahnungen",
   "dash.zk_alerts": "Zeitkonto Alerts",
   "dash.wv_active": "Active WV Projects",
-  "dash.chart": "📊 Last 7 Days Hours",
+  "dash.chart": "Last 7 Days Hours",
   "dash.no_data": "No timesheet data",
   "emp.f_contract_hrs": "Contract Hours/Day",
   "emp.f_tax": "Tax Method",
@@ -274,5 +274,10 @@
   "status.wh_approved": "Raktár jóváhagyta",
   "status.fin_approved": "Pénzügy jóváhagyta",
   "status.confirmed": "Megerősített",
-  "status.paid": "Kifizetve"
+  "status.paid": "Kifizetve",
+  "nav.operations": "Műveleti napló",
+  "nav.performance": "Teljesítmény",
+  "status.unmatched": "Nincs párosítva",
+  "nav.users": "Felhasználók",
+  "nav.settings": "Beállítások"
 }

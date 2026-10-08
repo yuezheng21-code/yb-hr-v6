@@ -154,7 +154,7 @@ export default function Commissions({ token, user }) {
             ))}
           </div>
           {canView && (
-            <button className="b bga" onClick={calculatePeriod}>⚡ 计算返佣</button>
+            <button className="b bga" onClick={calculatePeriod}>计算返佣</button>
           )}
         </div>
       </div>

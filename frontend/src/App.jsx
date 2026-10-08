@@ -23,8 +23,12 @@ import Dispatch from './pages/Dispatch.jsx';
 import Talent from './pages/Talent.jsx';
 import Recruit from './pages/Recruit.jsx';
 import Messages from './pages/Messages.jsx';
-import Admin from './pages/Admin.jsx';
+import AdminDashboard from './pages/admin/AdminDashboard.jsx';
+import Users from './pages/admin/Users.jsx';
+import Settings from './pages/admin/Settings.jsx';
 import Integrations from './pages/Integrations.jsx';
+import Operations from './pages/Operations.jsx';
+import Performance from './pages/Performance.jsx';
 
 const PATH_TO_KEY = {
   '/': 'dashboard', '/employees': 'employees', '/timesheets': 'timesheets',
@@ -34,6 +38,8 @@ const PATH_TO_KEY = {
   '/commissions': 'commissions', '/suppliers': 'suppliers', '/warehouses': 'warehouses',
   '/logs': 'logs', '/dispatch': 'dispatch', '/talent': 'talent',
   '/recruit': 'recruit', '/messages': 'messages', '/integrations': 'integrations', '/admin': 'admin',
+  '/operations': 'operations', '/performance': 'performance',
+  '/users': 'users', '/settings': 'settings',
 };
 const KEY_TO_PATH = Object.fromEntries(Object.entries(PATH_TO_KEY).map(([p, k]) => [k, p]));
 
@@ -119,7 +125,11 @@ export default function App() {
         <Route path="/recruit" element={<ProtectedRoute><Recruit {...props} /></ProtectedRoute>} />
         <Route path="/messages" element={<ProtectedRoute><Messages {...props} /></ProtectedRoute>} />
         <Route path="/integrations" element={<ProtectedRoute><Integrations {...props} /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute><Admin {...props} /></ProtectedRoute>} />
+        <Route path="/operations" element={<ProtectedRoute><Operations {...props} /></ProtectedRoute>} />
+        <Route path="/performance" element={<ProtectedRoute><Performance {...props} /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute><AdminDashboard {...props} /></ProtectedRoute>} />
+        <Route path="/users" element={<ProtectedRoute><Users {...props} /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings {...props} /></ProtectedRoute>} />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

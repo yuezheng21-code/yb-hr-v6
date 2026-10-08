@@ -110,7 +110,7 @@ function SettlementTab({ tab, period, token, user, t, showToast }) {
         <div className="ml" style={{ display: 'flex', gap: 6 }}>
           {canGenerate && (
             <button className="b bga" onClick={generate} disabled={generating}>
-              {generating ? '⏳' : '⚡'} {t('settle.generate')}
+              {generating ? '…' : ''}{t('settle.generate')}
             </button>
           )}
           {canExport && data.length > 0 && (
