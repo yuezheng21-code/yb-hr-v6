@@ -137,6 +137,7 @@ class IngestSourceIn(BaseModel):
     field_mapping: Optional[dict[str, Any]] = None
     auto_confirm: bool = False
     enabled: bool = True
+    scopes: list[str] = ["ops:write"]
 
 
 class IngestSourceUpdate(BaseModel):
@@ -147,3 +148,4 @@ class IngestSourceUpdate(BaseModel):
     field_mapping: Optional[dict[str, Any]] = None
     auto_confirm: Optional[bool] = None
     enabled: Optional[bool] = None
+    scopes: Optional[list[str]] = None

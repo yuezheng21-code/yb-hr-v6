@@ -127,6 +127,9 @@ class IngestSource(Base):
     field_mapping: Mapped[Optional[str]] = mapped_column(Text)  # JSON {canonical_field: "their_field"}
     auto_confirm: Mapped[bool] = mapped_column(Boolean, default=False)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    # 权限范围，逗号分隔：ops:write（推送作业记录）/ containers:write（推送卸柜记录）/ employees:read（读取人员信息）
+    # 旧记录为空时按 ops:write 处理
+    scopes: Mapped[Optional[str]] = mapped_column(String(200))
     last_used_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     total_received: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())

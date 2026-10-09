@@ -23,7 +23,7 @@ const TABS = [
   ['logs', '作业记录'],
   ['entry', '班组录入'],
   ['import', '文件导入'],
-  ['integration', 'WMS接入/账号映射'],
+  ['integration', '系统对接/账号映射'],
   ['types', '作业类型与工效标准'],
   ['quality', '质量事件'],
 ];
@@ -461,6 +461,7 @@ function IntegrationTab({ token, user, emps, meta, canConfig }) {
   };
 
   const systems = meta?.systems || {};
+  const scopes = meta?.api_scopes || { 'ops:write': '推送作业记录', 'containers:write': '推送卸柜记录', 'employees:read': '读取人员信息' };
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
   return (
@@ -480,23 +481,37 @@ function IntegrationTab({ token, user, emps, meta, canConfig }) {
       {isAdmin && (
         <div className="cd" style={{ padding: 14, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-            <div className="fw6">WMS 推送接入（API Key）</div>
-            <button className="b bga xs ml" onClick={() => setSrcForm({ name: '', system: 'generic', default_warehouse: '', default_client: '', field_mapping: '', auto_confirm: false, enabled: true })}>+ 新建接入源</button>
+            <div className="fw6">外部系统接入（API Key）</div>
+            <button className="b bga xs ml" onClick={() => setSrcForm({ name: '', system: 'generic', default_warehouse: '', default_client: '', field_mapping: '', auto_confirm: false, enabled: true, scopes: ['ops:write'] })}>+ 新建接入源</button>
           </div>
           <div className="tm" style={{ fontSize: 11, lineHeight: 1.7, marginBottom: 8 }}>
             WMS 或中间件（马帮/领星/易仓 的开放 API 拉取后、或自建脚本、Zapier/Make）调用：<br />
             <code>POST {origin}/api/v1/ops/ingest</code>　Header <code>X-API-Key: ybk_…</code>　Body <code>{'{"records":[{"task_id":"T1","operator":"zhang01","op_type":"拣货","qty":120,"date":"2026-10-08"}]}'}</code><br />
             加 <code>?dry_run=true</code> 只校验不入库；以 task_id/作业单号 幂等去重。
           </div>
+          <details style={{ fontSize: 11, lineHeight: 1.8, marginBottom: 8 }}>
+            <summary className="fw6" style={{ cursor: 'pointer' }}>对接 YBKPI（ybkpi.com）/ 卸柜记录软件：接口说明</summary>
+            <div className="tm" style={{ marginTop: 6 }}>
+              新建接入源时按需勾选权限，每个系统单独一把密钥。所有请求带 Header <code>X-API-Key</code>。<br />
+              · 连通测试：<code>GET {origin}/api/v1/ext/ping</code><br />
+              · 推送作业记录（ops:write）：<code>POST {origin}/api/v1/ext/operations</code>，格式同上<br />
+              · 推送装卸柜记录（containers:write）：<code>POST {origin}/api/v1/ext/containers</code><br />
+              <code>{'{"records":[{"external_id":"C-1","container_no":"MSKU1234567","work_date":"2026-10-08","container_type":"40HC","load_type":"unload","start_time":"08:00","end_time":"10:30","workers":["YB-2026-001","zhang01"]}]}'}</code><br />
+              　workers 填工号或该系统的操作员账号（在下方「账号映射」中绑定）；同一 external_id 再推送会更新未审批的记录；勾选「自动确认」直接记为仓库已审批，之后可用「卸柜记录同步」转为作业记录。<br />
+              · 读取人员信息（employees:read）：<code>GET {origin}/api/v1/ext/employees?status=active&format=json|csv&updated_since=2026-10-01T00:00:00</code><br />
+              　只返回工号、姓名、状态、仓库、岗位、等级、业务线、来源、供应商、入离职日期、该系统操作员账号；不含电话、证件、税号、银行与薪资。
+            </div>
+          </details>
           {newKey && <div className="alert alert-og" style={{ fontSize: 11, wordBreak: 'break-all' }}>
             新密钥（只显示一次，请立即复制保存）：<b className="mn">{newKey}</b>
             <button className="b bgh xs" style={{ marginLeft: 8 }} onClick={() => { navigator.clipboard?.writeText(newKey); showToast('已复制'); }}>复制</button>
           </div>}
           <div className="tw"><div className="ts"><table>
-            <thead><tr><th>名称</th><th>系统</th><th>密钥前缀</th><th>默认仓库/客户</th><th>自动确认</th><th>累计接收</th><th>最近推送</th><th>状态</th><th></th></tr></thead>
+            <thead><tr><th>名称</th><th>系统</th><th>权限</th><th>密钥前缀</th><th>默认仓库/客户</th><th>自动确认</th><th>累计接收</th><th>最近推送</th><th>状态</th><th></th></tr></thead>
             <tbody>{sources.map(s => (
               <tr key={s.id}>
-                <td className="fw6">{s.name}</td><td>{systems[s.system] || s.system}</td><td className="mn">{s.key_prefix}…</td>
+                <td className="fw6">{s.name}</td><td>{systems[s.system] || s.system}</td>
+                <td style={{ fontSize: 11 }}>{(s.scopes || []).map(x => scopes[x] || x).join('、')}</td><td className="mn">{s.key_prefix}…</td>
                 <td>{s.default_warehouse || '—'} / {s.default_client || '—'}</td><td>{s.auto_confirm ? '✓' : '—'}</td>
                 <td className="mn">{s.total_received}</td><td className="tm">{s.last_used_at ? s.last_used_at.slice(0, 16).replace('T', ' ') : '—'}</td>
                 <td style={{ color: s.enabled ? 'var(--gn)' : 'var(--rd)' }}>{s.enabled ? '启用' : '停用'}</td>
@@ -574,6 +589,15 @@ function IntegrationTab({ token, user, emps, meta, canConfig }) {
               <input className="fi" value={srcForm.default_client || ''} onChange={e => setSrcForm({ ...srcForm, default_client: e.target.value })} /></div>
             <div className="fg ful"><label className="fl">字段映射 JSON（可选）</label>
               <input className="fi" value={srcForm.field_mapping || ''} onChange={e => setSrcForm({ ...srcForm, field_mapping: e.target.value })} placeholder='{"operator":"opUser","qty":"pcs"}' /></div>
+            <div className="fg ful"><label className="fl">权限范围</label>
+              <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                {Object.entries(scopes).map(([k, v]) => (
+                  <label key={k} style={{ fontSize: 12, display: 'flex', gap: 4, alignItems: 'center' }}>
+                    <input type="checkbox" checked={(srcForm.scopes || []).includes(k)}
+                      onChange={e => setSrcForm({ ...srcForm, scopes: e.target.checked ? [...(srcForm.scopes || []), k] : (srcForm.scopes || []).filter(x => x !== k) })} />
+                    {v} <span className="tm mn">{k}</span></label>
+                ))}
+              </div></div>
             <div className="fg"><label className="fl">
               <input type="checkbox" checked={!!srcForm.auto_confirm} onChange={e => setSrcForm({ ...srcForm, auto_confirm: e.target.checked })} /> 推送后自动确认</label></div>
             <div className="fg"><label className="fl">
