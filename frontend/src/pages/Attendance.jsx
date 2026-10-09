@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { StatusBadge, fmt } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const GRADES = ['P1','P2','P3','P4','P5','P6','P7','P8','P9'];
 const WHS = ['UNA','DHL','BGK','ESN','DBG','BOC','KLN','DUS','WPT','MGL'];
@@ -21,6 +22,15 @@ export default function Attendance({ token, user }) {
   const showToast = useToast();
 
   const canEdit = ['admin','hr','mgr'].includes(user?.role);
+  const lt = useListTools(emps, { date: 'join_date', warehouse: 'primary_warehouse', supplier: 'supplier_id' }, token);
+  const COLS = [
+    { label: '工号', value: 'emp_no' }, { label: '姓名', value: 'name' }, { label: '业务线', value: 'biz_line' },
+    { label: '仓库', value: 'primary_warehouse' }, { label: '岗位', value: 'position' }, { label: '等级', value: 'grade' },
+    { label: '来源', value: r => (r.source_type === 'supplier' ? lt.supName(r.supplier_id) || '供应商' : '自有') },
+    { label: '时薪', value: 'hourly_rate', type: 'money' }, { label: '状态', value: r => (r.status === 'active' ? '在职' : '离职') },
+    { label: '入职', value: 'join_date', type: 'date' }, { label: '离职', value: 'leave_date', type: 'date' },
+    { label: '电话', value: 'phone' }, { label: '国籍', value: 'nationality' },
+  ];
   const isHR = ['admin','hr'].includes(user?.role);
   const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
@@ -30,7 +40,7 @@ export default function Attendance({ token, user }) {
 
   const load = useCallback(() => {
     setLoading(true);
-    api(`/api/v1/employees?q=${encodeURIComponent(search)}&status=${encodeURIComponent(filterStatus)}`, { token })
+    api(`/api/v1/employees?q=${encodeURIComponent(search)}&status=${encodeURIComponent(filterStatus)}&limit=5000`, { token })
       .then(setEmps)
       .finally(() => setLoading(false));
   }, [token, search, filterStatus]);
@@ -87,6 +97,7 @@ export default function Attendance({ token, user }) {
         </div>
       )}
 
+      <ListToolbar lt={lt} title="员工花名册" columns={COLS} token={token} dateLabel="入职日期" />
       {loading ? <Loading /> : (
         <div className="tw"><div className="ts"><table>
           <thead><tr>
@@ -96,7 +107,7 @@ export default function Attendance({ token, user }) {
             <th>{t('emp.col_status')}</th><th>{t('emp.col_join')}</th>
             {canEdit && <th></th>}
           </tr></thead>
-          <tbody>{emps.map(e => (
+          <tbody>{lt.rows.map(e => (
             <tr key={e.id}>
               <td className="mn gn">{e.id}</td>
               <td className="fw6">{isHR ? <button className="mz-link" style={{ fontWeight: 600, color: 'var(--ac2)' }} onClick={() => navigate(`/employees/${e.id}`)}>{e.name}</button> : e.name}</td>

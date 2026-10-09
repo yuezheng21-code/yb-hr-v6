@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 import { api, downloadCsv } from '../services/api.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
@@ -44,6 +45,16 @@ export default function Performance({ token, user }) {
   const [loading, setLoading] = useState(true);
   const [suppliers, setSuppliers] = useState([]);
   const [detail, setDetail] = useState(null);
+  const lt = useListTools(data?.rows || [], {}, token);
+  const PCOLS = [
+    { label: '排名', value: 'rank', type: 'int' }, { label: '维度', value: 'label' }, { label: '工号/代码', value: r => r.emp_no || r.code || r.key },
+    { label: '供应商', value: 'supplier_name' }, { label: '人数', value: 'headcount', type: 'int' }, { label: '天数', value: 'days', type: 'int' },
+    { label: '产量', value: 'qty', type: 'num', sum: true }, { label: '工时', value: 'total_hours', type: 'num', sum: true },
+    { label: 'UPH', value: 'uph', type: 'num' }, { label: '效率%', value: 'efficiency', type: 'pct' }, { label: '差错率%', value: 'error_rate', type: 'pct' },
+    { label: '质量分', value: 'quality_score', type: 'num' }, { label: '综合分', value: 'score', type: 'num' }, { label: '等级', value: 'grade' },
+    { label: '计件€', value: 'piece_amount', type: 'money', sum: true }, { label: '客户€', value: 'client_amount', type: 'money', sum: true },
+    { label: '扣款€', value: 'deductions', type: 'money', sum: true },
+  ];
 
   const qs = (extra = {}) => {
     const p = new URLSearchParams();
@@ -135,6 +146,8 @@ export default function Performance({ token, user }) {
             </div>
           )}
 
+          <ListToolbar lt={lt} title="绩效看板" columns={PCOLS} token={token}
+            subtitle={[`${f.date_from || '…'} → ${f.date_to || '…'}`, f.warehouse_code && `仓库 ${f.warehouse_code}`, f.supplier_id && `供应商 #${f.supplier_id}`, f.client && `客户 ${f.client}`].filter(Boolean).join(' · ')} />
           <div className="tw"><div className="ts"><table>
             <thead><tr>
               <th>#</th>

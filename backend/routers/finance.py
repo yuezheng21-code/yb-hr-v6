@@ -93,6 +93,7 @@ def _slip_dict(s: Payslip, emp: Optional[Employee] = None) -> dict:
         d[k] = json.loads(d[k]) if d[k] else ([] if k != "statutory" else {})
     if emp is not None:
         iban = (emp.iban or "").replace(" ", "")
+        d["warehouse_code"] = emp.primary_warehouse
         d["employee"] = {"id": emp.id, "name": emp.name, "emp_no": emp.emp_no, "datev_pnr": emp.datev_pnr,
                          "iban_tail": iban[-4:] if iban else None, "address": emp.address, "status": emp.status}
     return d
@@ -146,6 +147,101 @@ def _earnings_from_timesheets(rows: list[Timesheet]) -> tuple[list, list, float,
             earnings.append(g)
     other = [{"label": "Abzüge laut Arbeitszeitnachweis", "amount": _r(deduction), "auto": True}] if round(deduction, 2) else []
     return earnings, other, round(sum(float(t.hours or 0) for t in rows), 2), len({t.work_date for t in rows})
+
+
+# ═════════════════════════════════════════════════════════════════════
+#  打包下载（ZIP：每张单据一个 PDF）
+# ═════════════════════════════════════════════════════════════════════
+MAX_ZIP = 500
+
+
+def _zip(files: list[tuple[str, bytes]], name: str) -> Response:
+    import zipfile
+    from urllib.parse import quote
+    if not files:
+        raise HTTPException(404, "筛选范围内没有可打包的单据")
+    buf = io.BytesIO()
+    seen: set[str] = set()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for fname, data in files:
+            base, i = fname, 1
+            while fname in seen:
+                i += 1
+                fname = base.replace(".pdf", f"_{i}.pdf")
+            seen.add(fname)
+            z.writestr(fname, data)
+    return Response(buf.getvalue(), media_type="application/zip", headers={
+        "Content-Disposition": f"attachment; filename*=UTF-8''{quote(name)}", "Cache-Control": "private, no-store"})
+
+
+def _safe(s: str) -> str:
+    return "".join(ch if ch.isalnum() or ch in "-_." else "_" for ch in (s or ""))[:60]
+
+
+@router.get("/payslips/zip")
+def payslips_zip(period: str = Query(...), warehouse: Optional[str] = None, status: Optional[str] = None,
+                 ids: Optional[str] = Query(None, description="逗号分隔的工资条 ID（可选）"),
+                 user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    _need(user, PAYROLL_ROLES)
+    _period(period)
+    stmt = select(Payslip).where(Payslip.period == period).order_by(Payslip.emp_no)
+    if status:
+        stmt = stmt.where(Payslip.status == status)
+    if ids:
+        stmt = stmt.where(Payslip.id.in_([int(x) for x in ids.split(",") if x.strip().isdigit()]))
+    slips = db.scalars(stmt).all()
+    if warehouse:
+        wh = {e.id for e in db.scalars(select(Employee).where(Employee.primary_warehouse == warehouse.upper())).all()}
+        slips = [s for s in slips if s.employee_id in wh]
+    if len(slips) > MAX_ZIP:
+        raise HTTPException(413, f"单次最多打包 {MAX_ZIP} 张")
+    return _zip([(f"{_safe(s.emp_no)}_{_safe(s.emp_name)}_{s.period}.pdf", _render_slip(db, s)) for s in slips],
+                f"Entgeltabrechnungen_{period}{'_' + warehouse.upper() if warehouse else ''}.zip")
+
+
+@router.get("/supplier-statements/zip")
+def supplier_statements_zip(period: str = Query(...), supplier_id: Optional[int] = None, user: User = Depends(get_current_user),
+                            db: Session = Depends(get_db)):
+    if user.role not in FIN_ROLES | {"hr", "mgr", "sup"}:
+        raise HTTPException(403, "Forbidden")
+    stmt = select(SupplierSettlement).where(SupplierSettlement.period == period)
+    if user.role == "sup":
+        stmt = stmt.where(SupplierSettlement.supplier_id == user.bound_supplier_id)
+    elif supplier_id:
+        stmt = stmt.where(SupplierSettlement.supplier_id == supplier_id)
+    vat = float(settings_store.get("vat_rate") or 0)
+    files = [(f"{_safe(ss.settle_no)}_{_safe(ss.supplier_name)}.pdf",
+              supplier_statement_pdf(_company(), ss, db.get(Supplier, ss.supplier_id), _supplier_workers(db, ss), vat))
+             for ss in db.scalars(stmt).all()]
+    return _zip(files, f"Leistungsabrechnungen_{period}.zip")
+
+
+@router.get("/invoices/zip")
+def invoices_zip(date_from: Optional[date] = None, date_to: Optional[date] = None, customer_id: Optional[int] = None,
+                 status: Optional[str] = None, ids: Optional[str] = None, user: User = Depends(get_current_user),
+                 db: Session = Depends(get_db)):
+    """已开具账单的存档 PDF（按开票日期 / 客户 / 状态筛选，或指定 ids）。"""
+    _need(user, CUSTOMER_READ)
+    stmt = select(Invoice).where(Invoice.invoice_no.isnot(None)).order_by(Invoice.invoice_no)
+    if date_from:
+        stmt = stmt.where(Invoice.issue_date >= date_from)
+    if date_to:
+        stmt = stmt.where(Invoice.issue_date <= date_to)
+    if customer_id:
+        stmt = stmt.where(Invoice.customer_id == customer_id)
+    if status:
+        stmt = stmt.where(Invoice.status == status)
+    if ids:
+        stmt = stmt.where(Invoice.id.in_([int(x) for x in ids.split(",") if x.strip().isdigit()]))
+    invs = db.scalars(stmt).all()
+    if len(invs) > MAX_ZIP:
+        raise HTTPException(413, f"单次最多打包 {MAX_ZIP} 张")
+    files = []
+    for i in invs:
+        data = db.get(FileBlob, i.file_id).data if i.file_id else invoice_pdf(_company(), i, json.loads(i.lines or "[]"), db.get(Customer, i.customer_id))
+        files.append((f"{i.invoice_no}_{_safe(i.customer_name)}.pdf", data))
+    span = f"_{date_from}_{date_to}" if (date_from or date_to) else ""
+    return _zip(files, f"Rechnungen{span}_{date.today():%Y%m%d}.zip")
 
 
 @router.get("/payslips")

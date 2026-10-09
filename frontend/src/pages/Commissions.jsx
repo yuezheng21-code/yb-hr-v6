@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { fmtE } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const TIERS = ['bronze','silver','gold','platinum'];
 const TIER_COLORS = { bronze:'#cd7f32', silver:'#a0a0b0', gold:'#f5a623', platinum:'#6b7de8' };
@@ -40,6 +41,14 @@ export default function Commissions({ token, user }) {
   const [calcPeriod, setCalcPeriod] = useState(new Date().toISOString().slice(0,7));
   const [invoiceInputs, setInvoiceInputs] = useState({});
   const showToast = useToast();
+  const lt = useListTools(commissions, { date: 'created_at', warehouse: 'client_warehouse' }, token);
+  const COLS = [
+    { label: '协议编号', value: 'commission_no' }, { label: '推荐人', value: 'referrer_name' },
+    { label: '类型', value: r => (r.referrer_type === 'individual' ? '个人' : '机构') }, { label: '客户', value: 'client_name' },
+    { label: '仓库', value: 'client_warehouse' }, { label: '层级', value: 'tier' }, { label: '返佣率%', value: 'commission_rate', type: 'pct' },
+    { label: '有效期(月)', value: 'validity_months', type: 'int' }, { label: '已付', value: 'total_paid', type: 'money', sum: true },
+    { label: '待付', value: 'total_pending', type: 'money', sum: true }, { label: '状态', value: 'status' }, { label: '创建', value: 'created_at', type: 'date' },
+  ];
 
   const canAdmin = user?.role === 'admin';
   const canView = ['admin','fin'].includes(user?.role);
@@ -172,6 +181,7 @@ export default function Commissions({ token, user }) {
         </div>
       </div>
 
+      <ListToolbar lt={lt} title="返佣管理" columns={COLS} token={token} dateLabel="创建日期" />
       {loading ? <Loading /> : (
         commissions.length === 0
           ? <div style={{ textAlign:'center', padding:40, color:'var(--tx3)' }}>暂无返佣协议</div>
@@ -182,7 +192,7 @@ export default function Commissions({ token, user }) {
                 <th>层级</th><th>返佣率</th><th>有效期(月)</th>
                 <th>已付(€)</th><th>待付(€)</th><th>状态</th><th>操作</th>
               </tr></thead>
-              <tbody>{commissions.map(r => (
+              <tbody>{lt.rows.map(r => (
                 <tr key={r.id}>
                   <td className="mn tm">{r.commission_no}</td>
                   <td className="fw6">{r.referrer_name}</td>

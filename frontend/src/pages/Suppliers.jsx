@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const RATINGS = ['A','B','C'];
 
@@ -16,12 +17,18 @@ export default function Suppliers({ token, user }) {
   const [form, setForm] = useState({});
   const { t } = useLang();
   const showToast = useToast();
+  const COLS = [
+    { label: '编号', value: 'code' }, { label: '名称', value: 'name' }, { label: '类型', value: 'supplier_type' }, { label: '业务线', value: 'biz_line' },
+    { label: '合同号', value: 'contract_no' }, { label: '合同开始', value: 'contract_start', type: 'date' }, { label: '合同结束', value: 'contract_end', type: 'date' },
+    { label: '联系人', value: 'contact_person' }, { label: '电话', value: 'phone' }, { label: '邮箱', value: 'email' },
+    { label: '评级', value: 'rating' }, { label: '报税', value: 'tax_handle' }, { label: '状态', value: s => (s.status === 'active' ? '合作中' : '停止合作') },
+  ];
 
   const canEdit = ['admin','hr','mgr'].includes(user?.role);
 
   const load = () => {
     setLoading(true);
-    api('/api/v1/suppliers', { token }).then(setSuppliers).catch(() => setSuppliers([])).finally(() => setLoading(false));
+    api('/api/v1/suppliers?limit=1000', { token }).then(setSuppliers).catch(() => setSuppliers([])).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -29,6 +36,7 @@ export default function Suppliers({ token, user }) {
     !search || s.name?.toLowerCase().includes(search.toLowerCase()) ||
     s.contact_person?.toLowerCase().includes(search.toLowerCase())
   );
+  const lt = useListTools(filtered, { date: 'contract_start' }, token);
 
   const openNew = () => {
     setForm({ biz_line:'渊博', rating:'B', status:'active', tax_handle:'供应商自行报税' });
@@ -65,6 +73,7 @@ export default function Suppliers({ token, user }) {
         </div>
       </div>
 
+      <ListToolbar lt={lt} title="供应商" columns={COLS} token={token} dateLabel="合同开始" />
       {loading ? <Loading /> : (
         <div className="tw"><table>
           <thead><tr>
@@ -73,7 +82,7 @@ export default function Suppliers({ token, user }) {
             <th>{t('sup.col_email')}</th><th>{t('sup.col_rating')}</th>
             <th>{t('sup.col_status')}</th>{canEdit && <th></th>}
           </tr></thead>
-          <tbody>{filtered.map(s => (
+          <tbody>{lt.rows.map(s => (
             <tr key={s.id}>
               <td className="mn tm">{s.id}</td>
               <td className="fw6">{s.name}</td>

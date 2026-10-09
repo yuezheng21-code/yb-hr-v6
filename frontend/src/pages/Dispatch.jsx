@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const STATUS_COLORS = {
   open: '#3b82f6', recruiting: '#f59e0b', filled: '#10b981', closed: '#94a3b8',
@@ -27,6 +28,14 @@ export default function Dispatch({ token, user }) {
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
   const { t } = useLang();
+  const lt = useListTools(demands, { date: 'start_date', warehouse: 'warehouse_code' }, token);
+  const COLS = [
+    { label: '需求号', value: 'demand_no' }, { label: '业务线', value: r => BIZ_LABELS[r.biz_line] || r.biz_line }, { label: '仓库', value: 'warehouse_code' },
+    { label: '岗位', value: 'position' }, { label: '需求人数', value: 'headcount', type: 'int', sum: true }, { label: '已匹配', value: 'matched_count', type: 'int', sum: true },
+    { label: '开始', value: 'start_date', type: 'date' }, { label: '结束', value: 'end_date', type: 'date' }, { label: '班次', value: 'shift_pattern' },
+    { label: '客户结算', value: 'client_settlement_type' }, { label: '客户单价', value: 'client_rate', type: 'money' },
+    { label: '优先级', value: r => PRIORITY_LABELS[r.priority] || r.priority }, { label: '状态', value: r => STATUS_LABELS[r.status] || r.status }, { label: '提出人', value: 'requester' },
+  ];
   const showToast = useToast();
 
   const canEdit = ['admin','hr','mgr'].includes(user?.role);
@@ -146,10 +155,11 @@ export default function Dispatch({ token, user }) {
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 12, height: 'calc(100vh - 260px)', overflow: 'hidden' }}>
+      <ListToolbar lt={lt} title="派遣需求" columns={COLS} token={token} dateLabel="开始日期" />
+      <div style={{ display: 'flex', gap: 12, height: 'calc(100vh - 320px)', overflow: 'hidden' }}>
         {/* List */}
         <div style={{ width: 300, flexShrink: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {loading ? <Loading /> : demands.map(d => (
+          {loading ? <Loading /> : lt.rows.map(d => (
             <div key={d.id} onClick={() => setSelId(d.id)}
               style={{
                 padding: '10px 12px', borderRadius: 'var(--R2)', cursor: 'pointer',

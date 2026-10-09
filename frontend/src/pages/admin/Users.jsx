@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { api } from '../../services/api.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { Loading } from '../../components/Spinner.jsx';
+import { useListTools, ListToolbar } from '../../components/ListTools.jsx';
 import { ROLE_META, ROLES, initials, timeAgo } from './shared.js';
 
 const LANGS = [['zh', '中文'], ['en', 'English'], ['de', 'Deutsch'], ['tr', 'Türkçe'], ['ar', 'العربية'],
@@ -42,6 +43,13 @@ export default function Users({ token, user }) {
   const counts = ROLES.reduce((acc, r) => ({ ...acc, [r]: byStatus.filter(u => u.role === r).length }), {});
   const list = byStatus.filter(u => (!role || u.role === role) && (!q ||
     `${u.username} ${u.display_name}`.toLowerCase().includes(q.toLowerCase())));
+  const lt = useListTools(list, { date: 'created_at', warehouse: 'bound_warehouse', supplier: 'bound_supplier_id' }, token);
+  const COLS = [
+    { label: '用户名', value: 'username' }, { label: '姓名', value: 'display_name' }, { label: '角色', value: u => ROLE_META[u.role]?.label || u.role },
+    { label: '仓库', value: u => u.bound_warehouse || u.client_warehouses }, { label: '供应商', value: u => lt.supName(u.bound_supplier_id) },
+    { label: '语言', value: 'language' }, { label: '最近登录', value: 'last_login', type: 'date' }, { label: '状态', value: u => (u.is_active ? '启用' : '停用') },
+    { label: '创建', value: 'created_at', type: 'date' },
+  ];
 
   if (user?.role !== 'admin') return <div className="mz-empty">仅管理员可访问</div>;
 
@@ -128,12 +136,13 @@ export default function Users({ token, user }) {
           </div>
         </div>
 
+        <ListToolbar lt={lt} title="用户列表" columns={COLS} token={token} dateLabel="创建日期" />
         {loading ? <Loading /> : (
           <div className="mz-scroll">
             <table className="mz-table">
               <thead><tr><th>用户</th><th>角色</th><th>数据范围</th><th>PIN</th><th>语言</th><th>最近登录</th><th>状态</th><th /></tr></thead>
               <tbody>
-                {list.map(u => (
+                {lt.rows.map(u => (
                   <tr key={u.id} style={{ cursor: 'pointer', opacity: u.is_active ? 1 : .55 }} onClick={() => openEdit(u)}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

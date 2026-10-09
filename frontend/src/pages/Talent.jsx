@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { openFile } from './PersonnelFile.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const STATUS_COLORS = {
   available: '#10b981', contacted: '#3b82f6', interviewing: '#f59e0b',
@@ -24,6 +25,14 @@ export default function Talent({ token, user }) {
   const [talents, setTalents] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const lt = useListTools(talents, { date: 'created_at', supplier: 'supplier_id' }, token);
+  const COLS = [
+    { label: '姓名', value: 'name' }, { label: '电话', value: 'phone' }, { label: '邮箱', value: 'email' }, { label: '国籍', value: 'nationality' },
+    { label: '意向岗位', value: 'position' }, { label: '语言', value: 'languages' }, { label: '技能', value: 'skills' },
+    { label: '期望时薪', value: 'expected_rate', type: 'money' }, { label: '状态', value: r => STATUS_LABELS[r.pool_status] || r.pool_status },
+    { label: '渠道', value: r => (r.source === 'website' ? '官网投递' : r.source || '手动') },
+    { label: '供应商', value: r => lt.supName(r.supplier_id) }, { label: '推荐人', value: 'referrer' }, { label: '登记日期', value: 'created_at', type: 'date' },
+  ];
   const [selId, setSelId] = useState(null);
   const [addModal, setAddModal] = useState(false);
   const [matchModal, setMatchModal] = useState(false);
@@ -164,10 +173,11 @@ export default function Talent({ token, user }) {
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 12, height: 'calc(100vh - 280px)', overflow: 'hidden' }}>
+      <ListToolbar lt={lt} title="人才储备池" columns={COLS} token={token} dateLabel="登记日期" />
+      <div style={{ display: 'flex', gap: 12, height: 'calc(100vh - 340px)', overflow: 'hidden' }}>
         {/* List */}
         <div style={{ width: 280, flexShrink: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {loading ? <Loading /> : talents.map(t => (
+          {loading ? <Loading /> : lt.rows.map(t => (
             <div key={t.id} onClick={() => setSelId(t.id)}
               style={{
                 padding: '10px 12px', borderRadius: 'var(--R2)', cursor: 'pointer',

@@ -3,6 +3,7 @@ import { api } from '../services/api.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { openFile, saveFile } from './PersonnelFile.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const F = '/api/v1/finance';
 const eur = (v) => (v == null ? '—' : `€${Number(v).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
@@ -65,6 +66,14 @@ function Payslips({ token, user }) {
   const [sel, setSel] = useState(null);
   const [checked, setChecked] = useState([]);
   const load = () => api(`${F}/payslips?period=${period}`, { token }).then(l => { setList(l); setChecked([]); }).catch(e => showToast(e.message, 'err'));
+  const lt = useListTools(list || [], { warehouse: 'warehouse_code' }, token);
+  const COLS = [
+    { label: '工资条号', value: 'slip_no' }, { label: '工号', value: 'emp_no' }, { label: '姓名', value: 'emp_name' }, { label: '仓库', value: 'warehouse_code' },
+    { label: 'DATEV PNR', value: s => s.employee?.datev_pnr }, { label: '天数', value: 'work_days', type: 'int' }, { label: '工时', value: 'total_hours', type: 'num', sum: true },
+    { label: '税前', value: 'gross', type: 'money', sum: true }, { label: '税/社保', value: 'statutory_total', type: 'money', sum: true },
+    { label: '其他扣款', value: s => (s.other_deductions || []).reduce((a, o) => a + o.amount, 0), type: 'money', sum: true },
+    { label: '实发', value: 'payout', type: 'money', sum: true }, { label: '状态', value: s => (s.status === 'issued' ? '已签发' : '草稿') },
+  ];
   useEffect(() => { load(); }, [period]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generate = async () => {
@@ -86,7 +95,7 @@ function Payslips({ token, user }) {
   };
   if (!list) return <Loading />;
   const drafts = list.filter(s => s.status === 'draft');
-  const sum = (k) => list.reduce((a, s) => a + (s[k] || 0), 0);
+  const sum = (k) => lt.rows.reduce((a, s) => a + (s[k] || 0), 0);
   return (
     <>
       <div className="mz-card" style={{ padding: 12 }}>
@@ -103,10 +112,12 @@ function Payslips({ token, user }) {
         </div>
       </div>
       <div className="mz-grid mz-g4">
-        {[['人数', list.length], ['税前合计', eur(sum('gross'))], ['法定扣款', eur(sum('statutory_total'))], ['实发合计', eur(sum('payout'))]].map(([l, v]) => (
+        {[['人数', lt.rows.length], ['税前合计', eur(sum('gross'))], ['法定扣款', eur(sum('statutory_total'))], ['实发合计', eur(sum('payout'))]].map(([l, v]) => (
           <div key={l} className="mz-card"><div className="mz-kpi-l">{l}</div><div className="mz-kpi-v" style={{ fontSize: 22 }}>{v}</div></div>
         ))}
       </div>
+      <ListToolbar lt={lt} title={`工资条 ${period}`} columns={COLS} token={token} subtitle={`工资月份 ${period}`}
+        bundle={{ label: '打包下载工资条 PDF', disabled: !lt.rows.length, url: () => `${F}/payslips/zip?period=${period}&ids=${lt.rows.map(s => s.id).join(',')}` }} />
       <div className="mz-card" style={{ padding: 0 }}>
         {!list.length ? <div className="mz-empty">本月还没有工资条。先在「工时记录」完成审批入账，再点「从已入账工时生成」。</div> : (
           <div className="mz-scroll"><table className="mz-table">
@@ -114,7 +125,7 @@ function Payslips({ token, user }) {
               <th style={{ width: 28 }}><input type="checkbox" checked={checked.length === drafts.length && drafts.length > 0} onChange={e => setChecked(e.target.checked ? drafts.map(s => s.id) : [])} /></th>
               <th>员工</th><th style={{ textAlign: 'right' }}>工时</th><th style={{ textAlign: 'right' }}>税前</th><th style={{ textAlign: 'right' }}>税/社保</th>
               <th style={{ textAlign: 'right' }}>其他扣款</th><th style={{ textAlign: 'right' }}>实发</th><th>状态</th><th /></tr></thead>
-            <tbody>{list.map(s => {
+            <tbody>{lt.rows.map(s => {
               const other = (s.other_deductions || []).reduce((a, o) => a + o.amount, 0);
               return (
                 <tr key={s.id}>
@@ -220,6 +231,13 @@ function SupplierStatements({ token, user }) {
   const [detail, setDetail] = useState(null);
   const canGen = ['admin', 'fin', 'hr'].includes(user.role);
   const load = () => api(`${F}/supplier-statements?period=${period}`, { token }).then(setList).catch(e => showToast(e.message, 'err'));
+  const lt = useListTools(list || [], { supplier: 'supplier_id' }, token);
+  const COLS = [
+    { label: '结算单', value: 'settle_no' }, { label: '供应商', value: 'supplier_name' }, { label: '人数', value: 'employee_count', type: 'int', sum: true },
+    { label: '工时', value: 'total_hours', type: 'num', sum: true }, { label: '净额', value: 'net', type: 'money', sum: true },
+    { label: '增值税', value: 'vat', type: 'money', sum: true }, { label: '含税', value: 'gross', type: 'money', sum: true },
+    { label: '发票号', value: 'invoice_no' }, { label: '发票日期', value: 'invoice_date', type: 'date' }, { label: '状态', value: 'status' },
+  ];
   useEffect(() => { load(); }, [period]); // eslint-disable-line react-hooks/exhaustive-deps
   const generate = async () => {
     try { const r = await api('/api/v1/settlements/supplier/generate', { method: 'POST', body: { period }, token }); showToast(`已生成 ${r.generated} 个供应商结算`); load(); }
@@ -238,12 +256,14 @@ function SupplierStatements({ token, user }) {
         </div>
         <div className="mz-hint" style={{ marginTop: 8 }}>结算单（Leistungsabrechnung）列出供应商每位人员的天数、工时和金额，供应商据此开票；供应商账号登录后可下载自己的结算单。发票号与付款在「月度结算」中登记。</div>
       </div>
+      <ListToolbar lt={lt} title={`供应商结算 ${period}`} columns={COLS} token={token} subtitle={`结算月份 ${period}`}
+        bundle={{ label: '打包下载结算单 PDF', disabled: !lt.rows.length, url: () => `${F}/supplier-statements/zip?period=${period}${lt.sup && lt.sup !== '__own' ? `&supplier_id=${lt.sup}` : ''}` }} />
       <div className="mz-card" style={{ padding: 0 }}>
         {!list.length ? <div className="mz-empty">本月暂无供应商结算</div> : (
           <div className="mz-scroll"><table className="mz-table">
             <thead><tr><th>结算单</th><th>供应商</th><th style={{ textAlign: 'right' }}>人数</th><th style={{ textAlign: 'right' }}>工时</th>
               <th style={{ textAlign: 'right' }}>净额</th><th style={{ textAlign: 'right' }}>含税</th><th>状态</th><th /></tr></thead>
-            <tbody>{list.map(s => (
+            <tbody>{lt.rows.map(s => (
               <tr key={s.id}>
                 <td className="mz-num mz-muted">{s.settle_no}</td><td style={{ fontWeight: 500 }}>{s.supplier_name}</td>
                 <td className="mz-num" style={{ textAlign: 'right' }}>{s.employee_count}</td><td className="mz-num" style={{ textAlign: 'right' }}>{s.total_hours}</td>
@@ -284,6 +304,15 @@ function Invoices({ token, user }) {
   const [edit, setEdit] = useState(null);
   const canWrite = ['admin', 'fin'].includes(user.role);
   const load = () => api(`${F}/invoices`, { token }).then(setList).catch(e => showToast(e.message, 'err'));
+  const lt = useListTools(list || [], { date: i => i.issue_date || (i.created_at || '').slice(0, 10) }, token);
+  const COLS = [
+    { label: '发票号', value: i => i.invoice_no || `草稿 #${i.id}` }, { label: '类型', value: i => (i.kind === 'storno' ? '红字发票' : '发票') },
+    { label: '客户', value: 'customer_name' }, { label: 'USt-IdNr.', value: 'customer_vat_id' },
+    { label: '服务期间从', value: 'period_from', type: 'date' }, { label: '至', value: 'period_to', type: 'date' },
+    { label: '开票日期', value: 'issue_date', type: 'date' }, { label: '到期', value: 'due_date', type: 'date' },
+    { label: '净额', value: 'net', type: 'money', sum: true }, { label: '增值税', value: 'vat', type: 'money', sum: true }, { label: '含税', value: 'gross', type: 'money', sum: true },
+    { label: '状态', value: i => (i.overdue ? '逾期' : INV_STATUS[i.status][0]) }, { label: '收款日期', value: 'paid_at', type: 'date' }, { label: '收款金额', value: 'paid_amount', type: 'money', sum: true },
+  ];
   useEffect(() => { load(); api(`${F}/customers`, { token }).then(setCustomers).catch(() => {}); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const createDraft = async () => {
@@ -294,7 +323,7 @@ function Invoices({ token, user }) {
   };
   const openInv = async (i) => { try { setEdit(await api(`${F}/invoices/${i.id}`, { token })); } catch (e) { showToast(e.message, 'err'); } };
   if (!list) return <Loading />;
-  const shown = list.filter(i => !filter || (filter === 'overdue' ? i.overdue : i.status === filter));
+  const shown = lt.rows.filter(i => !filter || (filter === 'overdue' ? i.overdue : i.status === filter));
   const open = list.filter(i => i.status === 'issued' && i.kind === 'invoice');
   const [pf, pt] = monthRange(lastMonth());
   return (
@@ -316,6 +345,9 @@ function Invoices({ token, user }) {
             onClick={() => setNewForm({ customer_id: customers.find(c => c.is_active)?.id, period_from: pf, period_to: pt, include: { hours: true, containers: true, operations: false } })}>新建账单</button>}
         </div>
       </div>
+      <ListToolbar lt={{ ...lt, rows: shown }} title="甲方账单" columns={COLS} token={token} dateLabel="开票日期"
+        bundle={{ label: '打包下载发票 PDF', disabled: !shown.some(i => i.invoice_no), title: '仅已开具的发票',
+          url: () => `${F}/invoices/zip?ids=${shown.filter(i => i.invoice_no).map(i => i.id).join(',')}` }} />
       <div className="mz-card" style={{ padding: 0 }}>
         {!shown.length ? <div className="mz-empty">{customers.length ? '暂无账单' : '先在「客户」页添加甲方并关联仓库，再按月生成账单。'}</div> : (
           <div className="mz-scroll"><table className="mz-table">
@@ -436,6 +468,13 @@ function Customers({ token, user }) {
   const [form, setForm] = useState(null);
   const canWrite = ['admin', 'fin'].includes(user.role);
   const load = () => api(`${F}/customers`, { token }).then(setList).catch(e => showToast(e.message, 'err'));
+  const lt = useListTools(list || [], { warehouse: c => (c.warehouse_codes || [])[0] }, token);
+  const COLS = [
+    { label: '客户', value: 'name' }, { label: '地址', value: c => (c.address || '').replace(/\n/g, ', ') }, { label: '国家', value: 'country' },
+    { label: 'USt-IdNr.', value: 'vat_id' }, { label: '§13b', value: c => (c.reverse_charge ? '是' : '') }, { label: '邮箱', value: 'email' },
+    { label: '联系人', value: 'contact' }, { label: '仓库', value: c => (c.warehouse_codes || []).join(', ') },
+    { label: '付款期(天)', value: 'payment_days', type: 'int' }, { label: 'DATEV 债务人', value: 'debitor' }, { label: '状态', value: c => (c.is_active ? '启用' : '停用') },
+  ];
   useEffect(() => { load(); api('/api/v1/warehouses', { token }).then(setWhs).catch(() => {}); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const save = async () => {
     try {
@@ -451,11 +490,12 @@ function Customers({ token, user }) {
   return (
     <>
       {canWrite && <div className="mz-actions"><button className="mz-btn mz-btn-p" onClick={() => setForm({ ...EMPTY_CUST })}>添加客户</button></div>}
+      <ListToolbar lt={lt} title="客户" columns={COLS} token={token} />
       <div className="mz-card" style={{ padding: 0 }}>
         {!list.length ? <div className="mz-empty">还没有客户。添加甲方（仓库方）的开票信息并关联仓库后，即可按月生成账单。</div> : (
           <div className="mz-scroll"><table className="mz-table">
             <thead><tr><th>客户</th><th>USt-IdNr.</th><th>仓库</th><th>付款期</th><th>DATEV 债务人</th><th /></tr></thead>
-            <tbody>{list.map(c => (
+            <tbody>{lt.rows.map(c => (
               <tr key={c.id} style={{ opacity: c.is_active ? 1 : 0.5 }}>
                 <td><div style={{ fontWeight: 500 }}>{c.name}</div><div className="mz-muted">{(c.address || '').replace(/\n/g, ', ')}</div></td>
                 <td className="mz-num">{c.vat_id || '—'}{c.reverse_charge && <div className="mz-muted">§ 13b</div>}</td>

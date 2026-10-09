@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { StatusBadge, fmtE } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const GRADES = ['P1','P2','P3','P4','P5','P6','P7','P8','P9'];
 
@@ -41,6 +42,14 @@ export default function Referrals({ token, user }) {
   const [onboardDate, setOnboardDate] = useState(new Date().toISOString().slice(0,10));
   const [milestoneTarget, setMilestoneTarget] = useState('month1');
   const showToast = useToast();
+  const lt = useListTools(referrals, { date: 'submitted_at' }, token);
+  const COLS = [
+    { label: '推荐编号', value: 'referral_no' }, { label: '推荐人', value: 'referrer_name' }, { label: '推荐人职级', value: 'referrer_grade' },
+    { label: '被推荐人', value: 'referee_name' }, { label: '电话', value: 'referee_phone' }, { label: '目标职级', value: 'referee_target_grade' },
+    { label: '奖励层级', value: 'reward_tier' }, { label: '入职奖', value: 'reward_onboard', type: 'money', sum: true },
+    { label: '待发', value: 'reward_total_pending', type: 'money', sum: true }, { label: '已发', value: 'reward_total_paid', type: 'money', sum: true },
+    { label: '提交日期', value: 'submitted_at', type: 'date' }, { label: '入职日期', value: 'onboard_date', type: 'date' }, { label: '状态', value: 'status' },
+  ];
 
   const isHR = ['admin','hr'].includes(user?.role);
   const isFin = ['admin','fin'].includes(user?.role);
@@ -152,6 +161,7 @@ export default function Referrals({ token, user }) {
         </div>
       </div>
 
+      <ListToolbar lt={lt} title="推荐奖励" columns={COLS} token={token} dateLabel="提交日期" />
       {loading ? <Loading /> : (
         referrals.length === 0
           ? <div style={{ textAlign:'center', padding:40, color:'var(--tx3)' }}>暂无推荐记录</div>
@@ -163,7 +173,7 @@ export default function Referrals({ token, user }) {
                 <th>入职奖(€)</th><th>总待发(€)</th><th>总已发(€)</th>
                 <th>提交日期</th><th>状态</th><th>操作</th>
               </tr></thead>
-              <tbody>{referrals.map(r => (
+              <tbody>{lt.rows.map(r => (
                 <tr key={r.id}>
                   <td className="mn tm">{r.referral_no}</td>
                   <td className="fw6">{r.referrer_name}</td>

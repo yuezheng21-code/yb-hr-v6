@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const STATUS_COLORS = {
   draft: '#94a3b8', sent: '#3b82f6', negotiating: '#f59e0b',
@@ -36,6 +37,15 @@ export default function Quotations({ token, user }) {
   const [priceMatrix, setPriceMatrix] = useState(null);
   const { t } = useLang();
   const showToast = useToast();
+  const lt = useListTools(quotes, { date: 'created_at', warehouse: 'warehouse_code' }, token);
+  const COLS = [
+    { label: '报价单号', value: 'quote_no' }, { label: '客户', value: 'client_name' }, { label: '联系人', value: 'client_contact' },
+    { label: '项目类型', value: r => PROJECT_LABELS[r.project_type] || r.project_type }, { label: '仓库', value: 'warehouse_code' },
+    { label: '预计人数', value: 'headcount_estimate', type: 'int' }, { label: '平均职级', value: 'avg_grade' },
+    { label: '成本/h', value: 'cost_total_per_hour', type: 'money' }, { label: '报价/h', value: 'quote_hourly_rate', type: 'money' },
+    { label: '月度预估', value: 'total_monthly_estimate', type: 'money', sum: true }, { label: '有效期至', value: 'valid_until', type: 'date' },
+    { label: '状态', value: r => STATUS_LABELS[r.status] || r.status }, { label: '创建', value: 'created_at', type: 'date' },
+  ];
 
   const canEdit = ['admin','mgr'].includes(user?.role);
   const canCalc = ['admin','mgr','fin'].includes(user?.role);
@@ -163,9 +173,10 @@ export default function Quotations({ token, user }) {
         )}
       </div>
 
-      <div style={{ display:'flex', gap:12, height:'calc(100vh - 220px)', overflow:'hidden' }}>
+      <ListToolbar lt={lt} title="工程报价" columns={COLS} token={token} dateLabel="创建日期" />
+      <div style={{ display:'flex', gap:12, height:'calc(100vh - 280px)', overflow:'hidden' }}>
         <div style={{ width:280, flexShrink:0, overflowY:'auto', display:'flex', flexDirection:'column', gap:6 }}>
-          {loading ? <Loading /> : quotes.map(q => (
+          {loading ? <Loading /> : lt.rows.map(q => (
             <div key={q.id} onClick={() => selectQuote(q.id)}
               style={{
                 padding:'10px 12px', borderRadius:'var(--R2)', cursor:'pointer',

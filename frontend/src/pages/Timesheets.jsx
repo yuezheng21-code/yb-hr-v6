@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 export default function Timesheets({ token, user }) {
   const [ts, setTS] = useState([]);
@@ -25,6 +26,18 @@ export default function Timesheets({ token, user }) {
   const [emps, setEmps] = useState([]);
   const { t } = useLang();
   const showToast = useToast();
+  const lt = useListTools(ts, { date: 'work_date', warehouse: 'warehouse_code', supplier: 'supplier_id' }, token);
+  const COLS = [
+    { label: t('ts.col_id'), value: 'ts_no' }, { label: t('ts.col_emp'), value: 'emp_name' }, { label: '工号', value: 'emp_no' },
+    { label: '供应商', value: r => (r.source_type === 'supplier' ? lt.supName(r.supplier_id) : '自有') },
+    { label: t('ts.col_wh'), value: 'warehouse_code' }, { label: t('ts.col_date'), value: 'work_date', type: 'date' },
+    { label: '开始', value: 'start_time' }, { label: '结束', value: 'end_time' },
+    { label: t('ts.col_shift'), value: 'settlement_type' }, { label: t('ts.col_hrs'), value: 'hours', type: 'num', sum: true },
+    { label: t('ts.col_base'), value: 'base_rate', type: 'money' }, { label: t('ts.col_shift_b'), value: 'amount_bonus', type: 'money', sum: true },
+    { label: '扣款', value: 'amount_deduction', type: 'money', sum: true },
+    { label: t('ts.col_brutto'), value: 'amount_total', type: 'money', sum: true },
+    { label: t('ts.col_status'), value: r => t('ts.status_' + r.approval_status) },
+  ];
 
   const canApproveWH = ['admin', 'wh', 'mgr'].includes(user?.role);
   const canApproveFin = ['admin', 'fin'].includes(user?.role);
@@ -32,7 +45,8 @@ export default function Timesheets({ token, user }) {
 
   const load = () => {
     setLoading(true);
-    api(`/api/v1/timesheets?status=${encodeURIComponent(filterStatus)}`, { token })
+    const q = `${lt.from ? `&date_from=${lt.from}` : ''}${lt.to ? `&date_to=${lt.to}` : ''}`;
+    api(`/api/v1/timesheets?status=${encodeURIComponent(filterStatus)}&limit=5000${q}`, { token })
       .then(setTS)
       .finally(() => setLoading(false));
   };
@@ -40,7 +54,7 @@ export default function Timesheets({ token, user }) {
   useEffect(() => {
     load();
     api('/api/v1/employees?status=active', { token }).then(setEmps).catch(() => {});
-  }, [filterStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [filterStatus, lt.from, lt.to]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = async (id) => {
     try {
@@ -123,6 +137,7 @@ export default function Timesheets({ token, user }) {
         </div>
       </div>
 
+      <ListToolbar lt={lt} title="工时记录" columns={COLS} token={token} dateLabel="工作日期" />
       {loading ? <Loading /> : (
         <div className="tw"><div className="ts"><table>
           <thead><tr>
@@ -131,7 +146,7 @@ export default function Timesheets({ token, user }) {
             <th>{t('ts.col_hrs')}</th><th>{t('ts.col_base')}</th><th>{t('ts.col_shift_b')}</th>
             <th>{t('ts.col_brutto')}</th><th>{t('ts.col_status')}</th><th>{t('ts.col_action')}</th>
           </tr></thead>
-          <tbody>{ts.map(row => (
+          <tbody>{lt.rows.map(row => (
             <tr key={row.id}>
               <td className="mn tm">{row.ts_no}</td>
               <td className="fw6">{row.emp_name}</td>
