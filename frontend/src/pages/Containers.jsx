@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 function parseWorkerCount(worker_ids) {
   if (!worker_ids) return 0;
@@ -27,18 +28,27 @@ export default function Containers({ token, user }) {
   const [completeForm, setCompleteForm] = useState({ end_time: '', video_recorded: true });
   const [emps, setEmps] = useState([]);
   const { t } = useLang();
+  const lt = useListTools(containers, { date: 'work_date', warehouse: 'warehouse_code' }, token);
+  const COLS = [
+    { label: '记录号', value: 'cn_no' }, { label: t('ct.col_no'), value: 'container_no' }, { label: t('ct.col_type'), value: 'container_type' },
+    { label: '装/卸', value: r => (r.load_type === 'load' ? '装柜' : '卸柜') }, { label: t('ct.col_wh'), value: 'warehouse_code' },
+    { label: t('ct.col_date'), value: 'work_date', type: 'date' }, { label: t('ct.col_start'), value: 'start_time' }, { label: t('ct.col_end'), value: 'end_time' },
+    { label: t('ct.col_hrs'), value: 'total_hours', type: 'num', sum: true }, { label: t('ct.col_workers'), value: 'worker_count', type: 'int', sum: true },
+    { label: '客收(€)', value: 'client_revenue', type: 'money', sum: true }, { label: '封条', value: 'seal_no' },
+    { label: t('ct.col_video'), value: r => (r.video_recorded ? '是' : '否') }, { label: t('ct.col_status'), value: 'approval_status' },
+  ];
   const showToast = useToast();
 
   const canEdit = ['admin', 'hr', 'wh', 'mgr'].includes(user?.role);
 
   const load = () => {
     setLoading(true);
-    api('/api/v1/containers', { token }).then(setContainers).catch(() => setContainers([])).finally(() => setLoading(false));
+    api(`/api/v1/containers?limit=5000${lt.from ? `&date_from=${lt.from}` : ''}${lt.to ? `&date_to=${lt.to}` : ''}`, { token }).then(setContainers).catch(() => setContainers([])).finally(() => setLoading(false));
   };
 
+  useEffect(() => { load(); }, [lt.from, lt.to]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    load();
-    api('/api/v1/employees?status=active', { token }).then(setEmps).catch(() => {});
+    api('/api/v1/employees?status=active&limit=5000', { token }).then(setEmps).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addContainer = async () => {
@@ -94,6 +104,7 @@ export default function Containers({ token, user }) {
         </div>
       </div>
 
+      <ListToolbar lt={lt} title="装卸柜记录" columns={COLS} token={token} dateLabel="作业日期" />
       {loading ? <Loading /> : (
         <div className="tw"><div className="ts"><table>
           <thead><tr>
@@ -104,7 +115,7 @@ export default function Containers({ token, user }) {
             <th>客收(€)</th><th>{t('ct.col_video')}</th>
             <th>{t('ct.col_status')}</th><th></th>
           </tr></thead>
-          <tbody>{containers.map(c => (
+          <tbody>{lt.rows.map(c => (
             <tr key={c.id}>
               <td className="fw6">{c.container_no}</td>
               <td>{c.container_type}</td>

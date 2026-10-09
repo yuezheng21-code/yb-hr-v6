@@ -285,5 +285,7 @@
   "nav.templates": "Dokumentumsablonok",
   "nav.sop": "SOP-könyvtár",
   "nav.leads": "Érdeklődők",
-  "login.back_site": "Vissza a weboldalra"
+  "login.back_site": "Vissza a weboldalra",
+  "nav.finance": "Pénzügy",
+  "nav.my_payslips": "Bérjegyzékeim"
 }

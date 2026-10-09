@@ -301,7 +301,7 @@ def _sync_columns() -> None:
 
 def init_db() -> None:
     """Create all tables (if not exist) and reconcile existing ones. Called at startup."""
-    from backend.models import user, employee, supplier, warehouse, timesheet, container, clock, settlement, referral, commission, quotation, dispatch, message, integration, audit_log, operation, system_setting, personnel, website  # noqa: F401
+    from backend.models import user, employee, supplier, warehouse, timesheet, container, clock, settlement, referral, commission, quotation, dispatch, message, integration, audit_log, operation, system_setting, personnel, website, finance  # noqa: F401
     _migrate_schema()
     _archive_incompatible_tables()
     _sync_columns()

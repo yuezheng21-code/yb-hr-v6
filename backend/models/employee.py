@@ -38,6 +38,7 @@ class Employee(Base):
     tax_id: Mapped[Optional[str]] = mapped_column(String(30))
     social_security_no: Mapped[Optional[str]] = mapped_column(String(30))
     iban: Mapped[Optional[str]] = mapped_column(String(40))
+    datev_pnr: Mapped[Optional[str]] = mapped_column(String(10))  # DATEV 工资系统人员编号（LODAS PNR）
     health_insurance: Mapped[Optional[str]] = mapped_column(String(50))
     whatsapp: Mapped[Optional[str]] = mapped_column(String(30))
     wechat: Mapped[Optional[str]] = mapped_column(String(50))

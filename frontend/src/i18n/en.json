@@ -285,5 +285,7 @@
   "nav.templates": "Document Templates",
   "nav.sop": "SOP Library",
   "nav.leads": "Leads",
-  "login.back_site": "Back to website"
+  "login.back_site": "Back to website",
+  "nav.finance": "Finance",
+  "nav.my_payslips": "My Payslips"
 }

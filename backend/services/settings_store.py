@@ -35,6 +35,31 @@ DEFAULTS: dict[str, Any] = {
     # 官网（公开页面）联系方式
     "company_email": "",
     "company_phone": "",
+    # 财务 / 开票（§ 14 UStG 发票必备信息）
+    "company_tax_number": "",       # Steuernummer
+    "company_vat_id": "",           # USt-IdNr.
+    "company_register": "",         # Handelsregister, z. B. "Amtsgericht Dortmund HRB 12345"
+    "company_bank": "",
+    "company_iban": "",
+    "company_bic": "",
+    "vat_rate": 0.19,
+    "invoice_payment_days": 14,
+    # DATEV Buchungsstapel（EXTF）— 科目按税务师的 Kontenrahmen 配置
+    "datev_berater_nr": "",
+    "datev_mandant_nr": "",
+    "datev_skr": "03",
+    "datev_fiscal_year_start": 1,    # 财年开始月份
+    "datev_revenue_account": "8400",       # 19% 营业收入（SKR03 8400 / SKR04 4400）
+    "datev_revenue_rc_account": "8337",    # § 13b 反向征收收入（SKR03 8337 / SKR04 4337）
+    "datev_expense_account": "4780",       # 外包人工/劳务费用（SKR03 4780 / SKR04 6780）
+    "datev_expense_bu": "9",               # 进项税 19% BU-Schlüssel
+    "datev_debitor_start": 10000,
+    "datev_kreditor_start": 70000,
+    # DATEV LODAS 工资录入（Lohnarten 须与税务师的 Mandant 设置一致）
+    "lodas_la_hours": "",
+    "lodas_la_piece": "",
+    "lodas_la_bonus": "",
+    "lodas_la_deduction": "",
 }
 
 # (min, max) for numeric keys; strings must be non-empty
@@ -45,6 +70,8 @@ _RANGES: dict[str, tuple[float, float]] = {
     "arbzg_daily_limit": (1, 24), "arbzg_weekly_limit": (1, 168),
     "zeitkonto_max_positive": (0, 1000), "zeitkonto_max_negative": (-1000, 0),
     "session_timeout_minutes": (5, 7 * 24 * 60),
+    "vat_rate": (0, 0.5), "invoice_payment_days": (0, 365), "datev_fiscal_year_start": (1, 12),
+    "datev_debitor_start": (1, 99999999), "datev_kreditor_start": (1, 99999999),
 }
 
 PRICE_MATRIX_KEY = "price_matrix"  # quotation price matrix override (JSON), see quotation_builder

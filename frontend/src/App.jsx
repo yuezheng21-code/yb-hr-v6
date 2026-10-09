@@ -35,6 +35,8 @@ import Templates from './pages/Templates.jsx';
 import Sop from './pages/Sop.jsx';
 import Landing from './pages/Landing.jsx';
 import Leads from './pages/Leads.jsx';
+import Finance from './pages/Finance.jsx';
+import MyPayslips from './pages/MyPayslips.jsx';
 
 const PATH_TO_KEY = {
   '/': 'dashboard', '/employees': 'employees', '/timesheets': 'timesheets',
@@ -45,7 +47,7 @@ const PATH_TO_KEY = {
   '/logs': 'logs', '/dispatch': 'dispatch', '/talent': 'talent',
   '/recruit': 'recruit', '/messages': 'messages', '/integrations': 'integrations', '/admin': 'admin',
   '/operations': 'operations', '/performance': 'performance',
-  '/templates': 'templates', '/sop': 'sop', '/leads': 'leads',
+  '/templates': 'templates', '/sop': 'sop', '/leads': 'leads', '/finance': 'finance', '/my-payslips': 'my_payslips',
   '/users': 'users', '/settings': 'settings',
   '/client-bi': 'client_bi', '/client-preview': 'client_preview',
 };
@@ -129,6 +131,8 @@ export default function App() {
         <Route path="/" element={<ProtectedRoute><Dashboard {...props} /></ProtectedRoute>} />
         <Route path="/employees" element={<ProtectedRoute><Attendance {...props} /></ProtectedRoute>} />
         <Route path="/employees/:id" element={<ProtectedRoute><PersonnelFile {...props} /></ProtectedRoute>} />
+        <Route path="/finance" element={<ProtectedRoute><Finance {...props} /></ProtectedRoute>} />
+        <Route path="/my-payslips" element={<ProtectedRoute><MyPayslips {...props} /></ProtectedRoute>} />
         <Route path="/leads" element={<ProtectedRoute><Leads {...props} /></ProtectedRoute>} />
         <Route path="/templates" element={<ProtectedRoute><Templates {...props} /></ProtectedRoute>} />
         <Route path="/sop" element={<ProtectedRoute><Sop {...props} /></ProtectedRoute>} />

@@ -3,6 +3,7 @@ import { api } from '../services/api.js';
 import { useLang } from '../context/LangContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 import { Modal } from '../components/Modal.jsx';
 
 export default function Schedules({ token, user }) {
@@ -22,6 +23,12 @@ export default function Schedules({ token, user }) {
   });
   const { t } = useLang();
   const showToast = useToast();
+  const lt = useListTools(zk, { warehouse: 'warehouse_code' }, token);
+  const COLS = [
+    { label: '员工', value: 'employee_name' }, { label: '员工ID', value: 'employee_id' }, { label: '仓库', value: 'warehouse_code' }, { label: '职级', value: 'grade' },
+    { label: 'Plusstunden', value: 'plus_hours', type: 'num', sum: true }, { label: 'Minusstunden', value: 'minus_hours', type: 'num', sum: true },
+    { label: '日最高工时', value: 'daily_max', type: 'num' },
+  ];
 
   const canEdit = ['admin','hr','mgr'].includes(user?.role);
 
@@ -77,6 +84,7 @@ export default function Schedules({ token, user }) {
         {canEdit && <button className="b bga" onClick={() => setAddModal(true)}>{t('zk.add')}</button>}
       </div>
 
+      <ListToolbar lt={lt} title="时间账户 Zeitkonto" columns={COLS} token={token} />
       {loading ? <Loading /> : (
         <div className="tw"><div className="ts"><table>
           <thead><tr>
@@ -84,7 +92,7 @@ export default function Schedules({ token, user }) {
             <th>Plusstunden</th><th>Minusstunden</th><th>日最高工时</th>
             <th>{t('zk.col_status')}</th><th></th>
           </tr></thead>
-          <tbody>{zk.map(z => {
+          <tbody>{lt.rows.map(z => {
             const s = getStatus(z);
             return (
               <tr key={z.employee_id} onClick={() => openLogs(z.employee_id)}

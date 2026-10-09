@@ -65,6 +65,7 @@ class EmployeeUpdate(BaseModel):
     tax_id: Optional[str] = None
     social_security_no: Optional[str] = None
     iban: Optional[str] = None
+    datev_pnr: Optional[str] = None
     tax_mode: Optional[str] = None
     pin: Optional[str] = None   # 4-digit worker PIN — updates / creates linked User account
 
@@ -77,5 +78,6 @@ class EmployeeOut(EmployeeBase):
     tax_id: Optional[str] = None
     social_security_no: Optional[str] = None
     iban: Optional[str] = None
+    datev_pnr: Optional[str] = None
 
     model_config = {"from_attributes": True}

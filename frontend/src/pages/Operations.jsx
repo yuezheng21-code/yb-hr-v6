@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { StatusBadge } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const today = () => new Date().toISOString().slice(0, 10);
 const monthStart = () => today().slice(0, 8) + '01';
@@ -80,6 +81,17 @@ function LogsTab({ token, types, emps, canWrite }) {
   const [loading, setLoading] = useState(true);
   const [sel, setSel] = useState([]);
   const [edit, setEdit] = useState(null);
+  const lt = useListTools(data.items, { date: 'work_date', warehouse: 'warehouse_code', supplier: 'supplier_id' }, token,
+    { from: f.date_from, to: f.date_to });
+  useEffect(() => { if (lt.from !== f.date_from || lt.to !== f.date_to) setF(x => ({ ...x, date_from: lt.from, date_to: lt.to })); }, [lt.from, lt.to]); // eslint-disable-line react-hooks/exhaustive-deps
+  const COLS = [
+    { label: '日期', value: 'work_date', type: 'date' }, { label: '工号', value: 'emp_no' }, { label: '员工', value: r => r.emp_name || r.operator_ref },
+    { label: '供应商', value: r => lt.supName(r.supplier_id) || '自有' }, { label: '作业', value: r => r.op_name || r.op_label },
+    { label: '数量', value: 'qty', type: 'num', sum: true }, { label: '单位', value: 'unit' }, { label: '工时', value: 'hours', type: 'num', sum: true },
+    { label: 'UPH', value: 'uph', type: 'num' }, { label: '效率%', value: 'efficiency', type: 'pct' }, { label: '差错', value: 'error_qty', type: 'num', sum: true },
+    { label: '仓库', value: 'warehouse_code' }, { label: '客户', value: 'client' }, { label: '单号', value: 'ref_no' },
+    { label: '来源', value: r => SOURCE_LABELS[r.source] || r.source }, { label: '状态', value: 'status' },
+  ];
 
   const qs = () => {
     const p = new URLSearchParams();
@@ -88,7 +100,7 @@ function LogsTab({ token, types, emps, canWrite }) {
   };
   const load = () => {
     setLoading(true);
-    api(`/api/v1/ops/logs?${qs()}`, { token }).then(d => { setData(d); setSel([]); }).catch(e => showToast(e.message, 'err')).finally(() => setLoading(false));
+    api(`/api/v1/ops/logs?${qs()}&limit=2000`, { token }).then(d => { setData(d); setSel([]); }).catch(e => showToast(e.message, 'err')).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, [f.status, f.op_type_id, f.source, f.date_from, f.date_to]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -128,8 +140,6 @@ function LogsTab({ token, types, emps, canWrite }) {
   return (
     <div>
       <div className="ab" style={{ flexWrap: 'wrap', gap: 6 }}>
-        <input className="fi" type="date" style={{ width: 140 }} value={f.date_from} onChange={e => setF({ ...f, date_from: e.target.value })} />
-        <input className="fi" type="date" style={{ width: 140 }} value={f.date_to} onChange={e => setF({ ...f, date_to: e.target.value })} />
         <select className="fsl" style={{ width: 110 }} value={f.status} onChange={e => setF({ ...f, status: e.target.value })}>
           <option value="">全部状态</option>
           <option value="pending">待确认</option><option value="confirmed">已确认</option>
@@ -154,6 +164,7 @@ function LogsTab({ token, types, emps, canWrite }) {
         </div>
       </div>
 
+      <ListToolbar lt={lt} title="作业记录" columns={COLS} token={token} dateLabel="作业日期" />
       {loading ? <Loading /> : (
         <div className="tw"><div className="ts"><table>
           <thead><tr>
@@ -162,7 +173,7 @@ function LogsTab({ token, types, emps, canWrite }) {
             <th>日期</th><th>员工</th><th>作业</th><th>数量</th><th>工时</th><th>UPH</th><th>效率</th>
             <th>差错</th><th>仓库</th><th>客户</th><th>单号</th><th>来源</th><th>状态</th><th></th>
           </tr></thead>
-          <tbody>{data.items.map(l => (
+          <tbody>{lt.rows.map(l => (
             <tr key={l.id}>
               <td>{canWrite && l.status !== 'unmatched' && <input type="checkbox" checked={sel.includes(l.id)} onChange={() => toggle(l.id)} />}</td>
               <td className="mn">{l.work_date}</td>
@@ -703,8 +714,17 @@ function QualityTab({ token, user, emps, canWrite, canConfig }) {
   const [list, setList] = useState([]);
   const [range, setRange] = useState({ date_from: monthStart(), date_to: today() });
   const [form, setForm] = useState(null);
+  const lt = useListTools(list, { date: 'event_date', warehouse: 'warehouse_code' }, token, { from: range.date_from, to: range.date_to });
+  useEffect(() => { if (lt.from !== range.date_from || lt.to !== range.date_to) setRange({ date_from: lt.from, date_to: lt.to }); }, [lt.from, lt.to]); // eslint-disable-line react-hooks/exhaustive-deps
+  const COLS = [
+    { label: '日期', value: 'event_date', type: 'date' }, { label: '员工', value: 'emp_name' },
+    { label: '类型', value: r => EVENT_LABELS[r.event_type] || r.event_type }, { label: '程度', value: r => SEVERITY_LABELS[r.severity] || r.severity },
+    { label: '数量', value: 'qty', type: 'num', sum: true }, { label: '扣款', value: 'deduction', type: 'money', sum: true },
+    { label: '仓库', value: 'warehouse_code' }, { label: '客户', value: 'client' }, { label: '单号', value: 'ref_no' },
+    { label: '说明', value: 'description' }, { label: '记录人', value: 'created_by' },
+  ];
 
-  const load = () => api(`/api/v1/ops/quality?date_from=${range.date_from}&date_to=${range.date_to}`, { token }).then(setList).catch(() => {});
+  const load = () => api(`/api/v1/ops/quality?${range.date_from ? `date_from=${range.date_from}&` : ''}${range.date_to ? `date_to=${range.date_to}` : ''}`, { token }).then(setList).catch(() => {});
   useEffect(() => { load(); }, [range.date_from, range.date_to]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const save = async () => {
@@ -722,17 +742,16 @@ function QualityTab({ token, user, emps, canWrite, canConfig }) {
   return (
     <div>
       <div className="ab">
-        <input className="fi" type="date" style={{ width: 140 }} value={range.date_from} onChange={e => setRange({ ...range, date_from: e.target.value })} />
-        <input className="fi" type="date" style={{ width: 140 }} value={range.date_to} onChange={e => setRange({ ...range, date_to: e.target.value })} />
         <div className="ml">{canWrite && <button className="b bga" onClick={() => setForm({
           employee_id: '', event_date: today(), event_type: 'mispick', severity: 'minor', qty: 1, deduction: 0,
           warehouse_code: user?.bound_warehouse || '', client: '', ref_no: '', description: '',
         })}>+ 记录质量事件</button>}</div>
       </div>
       <div className="tm" style={{ fontSize: 11, margin: '6px 0' }}>质量分扣分：轻微 −5 · 严重 −15 · 重大 −40 · 表扬 +5；另按差错率每 1% 扣 10 分。</div>
+      <ListToolbar lt={lt} title="质量事件" columns={COLS} token={token} />
       <div className="tw"><div className="ts"><table>
         <thead><tr><th>日期</th><th>员工</th><th>类型</th><th>程度</th><th>数量</th><th>扣款</th><th>仓库</th><th>客户</th><th>单号</th><th>说明</th><th>记录人</th><th></th></tr></thead>
-        <tbody>{list.map(q => (
+        <tbody>{lt.rows.map(q => (
           <tr key={q.id}>
             <td className="mn">{q.event_date}</td><td className="fw6">{q.emp_name}</td>
             <td>{EVENT_LABELS[q.event_type] || q.event_type}</td>

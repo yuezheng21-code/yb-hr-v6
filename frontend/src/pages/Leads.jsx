@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const STATUS = {
   new: ['新线索', 'var(--ac)'], contacted: ['已联系', 'var(--og)'], quoting: ['报价中', 'var(--pp)'], quoted: ['已报价', 'var(--pp)'],
@@ -16,6 +17,15 @@ export default function Leads({ token, user }) {
   const [filter, setFilter] = useState('');
   const [sel, setSel] = useState(null);
   const canWrite = ['admin', 'hr', 'mgr'].includes(user?.role);
+  const base = (data?.items || []).filter(x => (filter ? x.status === filter : x.status !== 'spam'));
+  const lt = useListTools(base, { date: 'created_at' }, token);
+  const COLS = [
+    { label: '编号', value: 'lead_no' }, { label: '公司', value: 'company' }, { label: '联系人', value: 'contact_name' }, { label: '邮箱', value: 'email' },
+    { label: '电话', value: 'phone' }, { label: '服务', value: l => (l.service_labels || []).join('、') }, { label: '地点', value: 'location' },
+    { label: '人数', value: 'headcount', type: 'int', sum: true }, { label: '业务量', value: 'volume' }, { label: '开始', value: 'start_date', type: 'date' },
+    { label: '期限', value: 'duration' }, { label: '状态', value: l => STATUS[l.status]?.[0] || l.status }, { label: '负责人', value: 'assigned_to' },
+    { label: '提交时间', value: l => String(l.created_at).slice(0, 16).replace('T', ' ') }, { label: '需求说明', value: 'message' },
+  ];
 
   const load = () => api('/api/v1/leads', { token }).then(d => {
     setData(d);
@@ -24,7 +34,7 @@ export default function Leads({ token, user }) {
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!data) return <Loading />;
-  const items = data.items.filter(x => (filter ? x.status === filter : x.status !== 'spam'));
+  const items = lt.rows;
   const open = (data.counts.new || 0);
 
   return (
@@ -40,6 +50,7 @@ export default function Leads({ token, user }) {
         {data.statuses.map(s => <button key={s} className={filter === s ? 'on' : ''} onClick={() => setFilter(s)}>{STATUS[s][0]}<em>{data.counts[s] || 0}</em></button>)}
       </div>
 
+      <ListToolbar lt={lt} title="客户线索" columns={COLS} token={token} dateLabel="提交日期" />
       <div className="mz-card" style={{ padding: 0 }}>
         {items.length === 0 ? <div className="mz-empty">暂无线索。客户在官网首页「企业合作」提交需求后会出现在这里。</div> : (
           <div className="mz-scroll"><table className="mz-table">

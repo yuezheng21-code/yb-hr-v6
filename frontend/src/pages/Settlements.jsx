@@ -4,6 +4,7 @@ import { useLang } from '../context/LangContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { StatusBadge, fmtE } from '../components/StatusBadge.jsx';
+import { useListTools, ListToolbar } from '../components/ListTools.jsx';
 
 const TABS = ['employee', 'supplier', 'project'];
 
@@ -12,6 +13,30 @@ function SettlementTab({ tab, period, token, user, t, showToast }) {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const lt = useListTools(data, tab === 'supplier' ? { supplier: 'supplier_id' } : { warehouse: 'warehouse_code' }, token);
+  const COLS = {
+    employee: [
+      { label: '结算号', value: 'settle_no' }, { label: '员工', value: 'emp_name' }, { label: '工号', value: 'emp_no' }, { label: '职级', value: 'grade' },
+      { label: '仓库', value: 'warehouse_code' }, { label: '条数', value: 'timesheet_count', type: 'int', sum: true },
+      { label: '工时', value: 'total_hours', type: 'num', sum: true }, { label: '基础工资', value: 'base_pay', type: 'money', sum: true },
+      { label: '奖金', value: 'bonus_pay', type: 'money', sum: true }, { label: '扣款', value: 'deduction', type: 'money', sum: true },
+      { label: 'Brutto', value: 'gross_pay', type: 'money', sum: true }, { label: '综合成本', value: 'total_cost', type: 'money', sum: true },
+      { label: '状态', value: 'status' },
+    ],
+    supplier: [
+      { label: '结算号', value: 'settle_no' }, { label: '供应商', value: 'supplier_name' }, { label: '业务线', value: 'biz_line' },
+      { label: '员工数', value: 'employee_count', type: 'int', sum: true }, { label: '工时条数', value: 'timesheet_count', type: 'int', sum: true },
+      { label: '总工时', value: 'total_hours', type: 'num', sum: true }, { label: '应付', value: 'total_amount', type: 'money', sum: true },
+      { label: '发票号', value: 'invoice_no' }, { label: '发票日期', value: 'invoice_date', type: 'date' }, { label: '状态', value: 'status' },
+    ],
+    project: [
+      { label: '结算号', value: 'settle_no' }, { label: '仓库', value: 'warehouse_code' }, { label: '业务线', value: 'biz_line' },
+      { label: '客户收入', value: 'client_revenue', type: 'money', sum: true }, { label: '自有成本', value: 'own_labor_cost', type: 'money', sum: true },
+      { label: '供应商成本', value: 'supplier_labor_cost', type: 'money', sum: true }, { label: '总成本', value: 'total_labor_cost', type: 'money', sum: true },
+      { label: '毛利', value: 'gross_profit', type: 'money', sum: true }, { label: '毛利率%', value: r => (r.gross_margin * 100).toFixed(1), type: 'pct' },
+      { label: '状态', value: 'status' },
+    ],
+  }[tab];
 
   const canGenerate = tab === 'project'
     ? ['admin', 'fin'].includes(user?.role)
@@ -114,11 +139,12 @@ function SettlementTab({ tab, period, token, user, t, showToast }) {
             </button>
           )}
           {canExport && data.length > 0 && (
-            <button className="b bgh" onClick={downloadXlsx}>↓ Excel</button>
+            <button className="b bgh" onClick={downloadXlsx}>↓ 明细 Excel</button>
           )}
         </div>
       </div>
 
+      <ListToolbar lt={lt} title={`${{ employee: '员工结算', supplier: '供应商结算', project: '项目结算' }[tab]} ${period}`} columns={COLS} token={token} subtitle={`结算期间 ${period}`} />
       {loading ? <Loading /> : (
         <div className="tw"><div className="ts"><table>
           {tab === 'employee' && (
@@ -130,7 +156,7 @@ function SettlementTab({ tab, period, token, user, t, showToast }) {
                 <th>Brutto(€)</th><th>综合成本(€)</th>
                 <th>{t('c.status')}</th><th></th>
               </tr></thead>
-              <tbody>{data.map(r => (
+              <tbody>{lt.rows.map(r => (
                 <tr key={r.id}>
                   <td className="fw6">{r.emp_name}</td>
                   <td>{r.emp_no}</td><td>{r.grade}</td>
@@ -159,7 +185,7 @@ function SettlementTab({ tab, period, token, user, t, showToast }) {
                 <th>供应商</th><th>业务线</th><th>员工数</th><th>工时条数</th>
                 <th>总工时(h)</th><th>应付(€)</th><th>发票号</th><th>状态</th>
               </tr></thead>
-              <tbody>{data.map(r => (
+              <tbody>{lt.rows.map(r => (
                 <tr key={r.id}>
                   <td className="fw6">{r.supplier_name}</td>
                   <td>{r.biz_line}</td>
@@ -180,7 +206,7 @@ function SettlementTab({ tab, period, token, user, t, showToast }) {
                 <th>自有成本(€)</th><th>供应商成本(€)</th>
                 <th>总成本(€)</th><th>毛利(€)</th><th>毛利率</th><th>状态</th>
               </tr></thead>
-              <tbody>{data.map(r => (
+              <tbody>{lt.rows.map(r => (
                 <tr key={r.id}>
                   <td className="fw6">{r.warehouse_code}</td>
                   <td>{r.biz_line}</td>

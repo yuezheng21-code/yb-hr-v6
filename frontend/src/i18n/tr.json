@@ -285,5 +285,7 @@
   "nav.templates": "Belge Şablonları",
   "nav.sop": "SOP Kütüphanesi",
   "nav.leads": "Potansiyel Müşteriler",
-  "login.back_site": "Web sitesine dön"
+  "login.back_site": "Web sitesine dön",
+  "nav.finance": "Finans",
+  "nav.my_payslips": "Bordrolarım"
 }
