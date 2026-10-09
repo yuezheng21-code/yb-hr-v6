@@ -285,5 +285,7 @@
   "nav.templates": "Szablony dokumentów",
   "nav.sop": "Biblioteka SOP",
   "nav.leads": "Leady",
-  "login.back_site": "Powrót do strony"
+  "login.back_site": "Powrót do strony",
+  "nav.finance": "Finanse",
+  "nav.my_payslips": "Moje paski płac"
 }

@@ -4,7 +4,7 @@
  */
 
 import {
-  BadgePercent, BarChart3, BookOpen, FileSignature, Building2, Calculator, ClipboardList, Clock3, Container, FileText, Gauge, Gift, Hourglass, Inbox, LayoutDashboard, Link2, Mail, ScrollText, Send, Settings, Star, Target, Timer, Trophy, UserCog, Users, Wallet, Warehouse,
+  BadgePercent, BarChart3, Banknote, Receipt, BookOpen, FileSignature, Building2, Calculator, ClipboardList, Clock3, Container, FileText, Gauge, Gift, Hourglass, Inbox, LayoutDashboard, Link2, Mail, ScrollText, Send, Settings, Star, Target, Timer, Trophy, UserCog, Users, Wallet, Warehouse,
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
@@ -14,6 +14,8 @@ export const NAV_ITEMS = [
   { key: 'timesheets',      icon: Clock3, labelKey: 'nav.timesheets',       roles: ['admin','hr','wh','fin','mgr','sup'] },
   { key: 'schedules',       icon: Hourglass, labelKey: 'nav.schedules',        roles: ['admin','hr','mgr'] },
   { key: 'settlements',     icon: Wallet, labelKey: 'nav.settlement',       roles: ['admin','hr','fin','sup','mgr'] },
+  { key: 'finance',         icon: Banknote, labelKey: 'nav.finance',        roles: ['admin','hr','fin','sup','mgr'] },
+  { key: 'my_payslips',     icon: Receipt, labelKey: 'nav.my_payslips',     roles: ['worker'] },
   { key: 'containers',      icon: Container, labelKey: 'nav.containers',       roles: ['admin','hr','wh','mgr'] },
   { key: 'operations',      icon: ClipboardList, labelKey: 'nav.operations',       roles: ['admin','hr','wh','fin','mgr','sup'] },
   { key: 'performance',     icon: Trophy, labelKey: 'nav.performance',      roles: ['admin','hr','wh','fin','mgr','sup','worker'] },

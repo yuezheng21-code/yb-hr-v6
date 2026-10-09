@@ -285,5 +285,7 @@
   "nav.templates": "文书模板",
   "nav.sop": "SOP 学习资料",
   "nav.leads": "客户线索",
-  "login.back_site": "返回官网"
+  "login.back_site": "返回官网",
+  "nav.finance": "财务中心",
+  "nav.my_payslips": "我的工资条"
 }

@@ -313,6 +313,7 @@ const BASIC_FIELDS = [
   ['name', '姓名'], ['phone', '电话'], ['email', '邮箱'], ['birth_date', '出生日期', 'date'], ['nationality', '国籍'],
   ['address', '住址（合同使用）'], ['id_type', '证件类型'], ['id_number', '证件号'], ['tax_id', '税号 Steuer-ID'],
   ['social_security_no', '社保号 SV-Nr.'], ['health_insurance', '医保 Krankenkasse'], ['iban', 'IBAN'],
+  ['datev_pnr', 'DATEV 人员编号（工资系统）'],
   ['whatsapp', 'WhatsApp'], ['wechat', '微信'],
 ];
 

@@ -285,5 +285,7 @@
   "nav.templates": "Vorlagen",
   "nav.sop": "SOP-Bibliothek",
   "nav.leads": "Anfragen / Leads",
-  "login.back_site": "Zur Website"
+  "login.back_site": "Zur Website",
+  "nav.finance": "Finanzen",
+  "nav.my_payslips": "Meine Abrechnungen"
 }

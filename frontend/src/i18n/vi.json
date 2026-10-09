@@ -285,5 +285,7 @@
   "nav.templates": "Mẫu văn bản",
   "nav.sop": "Tài liệu SOP",
   "nav.leads": "Khách hàng tiềm năng",
-  "login.back_site": "Về trang web"
+  "login.back_site": "Về trang web",
+  "nav.finance": "Tài chính",
+  "nav.my_payslips": "Phiếu lương của tôi"
 }

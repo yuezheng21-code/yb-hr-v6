@@ -285,5 +285,7 @@
   "nav.templates": "قوالب المستندات",
   "nav.sop": "مكتبة SOP",
   "nav.leads": "العملاء المحتملون",
-  "login.back_site": "العودة إلى الموقع"
+  "login.back_site": "العودة إلى الموقع",
+  "nav.finance": "المالية",
+  "nav.my_payslips": "قسائم راتبي"
 }
