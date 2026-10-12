@@ -219,7 +219,9 @@ function Approvals({ approvals, token, user, onChange }) {
   };
   if (!approvals.length) return <div className="mz-empty">没有待审批申请，或您没有审批权限。</div>;
   return <div className="mz-scroll"><table className="mz-table"><thead><tr><th>类型</th><th>申请人</th><th>申请时间</th><th>内容</th><th /></tr></thead><tbody>
-    {approvals.map(a => <tr key={a.id}><td>{a.approval_type}</td><td>{a.requested_by}</td><td>{a.requested_at?.slice(0, 16)}</td><td>{a.payload?.reason || a.payload?.notes || '—'}</td>
+    {approvals.map(a => <tr key={a.id}><td>{a.approval_type}</td><td>{a.requested_by}</td><td>{a.requested_at?.slice(0, 16)}</td><td><div>{a.payload?.reason || a.payload?.notes || '—'}</div>
+      {a.attachments?.map(file => <button key={file.id} className="mz-link" style={{ color: 'var(--ac2)', marginTop: 4 }}
+        onClick={() => openFile(`${P}/approvals/${a.id}/attachments/${file.id}/file`, token).catch(e => showToast(e.message, 'err'))}>📎 {file.title}</button>)}</td>
       <td>{canApprove(user, a.approval_type) && <><button className="mz-btn mz-btn-s" onClick={() => decide(a.id, 'approved')}>批准</button><button className="mz-btn mz-btn-d mz-btn-s" onClick={() => decide(a.id, 'rejected')}>驳回</button></>}</td></tr>)}
   </tbody></table></div>;
 }

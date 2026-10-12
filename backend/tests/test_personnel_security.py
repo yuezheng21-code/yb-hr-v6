@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from backend.database import Base
 from backend.models.audit_log import AuditLog
 from backend.models.employee import Employee
+from backend.models.operation import OperationLog, OperationType
 from backend.models.personnel import EmployeeContract, EmployeeEvent, LeaveRecord, PersonnelApprovalAudit
 from backend.models.supplier import Supplier
 from backend.models.user import User
@@ -22,6 +23,7 @@ from backend.routers.personnel import (
     decide_approval,
 )
 from backend.services.access import require_approval_permission, scoped_employees
+from backend.services.performance import compute_performance
 
 
 def account(name, permissions, *, role="hr", supplier_id=None, warehouse=None, biz_line=None, zone=None):
@@ -88,6 +90,30 @@ class PersonnelSecurityTests(unittest.TestCase):
         exported = asyncio.run(content()).decode("utf-8-sig")
         self.assertIn("E-OWN", exported)
         self.assertNotIn("E-OTHER", exported)
+
+    def test_performance_aggregation_respects_allowed_employee_ids(self):
+        op_type = OperationType(code="PICK", name="Picking", standard_uph=100)
+        self.db.add(op_type)
+        self.db.flush()
+        self.db.add_all([
+            OperationLog(op_no="OP-OWN", employee_id=self.own.id, emp_no=self.own.emp_no, emp_name=self.own.name,
+                         supplier_id=self.own.supplier_id, op_type_id=op_type.id, work_date=date(2026, 10, 1),
+                         qty=100, hours=1, source="manual", status="confirmed"),
+            OperationLog(op_no="OP-OTHER", employee_id=self.other.id, emp_no=self.other.emp_no, emp_name=self.other.name,
+                         supplier_id=self.other.supplier_id, op_type_id=op_type.id, work_date=date(2026, 10, 1),
+                         qty=100, hours=1, source="manual", status="confirmed"),
+        ])
+        self.db.commit()
+
+        rows = compute_performance(
+            self.db,
+            date(2026, 10, 1),
+            date(2026, 10, 1),
+            group_by="employee",
+            employee_ids={self.own.id},
+        )
+
+        self.assertEqual([row["key"] for row in rows], [self.own.id])
 
     def test_specific_approval_permission_only_allows_its_type(self):
         approver = account("leave-approver", ["personnel.approve.leave"])

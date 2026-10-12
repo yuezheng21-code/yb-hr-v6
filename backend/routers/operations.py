@@ -514,6 +514,7 @@ def sync_containers(body: SyncContainersIn, user: User = Depends(get_current_use
     if user.role == "wh" and user.bound_warehouse:
         stmt = stmt.where(ContainerRecord.warehouse_code == user.bound_warehouse)
     matcher = Matcher(db, "*")
+    allowed_employee_ids = set(db.scalars(scoped_employees(select(Employee.id), user)).all())
     created, skipped, containers = 0, 0, 0
     next_no = None
     for cn in db.scalars(stmt).all():
@@ -522,6 +523,8 @@ def sync_containers(body: SyncContainersIn, user: User = Depends(get_current_use
         except json.JSONDecodeError:
             worker_ids = []
         if not worker_ids:
+            continue
+        if not set(worker_ids).issubset(allowed_employee_ids):
             continue
         containers += 1
         code = _container_op_code(cn.container_type, cn.load_type)
@@ -533,10 +536,7 @@ def sync_containers(body: SyncContainersIn, user: User = Depends(get_current_use
                                                        OperationLog.external_ref == ext)):
                 skipped += 1
                 continue
-            try:
-                emp = require_employee_access(db, emp_id, user)
-            except HTTPException:
-                continue
+            emp = require_employee_access(db, emp_id, user)
             if next_no is None:
                 next_no = next_op_no(db)
             prefix, seq = next_no.rsplit("-", 1)

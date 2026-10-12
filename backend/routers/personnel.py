@@ -867,6 +867,29 @@ async def upload_approval_attachment(
     return _doc_dict(document, blob)
 
 
+@router.get("/approvals/{approval_id}/attachments/{doc_id}/file")
+def download_approval_attachment(
+    approval_id: int,
+    doc_id: int,
+    inline: bool = False,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    row = _scoped_approval_row(db, approval_id, user)
+    if row is None:
+        raise HTTPException(404, "审批不存在")
+    approval, _ = row
+    _require_approval_view(user, approval)
+    document = db.scalar(select(EmployeeDocument).where(
+        EmployeeDocument.id == doc_id,
+        EmployeeDocument.approval_id == approval.id,
+        EmployeeDocument.is_deleted == False,  # noqa: E712
+    ))
+    if document is None:
+        raise HTTPException(404, "文件不存在")
+    return file_response(db.get(FileBlob, document.file_id), inline=inline)
+
+
 def _execute_approval(db: Session, approval: PersonnelApproval, emp: Employee, user: User) -> EmployeeEvent:
     p = _approval_payload(approval)
     if approval.approval_type == "salary":
