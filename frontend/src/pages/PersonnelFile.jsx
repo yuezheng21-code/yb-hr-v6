@@ -412,7 +412,7 @@ function ActionDrawer({ action, emp, contract, token, onClose, onDone }) {
   }[kind];
   const [f, setF] = useState(defaults);
   const [file, setFile] = useState(null);
-  const [useTpl, setUseTpl] = useState(!!ACTION_TEMPLATE[kind]);
+  const [useTpl, setUseTpl] = useState(!!ACTION_TEMPLATE[kind] && !['salary', 'termination'].includes(kind));
   const [busy, setBusy] = useState(false);
   const set = (k, v) => setF({ ...f, [k]: v });
   const title = { contract: '签订劳动合同', amend: `修订合同 ${action.contract?.contract_no || ''}`, salary: '调薪', performance: '绩效评估', leave: '请假', warning: 'Abmahnung（书面警告）', termination: '办理离职', note: '添加备注', upload: '上传档案文件' }[kind];
@@ -530,9 +530,10 @@ function ActionDrawer({ action, emp, contract, token, onClose, onDone }) {
               <input className="mz-input" style={{ height: 'auto', padding: 8 }} type="file" onChange={e => setFile(e.target.files[0] || null)} />
               <span className="mz-hint">PDF、图片、Office 文档，单个最大 15 MB；审批申请的附件会与该申请关联并保留审计记录。</span></div>
           )}
-          {ACTION_TEMPLATE[kind] && (
+          {ACTION_TEMPLATE[kind] && !['salary', 'termination'].includes(kind) && (
             <label className="mz-switch">保存后用模板生成正式文书<input type="checkbox" checked={useTpl} onChange={e => setUseTpl(e.target.checked)} /></label>
           )}
+          {['salary', 'termination'].includes(kind) && <div className="mz-hint">申请获批并执行后，再从时间线或档案生成正式文书。</div>}
         </div>
         <div className="mz-drawer-f">
           <button className="mz-btn" onClick={onClose}>取消</button>

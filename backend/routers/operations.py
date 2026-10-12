@@ -36,7 +36,7 @@ from backend.services.ops_ingest import (
 from backend.services.performance import compute_performance, GROUP_BY_OPTIONS, QUALITY_POINTS
 from backend.services.settlement_calc import compute_hours
 from backend.routers.clock import _resolve_employee
-from backend.services.access import require_employee_access, scoped_employee_related
+from backend.services.access import require_employee_access, scoped_employee_related, scoped_employees
 
 router = APIRouter(prefix="/api/v1/ops", tags=["operations"])
 
@@ -485,11 +485,12 @@ async def import_file(
     if not records:
         raise HTTPException(400, "文件无数据行")
     wh = default_warehouse or (user.bound_warehouse if user.role == "wh" else None)
+    allowed_employee_ids = db.scalars(scoped_employees(select(Employee.id), user)).all()
     result = ingest_records(
         db, records, source="import", system=system, field_mapping=parse_mapping(field_mapping),
         default_warehouse=wh, default_client=default_client,
         default_date=_parse_date(default_date, None) if default_date else None,
-        created_by=user.display_name, dry_run=dry_run,
+        created_by=user.display_name, dry_run=dry_run, allowed_employee_ids=allowed_employee_ids,
     )
     if dry_run:
         db.rollback()
@@ -532,8 +533,9 @@ def sync_containers(body: SyncContainersIn, user: User = Depends(get_current_use
                                                        OperationLog.external_ref == ext)):
                 skipped += 1
                 continue
-            emp = db.get(Employee, emp_id)
-            if emp is None:
+            try:
+                emp = require_employee_access(db, emp_id, user)
+            except HTTPException:
                 continue
             if next_no is None:
                 next_no = next_op_no(db)
@@ -706,9 +708,13 @@ def delete_source(source_id: int, user: User = Depends(get_current_user), db: Se
 @router.get("/aliases")
 def list_aliases(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _require(user, WRITE_ROLES)
-    rows = db.execute(select(OperatorAlias, Employee.name, Employee.emp_no)
-                      .join(Employee, Employee.id == OperatorAlias.employee_id)
-                      .order_by(OperatorAlias.system, OperatorAlias.alias)).all()
+    stmt = scoped_employees(
+        select(OperatorAlias, Employee.name, Employee.emp_no)
+        .join(Employee, Employee.id == OperatorAlias.employee_id)
+        .order_by(OperatorAlias.system, OperatorAlias.alias),
+        user,
+    )
+    rows = db.execute(stmt).all()
     return [{"id": a.id, "system": a.system, "alias": a.alias, "employee_id": a.employee_id,
              "emp_name": name, "emp_no": no} for a, name, no in rows]
 
@@ -729,8 +735,7 @@ def unmatched_operators(user: User = Depends(get_current_user), db: Session = De
 @router.post("/aliases", status_code=201)
 def create_alias(body: OperatorAliasIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _require(user, CONFIG_ROLES)
-    if db.get(Employee, body.employee_id) is None:
-        raise HTTPException(404, "员工不存在")
+    require_employee_access(db, body.employee_id, user)
     alias = body.alias.strip()
     existing = db.scalar(select(OperatorAlias).where(OperatorAlias.system == body.system,
                                                      OperatorAlias.alias == alias))
@@ -745,7 +750,12 @@ def create_alias(body: OperatorAliasIn, user: User = Depends(get_current_user), 
 @router.delete("/aliases/{alias_id}")
 def delete_alias(alias_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _require(user, CONFIG_ROLES)
-    a = db.get(OperatorAlias, alias_id)
+    a = db.scalar(scoped_employees(
+        select(OperatorAlias)
+        .join(Employee, Employee.id == OperatorAlias.employee_id)
+        .where(OperatorAlias.id == alias_id),
+        user,
+    ))
     if a is None:
         raise HTTPException(404, "Not found")
     db.delete(a)
@@ -806,15 +816,14 @@ def _perf(user: User, db: Session, date_from, date_to, group_by, warehouse_code,
     today = date.today()
     df = _parse_date(date_from, today.replace(day=1))
     dt = _parse_date(date_to, today)
-    if user.role == "sup":
-        supplier_id = user.bound_supplier_id or -1
-    elif user.role == "wh" and user.bound_warehouse:
-        warehouse_code = user.bound_warehouse
-    elif user.role == "worker":
-        employee_id = _resolve_employee(user, db).id
+    if user.role == "worker":
+        employee_ids = [_resolve_employee(user, db).id]
+    else:
+        employee_ids = db.scalars(scoped_employees(select(Employee.id), user)).all()
     return compute_performance(
         db, df, dt, group_by=group_by, warehouse_code=warehouse_code, client=client, supplier_id=supplier_id,
-        employee_id=employee_id, confirmed_only=confirmed_only, w_efficiency=w_efficiency, w_quality=w_quality,
+        employee_id=employee_id, employee_ids=employee_ids, confirmed_only=confirmed_only,
+        w_efficiency=w_efficiency, w_quality=w_quality,
     )
 
 

@@ -7,7 +7,7 @@ import { useTheme } from '../../context/ThemeContext.jsx';
 import { LogOut, Moon, Sun } from 'lucide-react';
 
 const ROLE_COLORS = { client:'#0ea5a4',admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
-const NAV_PERMISSION = { employees: 'employees.read', personnel_changes: 'changes.read' };
+const NAV_PERMISSION = { employees: 'employees.read', personnel_changes: 'changes.read', templates: 'personnel.read' };
 
 function useUnreadCount(token, enabled = true) {
   const [count, setCount] = useState(0);
