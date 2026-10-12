@@ -8,13 +8,14 @@ POST /api/v1/auth/refresh  — (placeholder)
 from __future__ import annotations
 from datetime import datetime
 import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+import backend.config as cfg
 from backend.database import get_db
 from backend.models.user import User
 from backend.schemas.user import LoginIn, TokenOut, UserOut, ChangePasswordIn
-from backend.middleware.auth import create_access_token, get_current_user
+from backend.middleware.auth import SESSION_COOKIE_NAME, create_access_token, get_current_user
 from backend.services import login_guard
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
@@ -30,8 +31,30 @@ def _password_ok(user: User, password: str) -> bool:
         return False
 
 
+def _is_secure_request(request: Request) -> bool:
+    forwarded_proto = request.headers.get("x-forwarded-proto", "").split(",", 1)[0].strip().lower()
+    return request.url.scheme == "https" or forwarded_proto == "https"
+
+
+def _set_session_cookie(response: Response, request: Request, token: str) -> None:
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        max_age=cfg.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        httponly=True,
+        secure=_is_secure_request(request),
+        samesite="lax",
+        path="/",
+    )
+
+
 @router.post("/login", response_model=TokenOut)
-def login(body: LoginIn, request: Request, db: Session = Depends(get_db)):
+def login(
+    body: LoginIn,
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+):
     key = f"pw:{login_guard.client_ip(request)}:{body.username.lower()}"
     login_guard.check(key)
     user = db.scalar(select(User).where(User.username == body.username))
@@ -42,6 +65,7 @@ def login(body: LoginIn, request: Request, db: Session = Depends(get_db)):
     user.last_login = datetime.utcnow()
     db.commit()
     token = create_access_token({"sub": str(user.id), "role": user.role})
+    _set_session_cookie(response, request, token)
     return TokenOut(access_token=token, user=UserOut.model_validate(user))
 
 
@@ -64,11 +88,23 @@ def change_password(
 
 
 @router.post("/refresh")
-def refresh_token(user: User = Depends(get_current_user)):
+def refresh_token(
+    request: Request,
+    response: Response,
+    user: User = Depends(get_current_user),
+):
     token = create_access_token({"sub": str(user.id), "role": user.role})
+    _set_session_cookie(response, request, token)
     return {"access_token": token, "token_type": "bearer"}
 
 
 @router.post("/logout")
-def logout():
+def logout(request: Request, response: Response):
+    response.delete_cookie(
+        key=SESSION_COOKIE_NAME,
+        httponly=True,
+        secure=_is_secure_request(request),
+        samesite="lax",
+        path="/",
+    )
     return {"message": "ok"}
