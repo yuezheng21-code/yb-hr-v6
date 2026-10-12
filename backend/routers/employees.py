@@ -18,7 +18,12 @@ from backend.models.employee import Employee
 from backend.models.user import User
 from backend.schemas.employee import EmployeeCreate, EmployeeUpdate, EmployeeOut
 from backend.middleware.auth import get_current_user
-from backend.services.access import require_permission, require_employee_access, scoped_employees
+from backend.services.access import (
+    require_permission,
+    require_employee_access,
+    require_employee_assignment_scope,
+    scoped_employees,
+)
 
 router = APIRouter(prefix="/api/v1/employees", tags=["employees"])
 
@@ -95,7 +100,7 @@ def export_employees(
     db: Session = Depends(get_db),
 ):
     """Export employee roster as CSV (admin/hr only)."""
-    require_permission(user, "changes.export")
+    require_permission(user, "employees.export")
 
     stmt = select(Employee).order_by(Employee.emp_no)
     stmt = _apply_row_filter(stmt, user)
@@ -151,6 +156,13 @@ def create_employee(
     db: Session = Depends(get_db),
 ):
     require_permission(user, "employees.write")
+    require_employee_assignment_scope(
+        db,
+        user,
+        supplier_id=body.supplier_id,
+        warehouse=body.primary_warehouse,
+        biz_line=body.biz_line,
+    )
 
     pin = (body.pin or "").strip() or None
     if pin is not None:
@@ -181,7 +193,7 @@ def create_employee(
 
     db.commit()
     db.refresh(emp)
-    return EmployeeOut.model_validate(emp)
+    return _strip_sensitive(EmployeeOut.model_validate(emp).model_dump(), user.role)
 
 
 @router.get("/{emp_id}", response_model=EmployeeOut)
@@ -205,7 +217,18 @@ def update_employee(
     emp = require_employee_access(db, emp_id, user, "employees.write")
 
     pin = body.pin
-    for k, v in body.model_dump(exclude_unset=True, exclude={"pin"}).items():
+    data = body.model_dump(exclude_unset=True, exclude={"pin"})
+    protected = {"hourly_rate", "status", "leave_date"}
+    if protected.intersection(data):
+        raise HTTPException(409, "时薪、离职日期和员工状态只能通过已执行的人事审批变更")
+    require_employee_assignment_scope(
+        db,
+        user,
+        supplier_id=data.get("supplier_id", emp.supplier_id),
+        warehouse=data.get("primary_warehouse", emp.primary_warehouse),
+        biz_line=data.get("biz_line", emp.biz_line),
+    )
+    for k, v in data.items():
         setattr(emp, k, v)
 
     # Handle PIN update / creation for linked worker User
@@ -231,7 +254,7 @@ def update_employee(
     emp.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(emp)
-    return EmployeeOut.model_validate(emp)
+    return _strip_sensitive(EmployeeOut.model_validate(emp).model_dump(), user.role)
 
 
 @router.delete("/{emp_id}", status_code=204)
@@ -241,6 +264,5 @@ def delete_employee(
     db: Session = Depends(get_db),
 ):
     require_permission(user, "employees.write")
-    emp = require_employee_access(db, emp_id, user, "employees.write")
-    emp.status = "inactive"
-    db.commit()
+    require_employee_access(db, emp_id, user, "employees.write")
+    raise HTTPException(409, "员工离职必须提交并执行离职审批")

@@ -36,6 +36,7 @@ from backend.services.ops_ingest import (
 from backend.services.performance import compute_performance, GROUP_BY_OPTIONS, QUALITY_POINTS
 from backend.services.settlement_calc import compute_hours
 from backend.routers.clock import _resolve_employee
+from backend.services.access import require_employee_access, scoped_employee_related, scoped_employees
 
 router = APIRouter(prefix="/api/v1/ops", tags=["operations"])
 
@@ -60,14 +61,17 @@ def _require(user: User, roles: set) -> None:
 def _scope_logs(stmt, user: User, db: Session):
     """Row-level security for operation logs / quality events."""
     model = stmt.column_descriptions[0]["entity"]
-    if user.role == "sup":
-        stmt = stmt.where(model.supplier_id == user.bound_supplier_id)
-    elif user.role == "wh" and user.bound_warehouse:
-        stmt = stmt.where(model.warehouse_code == user.bound_warehouse)
-    elif user.role == "worker":
+    if user.role == "worker":
         emp = _resolve_employee(user, db)
-        stmt = stmt.where(model.employee_id == emp.id)
-    return stmt
+        return stmt.where(model.employee_id == emp.id)
+    return scoped_employee_related(stmt, user, model.employee_id)
+
+
+def _get_scoped_log(db: Session, log_id: int, user: User) -> OperationLog:
+    log = db.scalar(_scope_logs(select(OperationLog).where(OperationLog.id == log_id), user, db))
+    if log is None:
+        raise HTTPException(404, "Not found")
+    return log
 
 
 def _check_wh(user: User, warehouse_code: Optional[str]) -> None:
@@ -269,9 +273,9 @@ def export_logs(
 @router.post("/logs", status_code=201)
 def create_log(body: OperationLogIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _require(user, WRITE_ROLES)
-    emp = db.get(Employee, body.employee_id)
+    emp = require_employee_access(db, body.employee_id, user)
     t = db.get(OperationType, body.op_type_id)
-    if emp is None or t is None:
+    if t is None:
         raise HTTPException(404, "员工或作业类型不存在")
     _check_wh(user, body.warehouse_code or user.bound_warehouse)
     log = _new_log(db, emp, t, work_date=body.work_date, qty=body.qty, hours=body.hours, error_qty=body.error_qty,
@@ -295,8 +299,9 @@ def create_logs_batch(body: OperationBatchIn, user: User = Depends(get_current_u
     for e in body.entries:
         if e.qty <= 0 and e.hours <= 0:
             continue
-        emp = db.get(Employee, e.employee_id)
-        if emp is None:
+        try:
+            emp = require_employee_access(db, e.employee_id, user)
+        except HTTPException:
             continue
         log = _new_log(db, emp, t, work_date=body.work_date, qty=e.qty, hours=e.hours, error_qty=e.error_qty,
                        warehouse_code=wh, client=body.client, ref_no=body.ref_no, user_name=user.display_name,
@@ -310,17 +315,13 @@ def create_logs_batch(body: OperationBatchIn, user: User = Depends(get_current_u
 def update_log(log_id: int, body: OperationLogUpdate, user: User = Depends(get_current_user),
                db: Session = Depends(get_db)):
     _require(user, WRITE_ROLES)
-    log = db.get(OperationLog, log_id)
-    if log is None:
-        raise HTTPException(404, "Not found")
+    log = _get_scoped_log(db, log_id, user)
     _check_wh(user, log.warehouse_code)
     if log.status == "confirmed" and user.role not in {"admin", "mgr"}:
         raise HTTPException(400, "已确认记录仅管理员/运营经理可修改")
     data = body.model_dump(exclude_unset=True)
     if "employee_id" in data:
-        emp = db.get(Employee, data.pop("employee_id"))
-        if emp is None:
-            raise HTTPException(404, "员工不存在")
+        emp = require_employee_access(db, data.pop("employee_id"), user)
         log.employee_id, log.emp_no, log.emp_name, log.supplier_id = emp.id, emp.emp_no, emp.name, emp.supplier_id
     if "op_type_id" in data:
         t = db.get(OperationType, data.pop("op_type_id"))
@@ -340,9 +341,7 @@ def update_log(log_id: int, body: OperationLogUpdate, user: User = Depends(get_c
 @router.delete("/logs/{log_id}")
 def delete_log(log_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _require(user, WRITE_ROLES)
-    log = db.get(OperationLog, log_id)
-    if log is None:
-        raise HTTPException(404, "Not found")
+    log = _get_scoped_log(db, log_id, user)
     _check_wh(user, log.warehouse_code)
     if log.status == "confirmed" and user.role not in {"admin", "mgr"}:
         raise HTTPException(400, "已确认记录仅管理员/运营经理可删除")
@@ -435,6 +434,7 @@ def station_scan(body: StationScanIn, user: User = Depends(get_current_user), db
     emp = m.employee(body.badge.strip(), body.badge.strip())
     if emp is None:
         raise HTTPException(404, f"工牌未识别: {body.badge}")
+    emp = require_employee_access(db, emp.id, user)
     t = m.op_type(body.op_code)
     if t is None:
         raise HTTPException(404, f"作业条码未识别: {body.op_code}")
@@ -485,11 +485,12 @@ async def import_file(
     if not records:
         raise HTTPException(400, "文件无数据行")
     wh = default_warehouse or (user.bound_warehouse if user.role == "wh" else None)
+    allowed_employee_ids = db.scalars(scoped_employees(select(Employee.id), user)).all()
     result = ingest_records(
         db, records, source="import", system=system, field_mapping=parse_mapping(field_mapping),
         default_warehouse=wh, default_client=default_client,
         default_date=_parse_date(default_date, None) if default_date else None,
-        created_by=user.display_name, dry_run=dry_run,
+        created_by=user.display_name, dry_run=dry_run, allowed_employee_ids=allowed_employee_ids,
     )
     if dry_run:
         db.rollback()
@@ -513,6 +514,7 @@ def sync_containers(body: SyncContainersIn, user: User = Depends(get_current_use
     if user.role == "wh" and user.bound_warehouse:
         stmt = stmt.where(ContainerRecord.warehouse_code == user.bound_warehouse)
     matcher = Matcher(db, "*")
+    allowed_employee_ids = set(db.scalars(scoped_employees(select(Employee.id), user)).all())
     created, skipped, containers = 0, 0, 0
     next_no = None
     for cn in db.scalars(stmt).all():
@@ -521,6 +523,8 @@ def sync_containers(body: SyncContainersIn, user: User = Depends(get_current_use
         except json.JSONDecodeError:
             worker_ids = []
         if not worker_ids:
+            continue
+        if not set(worker_ids).issubset(allowed_employee_ids):
             continue
         containers += 1
         code = _container_op_code(cn.container_type, cn.load_type)
@@ -532,9 +536,7 @@ def sync_containers(body: SyncContainersIn, user: User = Depends(get_current_use
                                                        OperationLog.external_ref == ext)):
                 skipped += 1
                 continue
-            emp = db.get(Employee, emp_id)
-            if emp is None:
-                continue
+            emp = require_employee_access(db, emp_id, user)
             if next_no is None:
                 next_no = next_op_no(db)
             prefix, seq = next_no.rsplit("-", 1)
@@ -706,9 +708,13 @@ def delete_source(source_id: int, user: User = Depends(get_current_user), db: Se
 @router.get("/aliases")
 def list_aliases(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _require(user, WRITE_ROLES)
-    rows = db.execute(select(OperatorAlias, Employee.name, Employee.emp_no)
-                      .join(Employee, Employee.id == OperatorAlias.employee_id)
-                      .order_by(OperatorAlias.system, OperatorAlias.alias)).all()
+    stmt = scoped_employees(
+        select(OperatorAlias, Employee.name, Employee.emp_no)
+        .join(Employee, Employee.id == OperatorAlias.employee_id)
+        .order_by(OperatorAlias.system, OperatorAlias.alias),
+        user,
+    )
+    rows = db.execute(stmt).all()
     return [{"id": a.id, "system": a.system, "alias": a.alias, "employee_id": a.employee_id,
              "emp_name": name, "emp_no": no} for a, name, no in rows]
 
@@ -729,8 +735,7 @@ def unmatched_operators(user: User = Depends(get_current_user), db: Session = De
 @router.post("/aliases", status_code=201)
 def create_alias(body: OperatorAliasIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _require(user, CONFIG_ROLES)
-    if db.get(Employee, body.employee_id) is None:
-        raise HTTPException(404, "员工不存在")
+    require_employee_access(db, body.employee_id, user)
     alias = body.alias.strip()
     existing = db.scalar(select(OperatorAlias).where(OperatorAlias.system == body.system,
                                                      OperatorAlias.alias == alias))
@@ -745,7 +750,12 @@ def create_alias(body: OperatorAliasIn, user: User = Depends(get_current_user), 
 @router.delete("/aliases/{alias_id}")
 def delete_alias(alias_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _require(user, CONFIG_ROLES)
-    a = db.get(OperatorAlias, alias_id)
+    a = db.scalar(scoped_employees(
+        select(OperatorAlias)
+        .join(Employee, Employee.id == OperatorAlias.employee_id)
+        .where(OperatorAlias.id == alias_id),
+        user,
+    ))
     if a is None:
         raise HTTPException(404, "Not found")
     db.delete(a)
@@ -776,9 +786,7 @@ def create_quality(body: QualityEventIn, user: User = Depends(get_current_user),
     _require(user, WRITE_ROLES)
     if body.severity not in SEVERITIES:
         raise HTTPException(400, f"severity must be one of {SEVERITIES}")
-    emp = db.get(Employee, body.employee_id)
-    if emp is None:
-        raise HTTPException(404, "员工不存在")
+    emp = require_employee_access(db, body.employee_id, user)
     wh = body.warehouse_code or (user.bound_warehouse if user.role == "wh" else None)
     _check_wh(user, wh)
     q = QualityEvent(**{**body.model_dump(), "warehouse_code": wh}, emp_name=emp.name,
@@ -791,7 +799,7 @@ def create_quality(body: QualityEventIn, user: User = Depends(get_current_user),
 @router.delete("/quality/{event_id}")
 def delete_quality(event_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _require(user, CONFIG_ROLES)
-    q = db.get(QualityEvent, event_id)
+    q = db.scalar(_scope_logs(select(QualityEvent).where(QualityEvent.id == event_id), user, db))
     if q is None:
         raise HTTPException(404, "Not found")
     db.delete(q)
@@ -808,15 +816,14 @@ def _perf(user: User, db: Session, date_from, date_to, group_by, warehouse_code,
     today = date.today()
     df = _parse_date(date_from, today.replace(day=1))
     dt = _parse_date(date_to, today)
-    if user.role == "sup":
-        supplier_id = user.bound_supplier_id or -1
-    elif user.role == "wh" and user.bound_warehouse:
-        warehouse_code = user.bound_warehouse
-    elif user.role == "worker":
-        employee_id = _resolve_employee(user, db).id
+    if user.role == "worker":
+        employee_ids = [_resolve_employee(user, db).id]
+    else:
+        employee_ids = db.scalars(scoped_employees(select(Employee.id), user)).all()
     return compute_performance(
         db, df, dt, group_by=group_by, warehouse_code=warehouse_code, client=client, supplier_id=supplier_id,
-        employee_id=employee_id, confirmed_only=confirmed_only, w_efficiency=w_efficiency, w_quality=w_quality,
+        employee_id=employee_id, employee_ids=employee_ids, confirmed_only=confirmed_only,
+        w_efficiency=w_efficiency, w_quality=w_quality,
     )
 
 

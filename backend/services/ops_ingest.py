@@ -330,6 +330,7 @@ def ingest_records(
     auto_confirm: bool = False,
     created_by: str = "",
     dry_run: bool = False,
+    allowed_employee_ids: Optional[set[int] | list[int]] = None,
 ) -> dict:
     """Normalize + match + persist a batch. Caller commits."""
     headers: list[str] = []
@@ -339,6 +340,7 @@ def ingest_records(
                 headers.append(k)
     header_map = build_header_map(headers, system, field_mapping)
     matcher = Matcher(db, system)
+    allowed_ids = set(allowed_employee_ids) if allowed_employee_ids is not None else None
 
     created, duplicates, unmatched, errors, preview = 0, 0, 0, [], []
     seen_refs: set = set()
@@ -386,6 +388,9 @@ def ingest_records(
             notes=rec["notes"],
         )
         apply_match(log, matcher)
+        if allowed_ids is not None and log.employee_id is not None and log.employee_id not in allowed_ids:
+            errors.append({"row": idx, "error": "员工不在当前账户的数据范围内"})
+            continue
         if log.status == "unmatched":
             unmatched += 1
         elif auto_confirm:

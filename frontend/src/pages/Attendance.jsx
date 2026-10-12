@@ -6,7 +6,8 @@ import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { Modal } from '../components/Modal.jsx';
 import { StatusBadge, fmt } from '../components/StatusBadge.jsx';
-import { useListTools, ListToolbar } from '../components/ListTools.jsx';
+import { useListTools, ListToolbar, downloadUrl } from '../components/ListTools.jsx';
+import { hasPermission } from '../services/permissions.js';
 
 const GRADES = ['P1','P2','P3','P4','P5','P6','P7','P8','P9'];
 const WHS = ['UNA','DHL','BGK','ESN','DBG','BOC','KLN','DUS','WPT','MGL'];
@@ -21,7 +22,7 @@ export default function Attendance({ token, user }) {
   const { t } = useLang();
   const showToast = useToast();
 
-  const canEdit = ['admin','hr','mgr'].includes(user?.role);
+  const canEdit = hasPermission(user, 'employees.write');
   const lt = useListTools(emps, { date: 'join_date', warehouse: 'primary_warehouse', supplier: 'supplier_id' }, token);
   const COLS = [
     { label: '工号', value: 'emp_no' }, { label: '姓名', value: 'name' }, { label: '业务线', value: 'biz_line' },
@@ -31,7 +32,7 @@ export default function Attendance({ token, user }) {
     { label: '入职', value: 'join_date', type: 'date' }, { label: '离职', value: 'leave_date', type: 'date' },
     { label: '电话', value: 'phone' }, { label: '国籍', value: 'nationality' },
   ];
-  const isHR = ['admin','hr'].includes(user?.role);
+  const isHR = hasPermission(user, 'personnel.read');
   const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
   useEffect(() => {
@@ -58,7 +59,9 @@ export default function Attendance({ token, user }) {
       if (editModal === 'new') {
         await api('/api/v1/employees', { method:'POST', body:form, token });
       } else {
-        await api(`/api/v1/employees/${editModal}`, { method:'PUT', body:form, token });
+        const body = { ...form };
+        ['id', 'emp_no', 'created_at', 'updated_at', 'hourly_rate', 'status', 'leave_date'].forEach(key => delete body[key]);
+        await api(`/api/v1/employees/${editModal}`, { method:'PUT', body, token });
       }
       setEditModal(null);
       load();
@@ -97,7 +100,17 @@ export default function Attendance({ token, user }) {
         </div>
       )}
 
-      <ListToolbar lt={lt} title="员工花名册" columns={COLS} token={token} dateLabel="入职日期" />
+      <ListToolbar
+        lt={lt}
+        title="员工花名册"
+        columns={COLS}
+        token={token}
+        dateLabel="入职日期"
+        hideExport
+        extra={hasPermission(user, 'employees.export') && (
+          <button className="mz-btn mz-btn-s" onClick={() => downloadUrl(`/api/v1/employees/export?status=${encodeURIComponent(filterStatus)}`, token, 'employees.csv')}>导出 CSV</button>
+        )}
+      />
       {loading ? <Loading /> : (
         <div className="tw"><div className="ts"><table>
           <thead><tr>
@@ -161,8 +174,11 @@ export default function Attendance({ token, user }) {
                 <option value="supplier">{t('emp.src_sup')}</option>
               </select></div>
             <div className="fg"><label className="fl">{t('emp.f_rate')}</label>
-              <input className="fi" type="number" step="0.5" value={form.hourly_rate||13}
-                onChange={e => setForm({...form,hourly_rate:+e.target.value})} /></div>
+              {editModal === 'new'
+                ? <input className="fi" type="number" step="0.5" value={form.hourly_rate||13}
+                  onChange={e => setForm({...form,hourly_rate:+e.target.value})} />
+                : <div className="mz-hint" style={{ paddingTop: 9 }}>€{fmt(form.hourly_rate)}/h（请通过人事档案中的调薪审批变更）</div>}
+            </div>
             <div className="fg"><label className="fl">{t('emp.f_settle')}</label>
               <select className="fsl" value={form.settlement_type||'hourly'} onChange={e => setForm({...form,settlement_type:e.target.value})}>
                 <option value="hourly">按小时 (Hourly)</option>

@@ -26,6 +26,20 @@ class EmployeeAccessTests(unittest.TestCase):
         with self.assertRaises(HTTPException):
             require_permission(user, "personnel.approve")
 
+    def test_all_configured_scope_dimensions_are_combined(self):
+        user = SimpleNamespace(
+            role="hr",
+            bound_supplier_id=12,
+            bound_warehouse="UNA",
+            bound_biz_line="579",
+            bound_zone=None,
+            permissions=None,
+        )
+        compiled = str(scoped_employees(select(Employee), user).compile(compile_kwargs={"literal_binds": True}))
+        self.assertIn("employees.supplier_id = 12", compiled)
+        self.assertIn("employees.primary_warehouse = 'UNA'", compiled)
+        self.assertIn("employees.biz_line = '579'", compiled)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -15,10 +15,12 @@ from backend.models.container import ContainerRecord
 from backend.models.timesheet import Timesheet
 from backend.models.employee import Employee
 from backend.models.user import User
+from backend.models.warehouse import Warehouse
 from backend.schemas.container import ContainerCreate, ContainerUpdate, ContainerOut, ContainerApproveIn
 from backend.middleware.auth import get_current_user
 from backend.services.settlement_calc import compute_hours
 from backend.services.sequence import next_sequence_no, make_prefix
+from backend.services.access import require_employee_access, scoped_employees
 
 router = APIRouter(prefix="/api/v1/containers", tags=["containers"])
 _logger = logging.getLogger(__name__)
@@ -47,6 +49,52 @@ def _next_ts_no(db: Session) -> str:
     return next_sequence_no(db, Timesheet, Timesheet.ts_no, make_prefix("TS"))
 
 
+def _worker_ids(cn: ContainerRecord) -> list[int]:
+    try:
+        values = json.loads(cn.worker_ids or "[]")
+        return [int(value) for value in values if str(value).isdigit()]
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return []
+
+
+def _container_in_scope(db: Session, cn: ContainerRecord, user: User) -> bool:
+    """Container records inherit scope from their warehouse/business line and assigned workers."""
+    if user.role in {"worker", "client"}:
+        return False
+    supplier_id = getattr(user, "bound_supplier_id", None)
+    warehouse = getattr(user, "bound_warehouse", None)
+    biz_line = getattr(user, "bound_biz_line", None)
+    zone = getattr(user, "bound_zone", None)
+    if user.role == "sup" and not supplier_id:
+        return False
+    if user.role == "wh" and not warehouse:
+        return False
+    if warehouse and cn.warehouse_code != warehouse:
+        return False
+    if biz_line and cn.biz_line != biz_line:
+        return False
+    if zone and not db.scalar(select(Warehouse.code).where(Warehouse.code == cn.warehouse_code, Warehouse.zone == zone)):
+        return False
+    if supplier_id:
+        worker_ids = _worker_ids(cn)
+        allowed_ids = set(db.scalars(scoped_employees(select(Employee.id), user)).all())
+        if not worker_ids or not set(worker_ids).issubset(allowed_ids):
+            return False
+    return True
+
+
+def _get_scoped_container(db: Session, cn_id: int, user: User) -> ContainerRecord:
+    cn = db.get(ContainerRecord, cn_id)
+    if cn is None or not _container_in_scope(db, cn, user):
+        raise HTTPException(404, "Container record not found")
+    return cn
+
+
+def _validate_assigned_workers(db: Session, cn: ContainerRecord, user: User) -> None:
+    for employee_id in _worker_ids(cn):
+        require_employee_access(db, employee_id, user)
+
+
 @router.get("")
 def list_containers(
     warehouse_code: Optional[str] = Query(None),
@@ -57,15 +105,14 @@ def list_containers(
     db: Session = Depends(get_db),
 ):
     stmt = select(ContainerRecord).order_by(ContainerRecord.work_date.desc(), ContainerRecord.id.desc())
-    if user.role == "wh":
-        stmt = stmt.where(ContainerRecord.warehouse_code == user.bound_warehouse)
     if warehouse_code:
         stmt = stmt.where(ContainerRecord.warehouse_code == warehouse_code)
     if date_from:
         stmt = stmt.where(ContainerRecord.work_date >= date_from)
     if date_to:
         stmt = stmt.where(ContainerRecord.work_date <= date_to)
-    return [_enrich(cn) for cn in db.scalars(stmt.offset(skip).limit(limit)).all()]
+    visible = [cn for cn in db.scalars(stmt).all() if _container_in_scope(db, cn, user)]
+    return [_enrich(cn) for cn in visible[skip:skip + limit]]
 
 
 @router.post("", response_model=ContainerOut, status_code=201)
@@ -77,6 +124,9 @@ def create_container(
     if user.role not in {"admin", "hr", "wh", "mgr"}:
         raise HTTPException(403, "Forbidden")
     cn = ContainerRecord(**body.model_dump(), cn_no=_next_cn_no(db))
+    _validate_assigned_workers(db, cn, user)
+    if not _container_in_scope(db, cn, user):
+        raise HTTPException(403, "Container is outside the current account scope")
     db.add(cn)
     db.commit()
     db.refresh(cn)
@@ -85,9 +135,7 @@ def create_container(
 
 @router.get("/{cn_id}")
 def get_container(cn_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    cn = db.get(ContainerRecord, cn_id)
-    if cn is None:
-        raise HTTPException(404, "Container record not found")
+    cn = _get_scoped_container(db, cn_id, user)
     return _enrich(cn)
 
 
@@ -98,9 +146,7 @@ def update_container(
 ):
     if user.role not in {"admin", "hr", "wh", "mgr"}:
         raise HTTPException(403, "Forbidden")
-    cn = db.get(ContainerRecord, cn_id)
-    if cn is None:
-        raise HTTPException(404, "Container record not found")
+    cn = _get_scoped_container(db, cn_id, user)
     if cn.is_split_to_timesheet:
         raise HTTPException(400, "Container already split to timesheets; cannot edit")
     for k, v in body.model_dump(exclude_unset=True).items():
@@ -118,9 +164,7 @@ def approve_container(
     """Warehouse approval: mark video recorded + approve."""
     if user.role not in {"admin", "wh", "mgr"}:
         raise HTTPException(403, "Forbidden")
-    cn = db.get(ContainerRecord, cn_id)
-    if cn is None:
-        raise HTTPException(404, "Container record not found")
+    cn = _get_scoped_container(db, cn_id, user)
     if body.end_time:
         cn.end_time = body.end_time
     cn.video_recorded = body.video_recorded
@@ -144,18 +188,11 @@ def split_to_timesheets(
     """
     if user.role not in {"admin", "hr", "wh", "mgr"}:
         raise HTTPException(403, "Forbidden")
-    cn = db.get(ContainerRecord, cn_id)
-    if cn is None:
-        raise HTTPException(404, "Container record not found")
+    cn = _get_scoped_container(db, cn_id, user)
     if cn.is_split_to_timesheet:
         raise HTTPException(400, "Already split")
 
-    worker_ids: List[int] = []
-    if cn.worker_ids:
-        try:
-            worker_ids = json.loads(cn.worker_ids)
-        except Exception:
-            pass
+    worker_ids = _worker_ids(cn)
 
     if not worker_ids:
         raise HTTPException(400, "No workers assigned to this container")
@@ -165,9 +202,7 @@ def split_to_timesheets(
 
     created_ts = []
     for emp_id in worker_ids:
-        emp = db.get(Employee, emp_id)
-        if emp is None:
-            continue
+        emp = require_employee_access(db, emp_id, user)
 
         ts_no = _next_ts_no(db)
         ts = Timesheet(

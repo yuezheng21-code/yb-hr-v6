@@ -60,6 +60,18 @@ def _next_ps_no(db: Session) -> str:
     return next_sequence_no(db, ProjectSettlement, ProjectSettlement.settle_no, make_prefix("PS"))
 
 
+def _scoped_supplier_settlement(db: Session, settle_id: int, user: User) -> SupplierSettlement:
+    stmt = select(SupplierSettlement).where(SupplierSettlement.id == settle_id)
+    if user.role == "sup":
+        if not user.bound_supplier_id:
+            raise HTTPException(404, "Settlement not found")
+        stmt = stmt.where(SupplierSettlement.supplier_id == user.bound_supplier_id)
+    settlement = db.scalar(stmt)
+    if settlement is None:
+        raise HTTPException(404, "Settlement not found")
+    return settlement
+
+
 def _compute_costs(gross: float) -> dict:
     """Compute cost breakdown from gross pay using configured rates."""
     social = round(gross * settings_store.get("social_rate"), 2)
@@ -301,7 +313,9 @@ def list_supplier_settlements(
         stmt = stmt.where(SupplierSettlement.period == period)
     if status:
         stmt = stmt.where(SupplierSettlement.status == status)
-    if user.role == "sup" and user.bound_supplier_id:
+    if user.role == "sup":
+        if not user.bound_supplier_id:
+            return []
         stmt = stmt.where(SupplierSettlement.supplier_id == user.bound_supplier_id)
     return db.scalars(stmt.offset(skip).limit(limit)).all()
 
@@ -414,10 +428,7 @@ def export_supplier_xlsx(
 
 @router.get("/supplier/{settle_id}", response_model=SupplierSettlementOut)
 def get_supplier_settlement(settle_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    ss = db.get(SupplierSettlement, settle_id)
-    if ss is None:
-        raise HTTPException(404, "Settlement not found")
-    return ss
+    return _scoped_supplier_settlement(db, settle_id, user)
 
 
 @router.put("/supplier/{settle_id}/invoice", response_model=SupplierSettlementOut)

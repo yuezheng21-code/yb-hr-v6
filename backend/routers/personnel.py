@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from fastapi.responses import Response
 from urllib.parse import quote
 from pydantic import BaseModel, Field
-from sqlalchemy import select, func
+from sqlalchemy import or_, select, func
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.middleware.auth import get_current_user
@@ -24,14 +24,22 @@ from backend.models.clock import ClockEvent
 from backend.models.timesheet import Timesheet
 from backend.models.dispatch import TalentPool
 from backend.models.personnel import (
-    FileBlob, EmployeeDocument, EmployeeContract, LeaveRecord, EmployeeEvent, PersonnelApproval, DocTemplate, SopDocument, SopAck,
+    FileBlob, EmployeeDocument, EmployeeContract, LeaveRecord, EmployeeEvent, PersonnelApproval, PersonnelApprovalAudit, DocTemplate, SopDocument, SopAck,
 )
+from backend.models.audit_log import AuditLog
 from backend.services import settings_store
 from backend.services.doc_render import fields_of, build_context, fill, to_html, to_docx, AUTO_FIELDS
 from backend.services.file_store import store_upload, store_bytes, file_response, blob_meta
 from backend.services.sequence import next_sequence_no, make_prefix
 from backend.services.performance import compute_performance
-from backend.services.access import require_permission, require_employee_access, scoped_employees
+from backend.services.access import (
+    approval_types,
+    require_approval_permission,
+    require_employee_access,
+    require_employee_assignment_scope,
+    require_permission,
+    scoped_employees,
+)
 from backend.routers.exports import Column, TableIn, _pdf, _xlsx
 
 router = APIRouter(prefix="/api/v1/personnel", tags=["personnel"])
@@ -64,6 +72,39 @@ def _scoped_emp(db: Session, emp_id: int, user: User, permission: str = "personn
 
 def _row(obj) -> dict:
     return {c.name: getattr(obj, c.name) for c in obj.__table__.columns}
+
+
+APPROVAL_LABELS = {"leave": "请假", "salary": "调薪", "termination": "离职"}
+PENDING_APPROVAL_STATUSES = {"pending", "requested"}
+
+
+def _actor(user: User) -> str:
+    return user.display_name or user.username
+
+
+def _approval_audit(db: Session, approval: PersonnelApproval, action: str, user: User, note: Optional[str] = None) -> None:
+    """Write both a workflow audit entry and the shared administrator audit log."""
+    actor = _actor(user)
+    db.add(PersonnelApprovalAudit(approval_id=approval.id, action=action, actor=actor, note=note))
+    db.add(AuditLog(
+        username=user.username,
+        user_display=user.display_name,
+        action=f"personnel_{action}",
+        target_table="personnel_approvals",
+        target_id=str(approval.id),
+        detail=f"{approval.approval_type}: {note or ''}".strip(),
+    ))
+
+
+def _approval_status_filter(status: str):
+    return PersonnelApproval.status.in_(PENDING_APPROVAL_STATUSES) if status in PENDING_APPROVAL_STATUSES else PersonnelApproval.status == status
+
+
+def _approval_payload(approval: PersonnelApproval) -> dict:
+    try:
+        return json.loads(approval.payload)
+    except (TypeError, json.JSONDecodeError):
+        return {}
 
 
 def _event(db: Session, emp: Employee, event_type: str, title: str, user: User, event_date: Optional[date] = None,
@@ -149,8 +190,20 @@ def attendance_cost(month: str = Query(..., pattern=r"^\d{4}-\d{2}$"), warehouse
 
 def _change_rows(db: Session, user: User, employee_id: Optional[int] = None, warehouse: Optional[str] = None,
                  supplier_id: Optional[int] = None, biz_line: Optional[str] = None, event_type: Optional[str] = None,
-                 date_from: Optional[date] = None, date_to: Optional[date] = None) -> list[dict]:
-    stmt = scoped_employees(select(EmployeeEvent, Employee).join(Employee, Employee.id == EmployeeEvent.employee_id), user)
+                 date_from: Optional[date] = None, date_to: Optional[date] = None,
+                 approval_status: Optional[str] = None) -> list[dict]:
+    stmt = scoped_employees(
+        select(EmployeeEvent, Employee, PersonnelApproval)
+        .join(Employee, Employee.id == EmployeeEvent.employee_id)
+        .outerjoin(
+            PersonnelApproval,
+            or_(
+               PersonnelApproval.request_event_id == EmployeeEvent.id,
+               PersonnelApproval.event_id == EmployeeEvent.id,
+            ),
+        ),
+        user,
+    )
     stmt = stmt.where(EmployeeEvent.event_type.in_(CHANGE_TYPES))
     if employee_id: stmt = stmt.where(Employee.id == employee_id)
     if warehouse: stmt = stmt.where(Employee.primary_warehouse == warehouse)
@@ -159,19 +212,36 @@ def _change_rows(db: Session, user: User, employee_id: Optional[int] = None, war
     if event_type: stmt = stmt.where(EmployeeEvent.event_type == event_type)
     if date_from: stmt = stmt.where(EmployeeEvent.event_date >= date_from)
     if date_to: stmt = stmt.where(EmployeeEvent.event_date <= date_to)
-    return [{"id": event.id, "date": event.event_date, "type": event.event_type, "title": event.title,
-             "employee_id": emp.id, "employee": emp.name, "emp_no": emp.emp_no, "warehouse": emp.primary_warehouse,
-             "supplier_id": emp.supplier_id, "biz_line": emp.biz_line, "created_by": event.created_by,
-             "details": json.loads(event.details) if event.details else None} for event, emp in db.execute(stmt.order_by(EmployeeEvent.event_date.desc(), EmployeeEvent.id.desc())).all()]
+    if approval_status:
+        stmt = stmt.where(_approval_status_filter(approval_status))
+    rows = []
+    for event, emp, approval in db.execute(stmt.order_by(EmployeeEvent.event_date.desc(), EmployeeEvent.id.desc())).all():
+        rows.append({
+            "id": event.id,
+            "date": event.event_date,
+            "type": event.event_type,
+            "title": event.title,
+            "employee_id": emp.id,
+            "employee": emp.name,
+            "emp_no": emp.emp_no,
+            "warehouse": emp.primary_warehouse,
+            "supplier_id": emp.supplier_id,
+            "biz_line": emp.biz_line,
+            "created_by": event.created_by,
+            "approval_status": "pending" if approval and approval.status == "requested" else (approval.status if approval else None),
+            "details": json.loads(event.details) if event.details else None,
+        })
+    return rows
 
 
 @router.get("/changes")
 def change_summary(employee_id: Optional[int] = Query(None), warehouse: Optional[str] = Query(None),
                    supplier_id: Optional[int] = Query(None), biz_line: Optional[str] = Query(None),
                    event_type: Optional[str] = Query(None), date_from: Optional[date] = Query(None),
-                   date_to: Optional[date] = Query(None), user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+                   date_to: Optional[date] = Query(None), approval_status: Optional[str] = Query(None),
+                   user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     require_permission(user, "changes.read")
-    return _change_rows(db, user, employee_id, warehouse, supplier_id, biz_line, event_type, date_from, date_to)
+    return _change_rows(db, user, employee_id, warehouse, supplier_id, biz_line, event_type, date_from, date_to, approval_status)
 
 
 @router.get("/changes/export")
@@ -179,12 +249,13 @@ def export_changes(format: str = Query("xlsx", pattern="^(xlsx|pdf)$"), employee
                    warehouse: Optional[str] = Query(None), supplier_id: Optional[int] = Query(None),
                    biz_line: Optional[str] = Query(None), event_type: Optional[str] = Query(None),
                    date_from: Optional[date] = Query(None), date_to: Optional[date] = Query(None),
+                   approval_status: Optional[str] = Query(None),
                    user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     require_permission(user, "changes.export")
-    rows = _change_rows(db, user, employee_id, warehouse, supplier_id, biz_line, event_type, date_from, date_to)
+    rows = _change_rows(db, user, employee_id, warehouse, supplier_id, biz_line, event_type, date_from, date_to, approval_status)
     table = TableIn(title="工人变更汇总", subtitle="服务端按当前账户授权范围生成",
-                    columns=[Column(label=x) for x in ["日期", "员工", "工号", "类别", "变更内容", "仓库", "供应商", "业务线", "操作人"]],
-                    rows=[[str(r["date"]), r["employee"], r["emp_no"], r["type"], r["title"], r["warehouse"], r["supplier_id"], r["biz_line"], r["created_by"]] for r in rows])
+                   columns=[Column(label=x) for x in ["日期", "员工", "工号", "类别", "审批状态", "变更内容", "仓库", "供应商", "业务线", "操作人"]],
+                   rows=[[str(r["date"]), r["employee"], r["emp_no"], r["type"], r["approval_status"], r["title"], r["warehouse"], r["supplier_id"], r["biz_line"], r["created_by"]] for r in rows])
     data = _xlsx(table, user) if format == "xlsx" else _pdf(table, user)
     media = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" if format == "xlsx" else "application/pdf"
     ext = "xlsx" if format == "xlsx" else "pdf"
@@ -199,6 +270,18 @@ def _active_contract(db: Session, emp_id: int) -> Optional[EmployeeContract]:
 
 def _doc_dict(d: EmployeeDocument, blob: Optional[FileBlob]) -> dict:
     return {**_row(d), "file": blob_meta(blob)}
+
+
+def _scoped_document(db: Session, doc_id: int, user: User) -> EmployeeDocument:
+    doc = db.scalar(scoped_employees(
+        select(EmployeeDocument)
+        .join(Employee, Employee.id == EmployeeDocument.employee_id)
+        .where(EmployeeDocument.id == doc_id),
+        user,
+    ))
+    if doc is None or doc.is_deleted:
+        raise HTTPException(404, "文件不存在")
+    return doc
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -254,16 +337,26 @@ def reminders(days: int = Query(60, ge=1, le=365), user: User = Depends(get_curr
     _hr(user)
     today = date.today()
     horizon = today + timedelta(days=days)
-    names = {e.id: (e.name, e.emp_no) for e in db.scalars(select(Employee)).all()}
+    employees = db.scalars(scoped_employees(select(Employee), user)).all()
+    names = {e.id: (e.name, e.emp_no) for e in employees}
+    employee_ids = list(names)
+    if not employee_ids:
+        return []
     out = []
-    for c in db.scalars(select(EmployeeContract).where(EmployeeContract.status == "active")).all():
+    for c in db.scalars(select(EmployeeContract).where(
+        EmployeeContract.employee_id.in_(employee_ids),
+        EmployeeContract.status == "active",
+    )).all():
         for kind, d in (("contract_end", c.end_date), ("probation_end", c.probation_end)):
             if d and today - timedelta(days=7) <= d <= horizon:
                 out.append({"kind": kind, "date": d, "employee_id": c.employee_id,
                             "employee": names.get(c.employee_id, ("?", ""))[0], "ref": c.contract_no})
-    for d in db.scalars(select(EmployeeDocument).where(EmployeeDocument.is_deleted == False,  # noqa: E712
-                                                        EmployeeDocument.valid_until.is_not(None),
-                                                        EmployeeDocument.valid_until <= horizon)).all():
+    for d in db.scalars(select(EmployeeDocument).where(
+        EmployeeDocument.employee_id.in_(employee_ids),
+        EmployeeDocument.is_deleted == False,  # noqa: E712
+        EmployeeDocument.valid_until.is_not(None),
+        EmployeeDocument.valid_until <= horizon,
+    )).all():
         out.append({"kind": "document_expiry", "date": d.valid_until, "employee_id": d.employee_id,
                     "employee": names.get(d.employee_id, ("?", ""))[0], "ref": d.title})
     return sorted(out, key=lambda r: r["date"])
@@ -284,6 +377,7 @@ async def upload_document(
     user: User = Depends(get_current_user), db: Session = Depends(get_db),
 ):
     _hr(user)
+    require_permission(user, "employees.write")
     emp = _scoped_emp(db, emp_id, user)
     if category not in DOC_CATEGORIES:
         raise HTTPException(400, f"未知文件类别 {category}")
@@ -307,10 +401,7 @@ async def upload_document(
 def download_document(doc_id: int, inline: bool = False, user: User = Depends(get_current_user),
                       db: Session = Depends(get_db)):
     _hr(user)
-    doc = db.get(EmployeeDocument, doc_id)
-    if doc is None or doc.is_deleted:
-        raise HTTPException(404, "文件不存在")
-    _scoped_emp(db, doc.employee_id, user)
+    doc = _scoped_document(db, doc_id, user)
     return file_response(db.get(FileBlob, doc.file_id), inline=inline)
 
 
@@ -318,10 +409,8 @@ def download_document(doc_id: int, inline: bool = False, user: User = Depends(ge
 def delete_document(doc_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """软删除：文件仍保留在数据库中以备审计，档案中不再显示。"""
     _hr(user)
-    doc = db.get(EmployeeDocument, doc_id)
-    if doc is None or doc.is_deleted:
-        raise HTTPException(404, "文件不存在")
-    _scoped_emp(db, doc.employee_id, user, "employees.write")
+    require_permission(user, "employees.write")
+    doc = _scoped_document(db, doc_id, user)
     doc.is_deleted, doc.deleted_by, doc.deleted_at = True, user.display_name, datetime.utcnow()
     _event(db, db.get(Employee, doc.employee_id), "note", f"删除文件：{doc.title}", user, details={"document_id": doc.id})
     db.commit()
@@ -346,6 +435,14 @@ class HireIn(BaseModel):
 def hire_from_talent(talent_id: int, body: HireIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """人才库候选人 → 员工档案（招聘与人事打通）。"""
     _hr(user)
+    require_permission(user, "employees.write")
+    require_employee_assignment_scope(
+        db,
+        user,
+        supplier_id=body.supplier_id,
+        warehouse=body.primary_warehouse,
+        biz_line=body.biz_line,
+    )
     t = db.get(TalentPool, talent_id)
     if t is None:
         raise HTTPException(404, "候选人不存在")
@@ -401,10 +498,21 @@ def _check_contract(body) -> None:
 @router.post("/employees/{emp_id}/contracts", status_code=201)
 def create_contract(emp_id: int, body: ContractIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _hr(user)
-    emp = _scoped_emp(db, emp_id, user)
+    require_permission(user, "employees.write")
+    emp = _scoped_emp(db, emp_id, user, "employees.write")
     _check_contract(body)
     if body.status not in ("draft", "active"):
         raise HTTPException(400, "status 只能是 draft 或 active")
+    require_employee_assignment_scope(
+        db,
+        user,
+        supplier_id=emp.supplier_id,
+        warehouse=body.warehouse_code or emp.primary_warehouse,
+        biz_line=emp.biz_line,
+    )
+    active_contract = _active_contract(db, emp.id)
+    if body.status == "active" and active_contract and body.hourly_rate != emp.hourly_rate:
+        raise HTTPException(409, "已有生效合同的调薪必须先提交并执行调薪审批")
     data = body.model_dump()
     data["probation_end"] = body.probation_end or (body.start_date + timedelta(days=182))  # default: 6 months
     c = EmployeeContract(employee_id=emp.id, created_by=user.display_name,
@@ -445,12 +553,22 @@ class AmendIn(BaseModel):
 def amend_contract(contract_id: int, body: AmendIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """合同修改：生成新版本（parent_id 指向原合同），原合同标记为已修订。"""
     _hr(user)
+    require_permission(user, "employees.write")
     old = db.get(EmployeeContract, contract_id)
     if old is None:
         raise HTTPException(404, "合同不存在")
     if old.status != "active":
         raise HTTPException(400, "只能修改生效中的合同")
-    emp = _emp(db, old.employee_id)
+    emp = _scoped_emp(db, old.employee_id, user, "employees.write")
+    if body.hourly_rate is not None and body.hourly_rate != old.hourly_rate:
+        raise HTTPException(409, "调薪必须先提交并执行调薪审批")
+    require_employee_assignment_scope(
+        db,
+        user,
+        supplier_id=emp.supplier_id,
+        warehouse=body.warehouse_code or emp.primary_warehouse,
+        biz_line=emp.biz_line,
+    )
     changes = body.model_dump(exclude_unset=True, exclude={"effective_date", "change_summary"})
     data = {c.name: getattr(old, c.name) for c in EmployeeContract.__table__.columns
             if c.name not in ("id", "contract_no", "parent_id", "status", "created_at", "created_by", "change_summary",
@@ -460,8 +578,6 @@ def amend_contract(contract_id: int, body: AmendIn, user: User = Depends(get_cur
                            parent_id=old.id, status="active", change_summary=body.change_summary,
                            created_by=user.display_name)
     old.status = "amended"
-    if new.hourly_rate != old.hourly_rate:
-        emp.hourly_rate = new.hourly_rate
     if new.position:
         emp.position = new.position
     db.add(new)
@@ -480,12 +596,77 @@ class SalaryIn(BaseModel):
 
 
 def _request_approval(db: Session, emp: Employee, approval_type: str, payload: dict, user: User) -> PersonnelApproval:
-    approval = PersonnelApproval(employee_id=emp.id, approval_type=approval_type, payload=json.dumps(payload, ensure_ascii=False),
-                                 requested_by=user.display_name or user.username)
+    approval = PersonnelApproval(
+        employee_id=emp.id,
+        approval_type=approval_type,
+        status="pending",
+        payload=json.dumps(payload, ensure_ascii=False),
+        requested_by=_actor(user),
+    )
     db.add(approval)
     db.flush()
-    _event(db, emp, "note", f"{approval_type} 申请待审批", user, details={"approval_id": approval.id, "status": "requested"})
+    request_event = _event(
+        db,
+        emp,
+        approval_type,
+        f"{APPROVAL_LABELS[approval_type]}申请待审批",
+        user,
+        details={"approval_id": approval.id, "approval_status": "pending"},
+    )
+    approval.request_event_id = request_event.id
+    _approval_audit(db, approval, "requested", user)
     return approval
+
+
+def _scoped_approval_row(db: Session, approval_id: int, user: User):
+    stmt = scoped_employees(
+        select(PersonnelApproval, Employee)
+        .join(Employee, Employee.id == PersonnelApproval.employee_id)
+        .where(PersonnelApproval.id == approval_id),
+        user,
+    )
+    return db.execute(stmt).first()
+
+
+def _require_approval_view(user: User, approval: PersonnelApproval) -> None:
+    if approval.approval_type in approval_types(user):
+        return
+    require_permission(user, "personnel.request")
+    if approval.requested_by != _actor(user):
+        raise HTTPException(404, "审批不存在")
+
+
+def _approval_documents(db: Session, approval_ids: list[int]) -> dict[int, list[dict]]:
+    if not approval_ids:
+        return {}
+    documents: dict[int, list[dict]] = {}
+    rows = db.execute(
+        select(EmployeeDocument, FileBlob)
+        .join(FileBlob, FileBlob.id == EmployeeDocument.file_id)
+        .where(EmployeeDocument.approval_id.in_(approval_ids), EmployeeDocument.is_deleted == False)  # noqa: E712
+        .order_by(EmployeeDocument.created_at)
+    ).all()
+    for document, blob in rows:
+        documents.setdefault(document.approval_id, []).append(_doc_dict(document, blob))
+    return documents
+
+
+def _approval_dict(
+    approval: PersonnelApproval,
+    employee: Employee,
+    *,
+    attachments: Optional[list[dict]] = None,
+    audits: Optional[list[PersonnelApprovalAudit]] = None,
+) -> dict:
+    return {
+        **_row(approval),
+        "status": "pending" if approval.status == "requested" else approval.status,
+        "payload": _approval_payload(approval),
+        "employee_name": employee.name,
+        "emp_no": employee.emp_no,
+        "attachments": attachments or [],
+        "audit": [{**_row(audit)} for audit in (audits or [])],
+    }
 
 
 @router.post("/employees/{emp_id}/salary", status_code=201)
@@ -510,7 +691,8 @@ class ReviewIn(BaseModel):
 @router.post("/employees/{emp_id}/reviews", status_code=201)
 def performance_review(emp_id: int, body: ReviewIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _hr(user)
-    emp = _scoped_emp(db, emp_id, user)
+    require_permission(user, "employees.write")
+    emp = _scoped_emp(db, emp_id, user, "employees.write")
     ops = None
     if body.include_ops:
         rows = compute_performance(db, body.period_from, body.period_to, group_by="employee", employee_id=emp_id)
@@ -528,7 +710,7 @@ class LeaveIn(BaseModel):
     start_date: date
     end_date: date
     days: Optional[float] = Field(None, ge=0)
-    status: str = "requested"
+    status: str = "pending"
     notes: Optional[str] = None
 
 
@@ -539,7 +721,7 @@ def create_leave(emp_id: int, body: LeaveIn, user: User = Depends(get_current_us
         raise HTTPException(400, f"未知请假类型 {body.leave_type}")
     if body.end_date < body.start_date:
         raise HTTPException(400, "结束日期早于开始日期")
-    if body.status != "requested":
+    if body.status not in PENDING_APPROVAL_STATUSES:
         raise HTTPException(400, "状态无效")
     overlap = db.scalar(select(LeaveRecord.id).where(
         LeaveRecord.employee_id == emp_id, LeaveRecord.status != "rejected",
@@ -547,6 +729,7 @@ def create_leave(emp_id: int, body: LeaveIn, user: User = Depends(get_current_us
     if overlap:
         raise HTTPException(409, "与已有请假时间重叠")
     payload = body.model_dump(mode="json")
+    payload.pop("status", None)
     payload["days"] = body.days if body.days is not None else _workdays(body.start_date, body.end_date)
     approval = _request_approval(db, emp, "leave", payload, user)
     db.commit()
@@ -571,7 +754,8 @@ class WarningIn(BaseModel):
 @router.post("/employees/{emp_id}/warnings", status_code=201)
 def create_warning(emp_id: int, body: WarningIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _hr(user)
-    emp = _scoped_emp(db, emp_id, user)
+    require_permission(user, "employees.write")
+    emp = _scoped_emp(db, emp_id, user, "employees.write")
     prior = db.scalar(select(func.count(EmployeeEvent.id)).where(EmployeeEvent.employee_id == emp_id,
                                                                  EmployeeEvent.event_type == "warning")) or 0
     ev = _event(db, emp, "warning", f"Abmahnung #{prior + 1}：{body.reason[:80]}", user, event_date=body.incident_date,
@@ -606,18 +790,108 @@ class ApprovalDecisionIn(BaseModel):
 @router.get("/approvals")
 def list_approvals(status: Optional[str] = Query(None), employee_id: Optional[int] = Query(None),
                    user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    require_permission(user, "personnel.approve")
+    allowed_types = approval_types(user)
     stmt = scoped_employees(select(PersonnelApproval, Employee).join(Employee, Employee.id == PersonnelApproval.employee_id), user)
+    if allowed_types:
+        stmt = stmt.where(PersonnelApproval.approval_type.in_(allowed_types))
+    else:
+        require_permission(user, "personnel.request")
+        stmt = stmt.where(PersonnelApproval.requested_by == _actor(user))
     if status:
-        stmt = stmt.where(PersonnelApproval.status == status)
+        stmt = stmt.where(_approval_status_filter(status))
     if employee_id:
         stmt = stmt.where(PersonnelApproval.employee_id == employee_id)
     rows = db.execute(stmt.order_by(PersonnelApproval.requested_at.desc())).all()
-    return [{**_row(a), "payload": json.loads(a.payload), "employee_name": e.name, "emp_no": e.emp_no} for a, e in rows]
+    attachments = _approval_documents(db, [approval.id for approval, _ in rows])
+    return [_approval_dict(approval, employee, attachments=attachments.get(approval.id)) for approval, employee in rows]
+
+
+@router.get("/approvals/{approval_id}")
+def get_approval(approval_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    row = _scoped_approval_row(db, approval_id, user)
+    if row is None:
+        raise HTTPException(404, "审批不存在")
+    approval, employee = row
+    _require_approval_view(user, approval)
+    audits = db.scalars(
+        select(PersonnelApprovalAudit)
+        .where(PersonnelApprovalAudit.approval_id == approval.id)
+        .order_by(PersonnelApprovalAudit.created_at, PersonnelApprovalAudit.id)
+    ).all()
+    return _approval_dict(
+        approval,
+        employee,
+        attachments=_approval_documents(db, [approval.id]).get(approval.id),
+        audits=audits,
+    )
+
+
+@router.post("/approvals/{approval_id}/attachments", status_code=201)
+async def upload_approval_attachment(
+    approval_id: int,
+    file: UploadFile = File(...),
+    category: Optional[str] = Form(None),
+    title: Optional[str] = Form(None),
+    notes: Optional[str] = Form(None),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    require_permission(user, "personnel.request")
+    row = _scoped_approval_row(db, approval_id, user)
+    if row is None:
+        raise HTTPException(404, "审批不存在")
+    approval, employee = row
+    if approval.status not in PENDING_APPROVAL_STATUSES:
+        raise HTTPException(409, "只能为待审批申请添加附件")
+    if approval.requested_by != _actor(user):
+        raise HTTPException(403, "只有申请人可以添加附件")
+    document_category = category or approval.approval_type
+    if document_category not in DOC_CATEGORIES:
+        raise HTTPException(400, f"未知文件类别 {document_category}")
+    blob = await store_upload(db, file, _actor(user))
+    document = EmployeeDocument(
+        employee_id=employee.id,
+        approval_id=approval.id,
+        category=document_category,
+        title=(title or blob.filename)[:200],
+        file_id=blob.id,
+        source="upload",
+        event_id=approval.request_event_id,
+        notes=notes,
+        uploaded_by=_actor(user),
+    )
+    db.add(document)
+    db.flush()
+    _approval_audit(db, approval, "attachment_added", user, document.title)
+    db.commit()
+    return _doc_dict(document, blob)
+
+
+@router.get("/approvals/{approval_id}/attachments/{doc_id}/file")
+def download_approval_attachment(
+    approval_id: int,
+    doc_id: int,
+    inline: bool = False,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    row = _scoped_approval_row(db, approval_id, user)
+    if row is None:
+        raise HTTPException(404, "审批不存在")
+    approval, _ = row
+    _require_approval_view(user, approval)
+    document = db.scalar(select(EmployeeDocument).where(
+        EmployeeDocument.id == doc_id,
+        EmployeeDocument.approval_id == approval.id,
+        EmployeeDocument.is_deleted == False,  # noqa: E712
+    ))
+    if document is None:
+        raise HTTPException(404, "文件不存在")
+    return file_response(db.get(FileBlob, document.file_id), inline=inline)
 
 
 def _execute_approval(db: Session, approval: PersonnelApproval, emp: Employee, user: User) -> EmployeeEvent:
-    p = json.loads(approval.payload)
+    p = _approval_payload(approval)
     if approval.approval_type == "salary":
         old, new = emp.hourly_rate, float(p["new_rate"])
         emp.hourly_rate = new
@@ -625,7 +899,8 @@ def _execute_approval(db: Session, approval: PersonnelApproval, emp: Employee, u
         pct = round((new - old) / old * 100, 1) if old else None
         return _event(db, emp, "salary", f"调薪：{old or '—'} → {new} €/h", user,
                       event_date=date.fromisoformat(p["effective_date"]), contract_id=active.id if active else None,
-                      details={"from": old, "to": new, "percent": pct, "reason": p.get("reason"), "approval_id": approval.id})
+                      details={"from": old, "to": new, "percent": pct, "reason": p.get("reason"), "approval_id": approval.id,
+                               "approval_status": "executed"})
     if approval.approval_type == "leave":
         start, end = date.fromisoformat(p["start_date"]), date.fromisoformat(p["end_date"])
         overlap = db.scalar(select(LeaveRecord.id).where(LeaveRecord.employee_id == emp.id, LeaveRecord.status != "rejected",
@@ -637,7 +912,8 @@ def _execute_approval(db: Session, approval: PersonnelApproval, emp: Employee, u
                             certificate_required=p["leave_type"] in ("krank", "kind_krank") and (end - start).days >= 3)
         db.add(leave); db.flush()
         return _event(db, emp, "leave", f"请假（{p['leave_type']}）{start:%m-%d}—{end:%m-%d}，{float(p['days']):g} 天", user,
-                      event_date=start, leave_id=leave.id, details={"status": "approved", "approval_id": approval.id, "notes": p.get("notes")})
+                      event_date=start, leave_id=leave.id, details={"status": "approved", "approval_id": approval.id,
+                                                                      "approval_status": "executed", "notes": p.get("notes")})
     if approval.approval_type == "termination":
         last_day = date.fromisoformat(p["last_day"])
         emp.leave_date = last_day
@@ -653,32 +929,48 @@ def _execute_approval(db: Session, approval: PersonnelApproval, emp: Employee, u
                 linked.is_active = False
         return _event(db, emp, "termination", f"离职（{p['termination_type']}），最后工作日 {last_day:%Y-%m-%d}", user,
                       event_date=date.fromisoformat(p["notice_date"]) if p.get("notice_date") else date.today(),
-                      details={**p, "approval_id": approval.id})
+                      details={**p, "approval_id": approval.id, "approval_status": "executed"})
     raise HTTPException(400, "未知审批类型")
 
 
 @router.post("/approvals/{approval_id}/decision")
 def decide_approval(approval_id: int, body: ApprovalDecisionIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    require_permission(user, "personnel.approve")
-    approval = db.get(PersonnelApproval, approval_id)
-    if approval is None:
+    row = _scoped_approval_row(db, approval_id, user)
+    if row is None:
         raise HTTPException(404, "审批不存在")
-    emp = _scoped_emp(db, approval.employee_id, user, "personnel.approve")
-    if approval.status != "requested":
+    approval, emp = row
+    require_approval_permission(user, approval.approval_type)
+    if approval.status not in PENDING_APPROVAL_STATUSES:
         raise HTTPException(409, "该申请已处理")
-    if approval.requested_by == (user.display_name or user.username):
+    if approval.requested_by == _actor(user):
         raise HTTPException(403, "申请人不能审批自己的申请")
     if body.status not in {"approved", "rejected"}:
         raise HTTPException(400, "状态只能是 approved 或 rejected")
-    approval.status, approval.decided_by, approval.decided_at, approval.decision_note = body.status, user.display_name, datetime.utcnow(), body.note
+    if body.status == "rejected" and not (body.note or "").strip():
+        raise HTTPException(400, "驳回时必须填写审批意见")
+    now = datetime.utcnow()
+    approval.decided_by, approval.decided_at, approval.decision_note = _actor(user), now, body.note
     if body.status == "approved":
+        approval.status, approval.approved_by, approval.approved_at = "approved", _actor(user), now
+        _approval_audit(db, approval, "approved", user, body.note)
         event = _execute_approval(db, approval, emp, user)
         approval.event_id = event.id
+        approval.status, approval.executed_by, approval.executed_at = "executed", _actor(user), datetime.utcnow()
+        _approval_audit(db, approval, "executed", user)
     else:
-        _event(db, emp, "note", f"{approval.approval_type} 申请被拒绝", user,
-               details={"approval_id": approval.id, "status": "rejected", "note": body.note})
+        approval.status = "rejected"
+        event = _event(
+            db,
+            emp,
+            approval.approval_type,
+            f"{APPROVAL_LABELS[approval.approval_type]}申请被驳回",
+            user,
+            details={"approval_id": approval.id, "approval_status": "rejected", "note": body.note},
+        )
+        approval.event_id = event.id
+        _approval_audit(db, approval, "rejected", user, body.note)
     db.commit()
-    return {**_row(approval), "payload": json.loads(approval.payload)}
+    return _approval_dict(approval, emp, attachments=_approval_documents(db, [approval.id]).get(approval.id))
 
 
 class NoteIn(BaseModel):
@@ -690,7 +982,8 @@ class NoteIn(BaseModel):
 @router.post("/employees/{emp_id}/notes", status_code=201)
 def add_note(emp_id: int, body: NoteIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _hr(user)
-    ev = _event(db, _scoped_emp(db, emp_id, user), "note", body.title, user, event_date=body.event_date, details={"text": body.text})
+    require_permission(user, "employees.write")
+    ev = _event(db, _scoped_emp(db, emp_id, user, "employees.write"), "note", body.title, user, event_date=body.event_date, details={"text": body.text})
     db.commit()
     return {"ok": True, "event_id": ev.id}
 
@@ -730,6 +1023,7 @@ def list_templates(user: User = Depends(get_current_user), db: Session = Depends
 @router.post("/templates", status_code=201)
 def create_template(body: TemplateIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _hr(user)
+    require_permission(user, "employees.write")
     if body.category not in TEMPLATE_CATEGORIES:
         raise HTTPException(400, "未知模板类别")
     code = body.code.strip().upper()
@@ -744,6 +1038,7 @@ def create_template(body: TemplateIn, user: User = Depends(get_current_user), db
 @router.put("/templates/{tpl_id}")
 def update_template(tpl_id: int, body: TemplateUpdate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     _hr(user)
+    require_permission(user, "employees.write")
     t = db.get(DocTemplate, tpl_id)
     if t is None:
         raise HTTPException(404, "模板不存在")
@@ -775,7 +1070,7 @@ def render_template(tpl_id: int, body: RenderIn, user: User = Depends(get_curren
     t = db.get(DocTemplate, tpl_id)
     if t is None:
         raise HTTPException(404, "模板不存在")
-    emp = _emp(db, body.employee_id)
+    emp = _scoped_emp(db, body.employee_id, user)
     contract = db.get(EmployeeContract, body.contract_id) if body.contract_id else (
         _active_contract(db, emp.id) or db.scalar(  # 离职员工：用最近一份合同
             select(EmployeeContract).where(EmployeeContract.employee_id == emp.id)
@@ -797,6 +1092,7 @@ def render_template(tpl_id: int, body: RenderIn, user: User = Depends(get_curren
                                  "Cache-Control": "private, no-store"})
     if body.mode != "save":
         raise HTTPException(400, "mode 只能是 preview / docx / save")
+    require_permission(user, "employees.write")
     if missing:
         raise HTTPException(400, f"还有未填写的字段：{', '.join(missing)}")
     blob = store_bytes(db, data, fname, None, user.display_name)

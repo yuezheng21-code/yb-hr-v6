@@ -88,6 +88,7 @@ def compute_performance(
     client: Optional[str] = None,
     supplier_id: Optional[int] = None,
     employee_id: Optional[int] = None,
+    employee_ids: Optional[set[int] | list[int] | tuple[int, ...]] = None,
     confirmed_only: bool = False,
     w_efficiency: float = 0.7,
     w_quality: float = 0.3,
@@ -108,6 +109,8 @@ def compute_performance(
         stmt = stmt.where(OperationLog.supplier_id == supplier_id)
     if employee_id:
         stmt = stmt.where(OperationLog.employee_id == employee_id)
+    if employee_ids is not None:
+        stmt = stmt.where(OperationLog.employee_id.in_(list(employee_ids) or [-1]))
     logs = db.scalars(stmt).all()
 
     types = {t.id: t for t in db.scalars(select(OperationType)).all()}
@@ -193,6 +196,8 @@ def compute_performance(
         qstmt = qstmt.where(QualityEvent.supplier_id == supplier_id)
     if employee_id:
         qstmt = qstmt.where(QualityEvent.employee_id == employee_id)
+    if employee_ids is not None:
+        qstmt = qstmt.where(QualityEvent.employee_id.in_(list(employee_ids) or [-1]))
     qpoints: dict = defaultdict(float)
     qcount: dict = defaultdict(int)
     qdeduct: dict = defaultdict(float)

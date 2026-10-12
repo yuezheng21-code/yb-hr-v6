@@ -45,6 +45,7 @@ class EmployeeDocument(Base):
     source: Mapped[str] = mapped_column(String(20), default="upload")  # upload / generated
     template_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("doc_templates.id"), nullable=True)
     event_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("employee_events.id"), nullable=True)
+    approval_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("personnel_approvals.id"), nullable=True, index=True)
     valid_until: Mapped[Optional[date]] = mapped_column(Date, nullable=True)  # 证件/签证到期提醒
     notes: Mapped[Optional[str]] = mapped_column(Text)
     uploaded_by: Mapped[Optional[str]] = mapped_column(String(100))
@@ -91,7 +92,7 @@ class LeaveRecord(Base):
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
     days: Mapped[float] = mapped_column(Float, default=0.0)  # working days
-    status: Mapped[str] = mapped_column(String(20), default="approved")  # requested / approved / rejected
+    status: Mapped[str] = mapped_column(String(20), default="pending")  # pending / approved / rejected
     certificate_required: Mapped[bool] = mapped_column(Boolean, default=False)  # AU-Bescheinigung
     notes: Mapped[Optional[str]] = mapped_column(Text)
     decided_by: Mapped[Optional[str]] = mapped_column(String(100))
@@ -122,14 +123,31 @@ class PersonnelApproval(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     employee_id: Mapped[int] = mapped_column(Integer, ForeignKey("employees.id"), nullable=False, index=True)
     approval_type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)  # leave / salary / termination
-    status: Mapped[str] = mapped_column(String(20), nullable=False, default="requested", index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending", index=True)
     payload: Mapped[str] = mapped_column(Text, nullable=False)
     requested_by: Mapped[str] = mapped_column(String(100), nullable=False)
     requested_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())
     decided_by: Mapped[Optional[str]] = mapped_column(String(100))
     decided_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     decision_note: Mapped[Optional[str]] = mapped_column(Text)
+    approved_by: Mapped[Optional[str]] = mapped_column(String(100))
+    approved_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    executed_by: Mapped[Optional[str]] = mapped_column(String(100))
+    executed_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    request_event_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("employee_events.id"), nullable=True)
     event_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("employee_events.id"), nullable=True)
+
+
+class PersonnelApprovalAudit(Base):
+    """Append-only audit entries for approval state transitions."""
+    __tablename__ = "personnel_approval_audits"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    approval_id: Mapped[int] = mapped_column(Integer, ForeignKey("personnel_approvals.id"), nullable=False, index=True)
+    action: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
+    actor: Mapped[str] = mapped_column(String(100), nullable=False)
+    note: Mapped[Optional[str]] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow(), index=True)
 
 
 class DocTemplate(Base):

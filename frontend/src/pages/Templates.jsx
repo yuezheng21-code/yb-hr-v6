@@ -3,6 +3,7 @@ import { api } from '../services/api.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { GenerateDrawer } from './PersonnelFile.jsx';
+import { hasPermission } from '../services/permissions.js';
 
 const P = '/api/v1/personnel';
 const CAT = { contract: '劳动合同', amendment: '补充协议', warning: '警告 Abmahnung', termination: '解约', certificate: '证明', other: '其他' };
@@ -19,6 +20,8 @@ export default function Templates({ token, user }) {
   const [empId, setEmpId] = useState('');
   const [gen, setGen] = useState(false);
   const ta = useRef(null);
+  const canRead = hasPermission(user, 'personnel.read');
+  const canWrite = hasPermission(user, 'employees.write');
 
   const load = (pick) => api(`${P}/templates`, { token }).then(ts => {
     setList(ts);
@@ -32,7 +35,7 @@ export default function Templates({ token, user }) {
     api('/api/v1/employees?status=active&limit=1000', { token }).then(setEmps).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!['admin', 'hr'].includes(user?.role)) return <div className="mz-empty">仅 HR / 管理员可管理文书模板</div>;
+  if (!canRead) return <div className="mz-empty">您没有查看文书模板的权限</div>;
   if (!list) return <Loading />;
 
   const pick = (t) => {
@@ -68,7 +71,7 @@ export default function Templates({ token, user }) {
       <div className="mz-head">
         <div><div className="mz-title">文书模板</div>
           <div className="mz-sub">劳动合同、补充协议、Abmahnung、解约通知、工作证明。HR 选员工即可自动填入档案信息，只需补填少量字段。</div></div>
-        <div className="mz-actions"><button className="mz-btn mz-btn-p" onClick={() => pick('new')}>新建模板</button></div>
+        <div className="mz-actions">{canWrite && <button className="mz-btn mz-btn-p" onClick={() => pick('new')}>新建模板</button>}</div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 260px) minmax(0, 1fr)', gap: 16, alignItems: 'start' }} className="tpl-grid">
@@ -88,22 +91,22 @@ export default function Templates({ token, user }) {
         <div className="mz-card">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
             <div className="mz-field"><label>代码（唯一，创建后不可改）</label>
-              <input className="mz-input" value={f.code} disabled={sel !== 'new'} placeholder="z.B. ABMAHNUNG_2" onChange={e => set('code', e.target.value.toUpperCase())} /></div>
+              <input className="mz-input" value={f.code} disabled={!canWrite || sel !== 'new'} placeholder="z.B. ABMAHNUNG_2" onChange={e => set('code', e.target.value.toUpperCase())} /></div>
             <div className="mz-field" style={{ gridColumn: 'span 2' }}><label>名称</label>
-              <input className="mz-input" value={f.name} onChange={e => set('name', e.target.value)} /></div>
+              <input className="mz-input" value={f.name} disabled={!canWrite} onChange={e => set('name', e.target.value)} /></div>
             <div className="mz-field"><label>类别（生成的文件归档到此类）</label>
-              <select className="mz-select" value={f.category} onChange={e => set('category', e.target.value)}>
+              <select className="mz-select" value={f.category} disabled={!canWrite} onChange={e => set('category', e.target.value)}>
                 {Object.entries(CAT).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></div>
             <div className="mz-field"><label>语言</label>
-              <select className="mz-select" value={f.language} onChange={e => set('language', e.target.value)}>
+              <select className="mz-select" value={f.language} disabled={!canWrite} onChange={e => set('language', e.target.value)}>
                 {['de', 'en', 'zh', 'pl', 'tr', 'hu', 'vi', 'ar'].map(l => <option key={l}>{l}</option>)}</select></div>
           </div>
           <div className="mz-field" style={{ marginTop: 12 }}><label>说明</label>
-            <input className="mz-input" value={f.description || ''} onChange={e => set('description', e.target.value)} /></div>
+            <input className="mz-input" value={f.description || ''} disabled={!canWrite} onChange={e => set('description', e.target.value)} /></div>
 
           <div className="mz-field" style={{ marginTop: 12 }}>
             <label>正文 — <code># 标题</code>　<code>## 小标题</code>　<code>**加粗**</code>　<code>---</code> 分页　<code>{'{{占位符}}'}</code> 自动填充　<code>{'{{key|标签}}'}</code> 由 HR 填写</label>
-            <textarea ref={ta} className="mz-input" spellCheck={false} value={f.body} onChange={e => set('body', e.target.value)}
+            <textarea ref={ta} className="mz-input" spellCheck={false} value={f.body} disabled={!canWrite} onChange={e => set('body', e.target.value)}
               style={{ height: 420, padding: 12, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, lineHeight: 1.6 }} />
           </div>
           {meta?.auto_fields && (
@@ -111,16 +114,16 @@ export default function Templates({ token, user }) {
               <div className="mz-hint" style={{ marginBottom: 6 }}>点击插入自动字段：</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {Object.entries(meta.auto_fields).map(([k, l]) => (
-                  <button key={k} className="mz-btn mz-btn-s" title={k} onClick={() => insert(`{{${k}}}`)}>{l}</button>
+                  <button key={k} className="mz-btn mz-btn-s" title={k} disabled={!canWrite} onClick={() => insert(`{{${k}}}`)}>{l}</button>
                 ))}
-                <button className="mz-btn mz-btn-s" onClick={() => insert('{{feld|Bezeichnung}}')}>+ 手填字段</button>
+                <button className="mz-btn mz-btn-s" disabled={!canWrite} onClick={() => insert('{{feld|Bezeichnung}}')}>+ 手填字段</button>
               </div>
             </div>
           )}
           {manual.length > 0 && <div className="mz-hint" style={{ marginTop: 10 }}>生成时需 HR 填写：{manual.join('、')}</div>}
 
           <div className="mz-actions" style={{ marginTop: 16, justifyContent: 'space-between', flexWrap: 'wrap' }}>
-            <label className="mz-switch" style={{ gap: 8 }}>启用<input type="checkbox" checked={!!f.is_active} onChange={e => set('is_active', e.target.checked)} /></label>
+            <label className="mz-switch" style={{ gap: 8 }}>启用<input type="checkbox" disabled={!canWrite} checked={!!f.is_active} onChange={e => set('is_active', e.target.checked)} /></label>
             <div className="mz-actions">
               {sel !== 'new' && <>
                 <select className="mz-select" value={empId} onChange={e => setEmpId(e.target.value)} style={{ minWidth: 180 }}>
@@ -129,14 +132,14 @@ export default function Templates({ token, user }) {
                 </select>
                 <button className="mz-btn" disabled={!empId || dirty || !f.is_active} title={dirty ? '请先保存模板' : ''} onClick={() => setGen(true)}>为员工生成</button>
               </>}
-              <button className="mz-btn mz-btn-p" disabled={!dirty} onClick={save}>{sel === 'new' ? '创建' : '保存'}</button>
+              {canWrite && <button className="mz-btn mz-btn-p" disabled={!dirty} onClick={save}>{sel === 'new' ? '创建' : '保存'}</button>}
             </div>
           </div>
           <div className="mz-hint" style={{ marginTop: 10 }}>修改正文后版本号自动 +1，已生成的文书记录生成时的模板版本。内置模板为德国劳动法通用示例（Muster），正式使用前请由劳动法律师审核。</div>
         </div>
       </div>
 
-      {gen && emp && <GenerateDrawer init={{ templateCode: f.code }} emp={emp} templates={list} token={token}
+      {gen && emp && <GenerateDrawer init={{ templateCode: f.code }} emp={emp} templates={list} token={token} canWrite={canWrite}
         onClose={() => setGen(false)} onSaved={() => setGen(false)} />}
     </div>
   );
