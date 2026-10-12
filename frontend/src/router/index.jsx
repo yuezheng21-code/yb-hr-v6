@@ -11,6 +11,7 @@ export const NAV_ITEMS = [
   { key: 'client_bi',       icon: BarChart3, labelKey: 'nav.client_bi',      roles: ['client'] },
   { key: 'dashboard',       icon: LayoutDashboard, labelKey: 'nav.dashboard',       roles: ['admin','hr','wh','fin','mgr','sup'] },
   { key: 'employees',       icon: Users, labelKey: 'nav.employees',       roles: ['admin','hr','wh','fin','mgr','sup'] },
+  { key: 'personnel_changes', icon: ClipboardList, label: '工人变更汇总', roles: ['admin','hr','wh','fin','mgr','sup'] },
   { key: 'timesheets',      icon: Clock3, labelKey: 'nav.timesheets',       roles: ['admin','hr','wh','fin','mgr','sup'] },
   { key: 'schedules',       icon: Hourglass, labelKey: 'nav.schedules',        roles: ['admin','hr','mgr'] },
   { key: 'settlements',     icon: Wallet, labelKey: 'nav.settlement',       roles: ['admin','hr','fin','sup','mgr'] },

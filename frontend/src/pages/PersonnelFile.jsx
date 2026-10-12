@@ -4,6 +4,7 @@ import { api } from '../services/api.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { Loading } from '../components/Spinner.jsx';
 import { initials } from './admin/shared.js';
+import { canApprove, hasPermission } from '../services/permissions.js';
 
 const P = '/api/v1/personnel';
 const today = () => new Date().toISOString().slice(0, 10);
@@ -23,7 +24,7 @@ const LEAVE = { urlaub: '年假 Urlaub', krank: '病假 Krank', kind_krank: '子
 const CONTRACT = { befristet: '定期 befristet', unbefristet: '无固定期 unbefristet', minijob: 'Minijob', werkstudent: 'Werkstudent', aushilfe: '临时工 Aushilfe' };
 const CONTRACT_STATUS = { draft: '草稿', active: '生效中', amended: '已修订', ended: '已结束' };
 const TERM = { ordentlich: '普通解雇', fristlos: '即时解雇', aufhebung: '协议解除', befristung_ende: '合同到期', eigenkuendigung: '员工辞职', probezeit: '试用期解除' };
-const LEAVE_STATUS = { requested: '待批准', approved: '已批准', rejected: '已拒绝' };
+const LEAVE_STATUS = { pending: '待审批', requested: '待审批', approved: '已批准', rejected: '已拒绝' };
 // action → template code offered after submit
 const ACTION_TEMPLATE = { contract: 'AV_BEFRISTET', salary: 'AENDERUNG_LOHN', warning: 'ABMAHNUNG', termination: 'KUENDIGUNG_ORDENTLICH' };
 
@@ -72,6 +73,16 @@ export async function uploadDoc(token, empId, file, fields) {
   return data;
 }
 
+async function uploadApprovalAttachment(token, approvalId, file, fields) {
+  const fd = new FormData();
+  fd.append('file', file);
+  Object.entries(fields).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') fd.append(k, v); });
+  const res = await fetch(`${P}/approvals/${approvalId}/attachments`, { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || res.statusText);
+  return data;
+}
+
 export default function PersonnelFile({ token, user }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -84,16 +95,25 @@ export default function PersonnelFile({ token, user }) {
   const [templates, setTemplates] = useState([]);
   const [changes, setChanges] = useState([]);
   const [approvals, setApprovals] = useState([]);
+  const canRead = hasPermission(user, 'personnel.read');
+  const canWrite = hasPermission(user, 'employees.write');
+  const canRequest = hasPermission(user, 'personnel.request');
+  const canApproveAny = ['leave', 'salary', 'termination'].some(type => canApprove(user, type));
+  const canSeeApprovals = canRequest || canApproveAny;
 
   const load = () => api(`${P}/employees/${id}`, { token }).then(setD).catch(e => setErr(e.message));
+  const loadApprovals = () => {
+    if (!canSeeApprovals) return setApprovals([]);
+    return api(`${P}/approvals?employee_id=${id}&status=pending`, { token }).then(setApprovals).catch(() => {});
+  };
   useEffect(() => {
     load();
     api(`${P}/templates`, { token }).then(setTemplates).catch(() => {});
     api(`${P}/changes?employee_id=${id}`, { token }).then(setChanges).catch(() => {});
-    api(`${P}/approvals?employee_id=${id}&status=requested`, { token }).then(setApprovals).catch(() => {});
+    loadApprovals();
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!['admin', 'hr'].includes(user?.role)) return <div className="mz-empty">人事档案仅 HR / 管理员可查看</div>;
+  if (!canRead) return <div className="mz-empty">您没有查看人事档案的权限</div>;
   if (err) return <div className="mz-empty">{err}</div>;
   if (!d) return <Loading />;
 
@@ -104,12 +124,15 @@ export default function PersonnelFile({ token, user }) {
 
   const after = async (kind, res, file, useTemplate, prefill) => {
     if (file) {
-      try { await uploadDoc(token, e.id, file, { category: fileCategory(kind), title: file.name, event_id: res.event_id }); }
+      try {
+        if (res.approval_id) await uploadApprovalAttachment(token, res.approval_id, file, { category: fileCategory(kind), title: file.name });
+        else await uploadDoc(token, e.id, file, { category: fileCategory(kind), title: file.name, event_id: res.event_id });
+      }
       catch (x) { showToast('记录已保存，但附件上传失败：' + x.message, 'err'); }
     }
     setAction(null);
     await load();
-    if (useTemplate && ACTION_TEMPLATE[kind]) setGen({ templateCode: ACTION_TEMPLATE[kind], eventId: res.event_id, contractId: kind === 'contract' ? res.id : undefined, values: prefill });
+    if (useTemplate && !res.approval_id && ACTION_TEMPLATE[kind]) setGen({ templateCode: ACTION_TEMPLATE[kind], eventId: res.event_id, contractId: kind === 'contract' ? res.id : undefined, values: prefill });
   };
 
   return (
@@ -128,14 +151,17 @@ export default function PersonnelFile({ token, user }) {
           </div>
         </div>
         <div className="mz-actions">
-          <button className="mz-btn" onClick={() => setAction({ kind: 'upload' })}>上传文件</button>
+          {canWrite && <button className="mz-btn" onClick={() => setAction({ kind: 'upload' })}>上传文件</button>}
           <button className="mz-btn mz-btn-p" onClick={() => setGen({})}>生成文书</button>
         </div>
       </div>
 
       <div className="mz-card" style={{ padding: 12 }}>
         <div className="mz-actions" style={{ gap: 6 }}>
-          {[['contract', '签订合同'], ['salary', '调薪'], ['performance', '绩效评估'], ['leave', '请假'], ['warning', 'Abmahnung'], ['note', '备注'], ['termination', '离职']].map(([k, l]) => (
+          {[
+            ['contract', '签订合同', canWrite], ['salary', '调薪', canRequest], ['performance', '绩效评估', canWrite],
+            ['leave', '请假', canRequest], ['warning', 'Abmahnung', canWrite], ['note', '备注', canWrite], ['termination', '离职', canRequest],
+          ].filter(([, , allowed]) => allowed).map(([k, l]) => (
             <button key={k} className={`mz-btn mz-btn-s ${k === 'termination' || k === 'warning' ? 'mz-btn-d' : ''}`} disabled={left && k !== 'note'} onClick={() => setAction({ kind: k })}>{l}</button>
           ))}
         </div>
@@ -155,16 +181,16 @@ export default function PersonnelFile({ token, user }) {
           ))}
         </div>
         {tab === 'timeline' && <Timeline events={d.events} docs={d.documents} token={token} />}
-        {tab === 'approvals' && <Approvals approvals={approvals} token={token} onChange={() => { load(); api(`${P}/approvals?employee_id=${id}&status=requested`, { token }).then(setApprovals).catch(() => {}); }} />}
+        {tab === 'approvals' && <Approvals approvals={approvals} token={token} user={user} onChange={() => { load(); loadApprovals(); }} />}
         {tab === 'changes' && <ChangeSummary changes={changes} employeeId={id} token={token} />}
-        {tab === 'contracts' && <Contracts contracts={d.contracts} onAmend={c => setAction({ kind: 'amend', contract: c })} onGenerate={c => setGen({ templateCode: 'AV_BEFRISTET', contractId: c.id })} />}
-        {tab === 'documents' && <Documents docs={d.documents} token={token} onChange={load} />}
+        {tab === 'contracts' && <Contracts contracts={d.contracts} canWrite={canWrite} onAmend={c => setAction({ kind: 'amend', contract: c })} onGenerate={c => setGen({ templateCode: 'AV_BEFRISTET', contractId: c.id })} />}
+        {tab === 'documents' && <Documents docs={d.documents} token={token} canWrite={canWrite} onChange={load} />}
         {tab === 'leaves' && <Leaves leaves={d.leaves} token={token} onChange={load} />}
-        {tab === 'basic' && <Basic emp={e} token={token} onSaved={load} />}
+        {tab === 'basic' && <Basic emp={e} token={token} canWrite={canWrite} onSaved={load} />}
       </div>
 
       {action && <ActionDrawer action={action} emp={e} contract={ac} token={token} onClose={() => setAction(null)} onDone={after} />}
-      {gen && <GenerateDrawer init={gen} emp={e} templates={templates} token={token} onClose={() => setGen(null)} onSaved={() => { setGen(null); load(); }} />}
+      {gen && <GenerateDrawer init={gen} emp={e} templates={templates} token={token} canWrite={canWrite} onClose={() => setGen(null)} onSaved={() => { setGen(null); load(); }} />}
     </div>
   );
 }
@@ -177,23 +203,24 @@ function ChangeSummary({ changes, employeeId, token }) {
       <button className="mz-btn" onClick={() => download('pdf')}>下载 PDF</button>
     </div>
     {!changes.length ? <div className="mz-empty">暂无人员变更</div> : <div className="mz-scroll"><table className="mz-table">
-      <thead><tr><th>日期</th><th>类别</th><th>变更内容</th><th>操作人</th></tr></thead>
-      <tbody>{changes.map(c => <tr key={c.id}><td>{c.date}</td><td>{EVENT[c.type]?.[0] || c.type}</td><td>{c.title}</td><td>{c.created_by || '—'}</td></tr>)}</tbody>
+      <thead><tr><th>日期</th><th>类别</th><th>审批状态</th><th>变更内容</th><th>操作人</th></tr></thead>
+      <tbody>{changes.map(c => <tr key={c.id}><td>{c.date}</td><td>{EVENT[c.type]?.[0] || c.type}</td><td>{c.approval_status || '—'}</td><td>{c.title}</td><td>{c.created_by || '—'}</td></tr>)}</tbody>
     </table></div>}
   </div>;
 }
 
-function Approvals({ approvals, token, onChange }) {
+function Approvals({ approvals, token, user, onChange }) {
   const showToast = useToast();
   const decide = async (id, status) => {
-    const note = window.prompt(status === 'approved' ? '审批意见（可选）' : '驳回原因（可选）') ?? '';
+    const note = window.prompt(status === 'approved' ? '审批意见（可选）' : '驳回原因（必填）') ?? '';
+    if (status === 'rejected' && !note.trim()) return;
     try { await api(`${P}/approvals/${id}/decision`, { method: 'POST', token, body: { status, note } }); showToast(status === 'approved' ? '已批准并执行' : '已驳回'); onChange(); }
     catch (e) { showToast(e.message, 'err'); }
   };
   if (!approvals.length) return <div className="mz-empty">没有待审批申请，或您没有审批权限。</div>;
   return <div className="mz-scroll"><table className="mz-table"><thead><tr><th>类型</th><th>申请人</th><th>申请时间</th><th>内容</th><th /></tr></thead><tbody>
     {approvals.map(a => <tr key={a.id}><td>{a.approval_type}</td><td>{a.requested_by}</td><td>{a.requested_at?.slice(0, 16)}</td><td>{a.payload?.reason || a.payload?.notes || '—'}</td>
-      <td><button className="mz-btn mz-btn-s" onClick={() => decide(a.id, 'approved')}>批准</button><button className="mz-btn mz-btn-d mz-btn-s" onClick={() => decide(a.id, 'rejected')}>驳回</button></td></tr>)}
+      <td>{canApprove(user, a.approval_type) && <><button className="mz-btn mz-btn-s" onClick={() => decide(a.id, 'approved')}>批准</button><button className="mz-btn mz-btn-d mz-btn-s" onClick={() => decide(a.id, 'rejected')}>驳回</button></>}</td></tr>)}
   </tbody></table></div>;
 }
 
@@ -253,7 +280,7 @@ function Timeline({ events, docs, token }) {
   );
 }
 
-function Contracts({ contracts, onAmend, onGenerate }) {
+function Contracts({ contracts, canWrite, onAmend, onGenerate }) {
   if (!contracts.length) return <div className="mz-empty">暂无合同。点击上方「签订合同」录入，并可用模板直接生成合同文本。</div>;
   return (
     <div className="mz-scroll"><table className="mz-table">
@@ -269,7 +296,7 @@ function Contracts({ contracts, onAmend, onGenerate }) {
           <td>{c.position || '—'} · {c.warehouse_code || '—'}</td>
           <td><span className="mz-tag"><span className="mz-dot" style={{ background: c.status === 'active' ? 'var(--gn)' : 'var(--tx3)' }} />{CONTRACT_STATUS[c.status] || c.status}</span></td>
           <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-            {c.status === 'active' && <button className="mz-btn mz-btn-s" onClick={() => onAmend(c)}>修订</button>}{' '}
+            {canWrite && c.status === 'active' && <button className="mz-btn mz-btn-s" onClick={() => onAmend(c)}>修订</button>}{' '}
             <button className="mz-btn mz-btn-s" onClick={() => onGenerate(c)}>生成文本</button>
           </td>
         </tr>
@@ -278,7 +305,7 @@ function Contracts({ contracts, onAmend, onGenerate }) {
   );
 }
 
-function Documents({ docs, token, onChange }) {
+function Documents({ docs, token, canWrite, onChange }) {
   const showToast = useToast();
   const [cat, setCat] = useState('');
   const cats = [...new Set(docs.map(x => x.category))];
@@ -307,7 +334,7 @@ function Documents({ docs, token, onChange }) {
             <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
               <button className="mz-btn mz-btn-s" onClick={() => openFile(`${P}/documents/${x.id}/file`, token).catch(e => showToast(e.message, 'err'))}>查看</button>{' '}
               <button className="mz-btn mz-btn-s" onClick={() => saveFile(`${P}/documents/${x.id}/file`, token, x.file?.filename || 'file').catch(e => showToast(e.message, 'err'))}>下载</button>{' '}
-              <button className="mz-btn mz-btn-s mz-btn-d" onClick={() => del(x)}>移除</button>
+              {canWrite && <button className="mz-btn mz-btn-s mz-btn-d" onClick={() => del(x)}>移除</button>}
             </td>
           </tr>
         ))}</tbody>
@@ -316,11 +343,7 @@ function Documents({ docs, token, onChange }) {
   );
 }
 
-function Leaves({ leaves, token, onChange }) {
-  const showToast = useToast();
-  const set = async (l, status) => {
-    try { await api(`${P}/leaves/${l.id}`, { method: 'PUT', body: { status }, token }); onChange(); } catch (e) { showToast(e.message, 'err'); }
-  };
+function Leaves({ leaves }) {
   if (!leaves.length) return <div className="mz-empty">暂无请假记录</div>;
   return (
     <div className="mz-scroll"><table className="mz-table">
@@ -333,10 +356,7 @@ function Leaves({ leaves, token, onChange }) {
           <td><span className="mz-tag"><span className="mz-dot" style={{ background: l.status === 'approved' ? 'var(--gn)' : l.status === 'rejected' ? 'var(--rd)' : 'var(--og)' }} />{LEAVE_STATUS[l.status]}</span></td>
           <td className="mz-muted">{l.certificate_required ? '需要（>3 天）' : '—'}</td>
           <td className="mz-muted">{l.notes || ''}</td>
-          <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-            {l.status !== 'approved' && <button className="mz-btn mz-btn-s" onClick={() => set(l, 'approved')}>批准</button>}{' '}
-            {l.status !== 'rejected' && <button className="mz-btn mz-btn-s mz-btn-d" onClick={() => set(l, 'rejected')}>拒绝</button>}
-          </td>
+          <td />
         </tr>
       ))}</tbody>
     </table></div>
@@ -351,7 +371,7 @@ const BASIC_FIELDS = [
   ['whatsapp', 'WhatsApp'], ['wechat', '微信'],
 ];
 
-function Basic({ emp, token, onSaved }) {
+function Basic({ emp, token, canWrite, onSaved }) {
   const showToast = useToast();
   const [f, setF] = useState(() => Object.fromEntries(BASIC_FIELDS.map(([k]) => [k, emp[k] || ''])));
   const save = async () => {
@@ -370,7 +390,7 @@ function Basic({ emp, token, onSaved }) {
             <input className="mz-input" type={type || 'text'} value={f[k]} onChange={e => setF({ ...f, [k]: e.target.value })} /></div>
         ))}
       </div>
-      <div style={{ marginTop: 16, textAlign: 'right' }}><button className="mz-btn mz-btn-p" onClick={save}>保存个人信息</button></div>
+      {canWrite && <div style={{ marginTop: 16, textAlign: 'right' }}><button className="mz-btn mz-btn-p" onClick={save}>保存个人信息</button></div>}
     </div>
   );
 }
@@ -384,7 +404,7 @@ function ActionDrawer({ action, emp, contract, token, onClose, onDone }) {
     amend: { effective_date: today(), change_summary: '', hourly_rate: '', weekly_hours: '', warehouse_code: '', position: '', end_date: '' },
     salary: { new_rate: emp.hourly_rate ? (emp.hourly_rate + 0.5).toFixed(2) : '', effective_date: today(), reason: '' },
     performance: { period_from: plusDays(today(), -90), period_to: today(), rating: 3, summary: '', strengths: '', improvements: '', goals: '', include_ops: true },
-    leave: { leave_type: 'urlaub', start_date: today(), end_date: today(), status: 'requested', notes: '' },
+    leave: { leave_type: 'urlaub', start_date: today(), end_date: today(), status: 'pending', notes: '' },
     warning: { incident_date: today(), reason: '', description: '' },
     termination: { last_day: plusDays(today(), 28), termination_type: 'ordentlich', notice_date: today(), reason: '', deactivate_login: true },
     note: { title: '', text: '', event_date: today() },
@@ -478,11 +498,11 @@ function ActionDrawer({ action, emp, contract, token, onClose, onDone }) {
             <label className="mz-switch">自动带入该期间作业绩效（效率、质量、等级）<input type="checkbox" checked={f.include_ops} onChange={e => set('include_ops', e.target.checked)} /></label>
           </>}
           {kind === 'leave' && <>
-            {two(S('leave_type', '请假类型', LEAVE), S('status', '状态', LEAVE_STATUS))}
+            {S('leave_type', '请假类型', LEAVE)}
             {two(F('start_date', '开始', 'date'), F('end_date', '结束', 'date'))}
             {F('days', '工作日天数（留空自动按周一至周五计算）', 'number')}
             {F('notes', '备注', 'textarea')}
-            {['krank', 'kind_krank'].includes(f.leave_type) && <div className="mz-hint">病假超过 3 天需提交医生证明（AU-Bescheinigung），可在下方直接上传。</div>}
+            {['krank', 'kind_krank'].includes(f.leave_type) &&             <div className="mz-hint">请假提交后进入待审批；病假超过 3 天需提交医生证明（AU-Bescheinigung），可在下方直接上传。</div>}
           </>}
           {kind === 'warning' && <>
             {F('incident_date', '违规日期', 'date')}
@@ -508,7 +528,7 @@ function ActionDrawer({ action, emp, contract, token, onClose, onDone }) {
           {kind !== 'note' && (
             <div className="mz-field"><label>{kind === 'upload' ? '文件 *' : '附件（可选：签字扫描件、医生证明等）'}</label>
               <input className="mz-input" style={{ height: 'auto', padding: 8 }} type="file" onChange={e => setFile(e.target.files[0] || null)} />
-              <span className="mz-hint">PDF、图片、Office 文档，单个最大 15 MB；文件存入该员工档案。</span></div>
+              <span className="mz-hint">PDF、图片、Office 文档，单个最大 15 MB；审批申请的附件会与该申请关联并保留审计记录。</span></div>
           )}
           {ACTION_TEMPLATE[kind] && (
             <label className="mz-switch">保存后用模板生成正式文书<input type="checkbox" checked={useTpl} onChange={e => setUseTpl(e.target.checked)} /></label>
@@ -524,7 +544,7 @@ function ActionDrawer({ action, emp, contract, token, onClose, onDone }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-export function GenerateDrawer({ init, emp, templates, token, onClose, onSaved }) {
+export function GenerateDrawer({ init, emp, templates, token, canWrite, onClose, onSaved }) {
   const showToast = useToast();
   const active = templates.filter(t => t.is_active);
   const first = active.find(t => t.code === init.templateCode) || active[0];
@@ -597,7 +617,7 @@ export function GenerateDrawer({ init, emp, templates, token, onClose, onSaved }
         <div className="mz-drawer-f">
           <span className="mz-muted" style={{ marginRight: 'auto' }}>{preview?.missing.length ? `还有 ${preview.missing.length} 个字段未填（预览中以 [方括号] 显示）` : ''}</span>
           <button className="mz-btn" onClick={download} disabled={!tpl}>下载 Word</button>
-          <button className="mz-btn mz-btn-p" disabled={busy || !tpl || preview?.missing.length > 0} onClick={save}>生成并存入档案</button>
+          {canWrite && <button className="mz-btn mz-btn-p" disabled={busy || !tpl || preview?.missing.length > 0} onClick={save}>生成并存入档案</button>}
         </div>
       </div>
     </div>

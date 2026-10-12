@@ -19,6 +19,7 @@ from backend.middleware.auth import get_current_user
 from backend.services.settlement_calc import calc_settlement, calc_shift_bonus_rate, compute_hours
 from backend.services.sequence import next_sequence_no, make_prefix
 from backend.services.compliance import ARBZG
+from backend.services.access import require_employee_access, require_permission, scoped_employee_related, scoped_employees
 
 router = APIRouter(prefix="/api/v1/timesheets", tags=["timesheets"])
 
@@ -28,15 +29,16 @@ def _next_ts_no(db: Session) -> str:
 
 
 def _apply_row_filter(stmt, user: User):
-    """Row-level security: filter timesheets based on user role."""
-    if user.role == "sup":
-        stmt = stmt.where(Timesheet.supplier_id == user.bound_supplier_id)
-    elif user.role == "wh":
-        stmt = stmt.where(Timesheet.warehouse_code == user.bound_warehouse)
-    elif user.role == "worker":
-        # workers can only see their own timesheets — return empty until employee linkage is built
-        stmt = stmt.where(Timesheet.id == -1)
-    return stmt
+    """Use the same supplier, warehouse, business-line, and zone scope as employees."""
+    return scoped_employee_related(stmt, user, Timesheet.employee_id)
+
+
+def _get_scoped_timesheet(db: Session, ts_id: int, user: User) -> Timesheet:
+    require_permission(user, "employees.read")
+    ts = db.scalar(_apply_row_filter(select(Timesheet).where(Timesheet.id == ts_id), user))
+    if ts is None:
+        raise HTTPException(404, "Timesheet not found")
+    return ts
 
 
 def _compute_and_set_amounts(ts: Timesheet, emp: Employee, is_holiday: bool = False) -> None:
@@ -78,6 +80,7 @@ def list_timesheets(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    require_permission(user, "employees.read")
     stmt = select(Timesheet).order_by(Timesheet.work_date.desc(), Timesheet.id.desc())
     stmt = _apply_row_filter(stmt, user)
     if status:
@@ -104,9 +107,7 @@ def create_timesheet(
     if user.role not in {"admin", "hr", "wh", "mgr"}:
         raise HTTPException(403, "Forbidden")
 
-    emp = db.get(Employee, body.employee_id)
-    if emp is None:
-        raise HTTPException(404, "Employee not found")
+    emp = require_employee_access(db, body.employee_id, user)
 
     data = body.model_dump()
     effective_rate = data.pop("base_rate", 0.0) or (emp.hourly_rate or 0.0)
@@ -139,8 +140,9 @@ def batch_create_timesheets(
         raise HTTPException(403, "Forbidden")
     created = []
     for body in items:
-        emp = db.get(Employee, body.employee_id)
-        if emp is None:
+        try:
+            emp = require_employee_access(db, body.employee_id, user)
+        except HTTPException:
             continue
         bdata = body.model_dump()
         b_rate = bdata.pop("base_rate", 0.0) or (emp.hourly_rate or 0.0)
@@ -171,11 +173,10 @@ def batch_approve(
 ):
     if user.role not in {"admin", "wh", "fin", "mgr"}:
         raise HTTPException(403, "Forbidden")
+    require_permission(user, "employees.read")
     count = 0
-    for ts_id in ids:
-        ts = db.get(Timesheet, ts_id)
-        if ts is None:
-            continue
+    stmt = _apply_row_filter(select(Timesheet).where(Timesheet.id.in_(ids or [-1])), user)
+    for ts in db.scalars(stmt).all():
         now = datetime.utcnow()
         if ts.approval_status == "wh_pending" and user.role in {"admin", "wh", "mgr"}:
             ts.approval_status = "fin_pending"
@@ -203,6 +204,7 @@ def zeitkonto_summary(
     """
     if user.role not in {"admin", "hr", "mgr", "wh", "fin"}:
         raise HTTPException(403, "Forbidden")
+    require_permission(user, "employees.read")
 
     stmt = (
         select(
@@ -221,10 +223,7 @@ def zeitkonto_summary(
         .order_by(Employee.name)
     )
 
-    if user.role == "wh":
-        stmt = stmt.where(Employee.primary_warehouse == user.bound_warehouse)
-    elif user.role == "sup":
-        stmt = stmt.where(Employee.supplier_id == user.bound_supplier_id)
+    stmt = scoped_employees(stmt, user)
 
     rows = db.execute(stmt).mappings().all()
 
@@ -267,6 +266,7 @@ def export_timesheets(
     """Export timesheets as CSV. Accessible by admin/hr/fin."""
     if user.role not in {"admin", "hr", "fin"}:
         raise HTTPException(403, "Forbidden")
+    require_permission(user, "employees.read")
 
     stmt = select(Timesheet).order_by(Timesheet.work_date.desc())
     stmt = _apply_row_filter(stmt, user)
@@ -305,10 +305,7 @@ def export_timesheets(
 
 @router.get("/{ts_id}", response_model=TimesheetOut)
 def get_timesheet(ts_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    ts = db.get(Timesheet, ts_id)
-    if ts is None:
-        raise HTTPException(404, "Timesheet not found")
-    return ts
+    return _get_scoped_timesheet(db, ts_id, user)
 
 
 @router.put("/{ts_id}", response_model=TimesheetOut)
@@ -316,13 +313,11 @@ def update_timesheet(
     ts_id: int, body: TimesheetUpdate,
     user: User = Depends(get_current_user), db: Session = Depends(get_db),
 ):
-    ts = db.get(Timesheet, ts_id)
-    if ts is None:
-        raise HTTPException(404, "Timesheet not found")
-    if ts.approval_status not in {"draft", "rejected"}:
-        raise HTTPException(400, "Only draft/rejected timesheets can be edited")
     if user.role not in {"admin", "hr", "wh", "mgr"}:
         raise HTTPException(403, "Forbidden")
+    ts = _get_scoped_timesheet(db, ts_id, user)
+    if ts.approval_status not in {"draft", "rejected"}:
+        raise HTTPException(400, "Only draft/rejected timesheets can be edited")
     for k, v in body.model_dump(exclude_unset=True).items():
         setattr(ts, k, v)
     emp = db.get(Employee, ts.employee_id)
@@ -343,9 +338,7 @@ def submit_timesheet(
     """Submit a draft timesheet for warehouse approval."""
     if user.role not in {"admin", "hr", "wh", "mgr"}:
         raise HTTPException(403, "Only admin, hr, wh, and mgr roles can submit timesheets")
-    ts = db.get(Timesheet, ts_id)
-    if ts is None:
-        raise HTTPException(404, "Timesheet not found")
+    ts = _get_scoped_timesheet(db, ts_id, user)
     if ts.approval_status != "draft":
         raise HTTPException(400, "Only draft timesheets can be submitted")
     ts.approval_status = "wh_pending"
@@ -367,9 +360,7 @@ def approve_timesheet(
     fin role: approves fin_pending
     admin: can approve any step
     """
-    ts = db.get(Timesheet, ts_id)
-    if ts is None:
-        raise HTTPException(404, "Timesheet not found")
+    ts = _get_scoped_timesheet(db, ts_id, user)
 
     now = datetime.utcnow()
     if ts.approval_status == "wh_pending":
@@ -407,9 +398,7 @@ def reject_timesheet(
     ts_id: int, body: TimesheetRejectIn,
     user: User = Depends(get_current_user), db: Session = Depends(get_db),
 ):
-    ts = db.get(Timesheet, ts_id)
-    if ts is None:
-        raise HTTPException(404, "Timesheet not found")
+    ts = _get_scoped_timesheet(db, ts_id, user)
     if ts.approval_status not in {"wh_pending", "fin_pending"}:
         raise HTTPException(400, "Can only reject pending timesheets")
     if user.role not in {"admin", "wh", "fin", "mgr"}:

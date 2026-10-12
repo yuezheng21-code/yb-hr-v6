@@ -9,9 +9,11 @@ const LANGS = [['zh', '中文'], ['en', 'English'], ['de', 'Deutsch'], ['tr', 'T
   ['hu', 'Magyar'], ['vi', 'Tiếng Việt'], ['pl', 'Polski']];
 const BIZ_LINES = ['渊博', '579'];
 const PERMISSIONS = [
-  ['employees.read', '查看花名册'], ['employees.write', '维护花名册'],
+  ['employees.read', '查看花名册'], ['employees.write', '维护花名册'], ['employees.export', '导出花名册'],
   ['personnel.read', '查看人事档案'], ['personnel.request', '提交人事申请'],
-  ['personnel.approve', '审批人事申请'], ['changes.read', '查看变更汇总'], ['changes.export', '导出变更汇总'],
+  ['personnel.approve', '审批全部人事申请'],
+  ['personnel.approve.leave', '审批请假'], ['personnel.approve.salary', '审批调薪'], ['personnel.approve.termination', '审批离职'],
+  ['changes.read', '查看变更汇总'], ['changes.export', '导出变更汇总'],
 ];
 
 const EMPTY = {
@@ -113,6 +115,7 @@ export default function Users({ token, user }) {
     if (u.role === 'client') return u.client_warehouses ? `可见仓库 ${u.client_warehouses.split(',').join('、')}` : <span style={{ color: 'var(--og)' }}>未绑定仓库</span>;
     if (u.bound_supplier_id) parts.push(supName[u.bound_supplier_id] || `供应商 #${u.bound_supplier_id}`);
     if (u.bound_biz_line) parts.push(`业务线 ${u.bound_biz_line}`);
+    if (u.bound_zone) parts.push(`区域 ${u.bound_zone}`);
     if (parts.length) return parts.join(' · ');
     if ((u.role === 'sup' || u.role === 'wh')) return <span style={{ color: 'var(--og)' }}>未绑定</span>;
     return <span className="mz-muted">全部</span>;
@@ -228,7 +231,7 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
           </div>
 
           <div className="mz-section">数据范围</div>
-          {(f.role === 'wh' || f.bound_warehouse) && (
+          {f.role !== 'client' && (
             <div className="mz-field"><label>绑定仓库{f.role === 'wh' ? '（必填）' : ''}</label>
               <select className="mz-select" value={f.bound_warehouse} onChange={e => set('bound_warehouse', e.target.value)}>
                 <option value="">不限</option>
@@ -252,7 +255,7 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
               <span className="mz-hint">甲方只能看到所选仓库已确认的作业汇总，看不到员工个人信息、工资和供应商成本。</span>
             </div>
           )}
-          {(f.role === 'sup' || f.bound_supplier_id) && (
+          {f.role !== 'client' && (
             <div className="mz-field"><label>绑定供应商{f.role === 'sup' ? '（必填）' : ''}</label>
               <select className="mz-select" value={f.bound_supplier_id} onChange={e => set('bound_supplier_id', e.target.value)}>
                 <option value="">不限</option>

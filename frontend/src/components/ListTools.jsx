@@ -123,7 +123,7 @@ export async function downloadUrl(path, token, fallback = 'download') {
   await download(await fetch(path, { headers: { Authorization: 'Bearer ' + token } }), fallback);
 }
 
-export function ListToolbar({ lt, title, columns, token, bundle, extra, children, dateLabel = '日期', subtitle }) {
+export function ListToolbar({ lt, title, columns, token, bundle, extra, children, dateLabel = '日期', subtitle, hideExport = false }) {
   const [busy, setBusy] = useState('');
   const [err, setErr] = useState('');
   const run = async (key, fn) => {
@@ -168,8 +168,8 @@ export function ListToolbar({ lt, title, columns, token, bundle, extra, children
       <span className="lt-count">{lt.active ? `${lt.rows.length} / ${lt.total}` : lt.total} 条</span>
       <div className="lt-actions">
         {extra}
-        <button className="mz-btn mz-btn-s" disabled={!!busy || !lt.rows.length} onClick={() => doExport('xlsx')}>{busy === 'xlsx' ? '导出中…' : 'Excel'}</button>
-        <button className="mz-btn mz-btn-s" disabled={!!busy || !lt.rows.length} onClick={() => doExport('pdf')}>{busy === 'pdf' ? '导出中…' : 'PDF'}</button>
+        {!hideExport && <><button className="mz-btn mz-btn-s" disabled={!!busy || !lt.rows.length} onClick={() => doExport('xlsx')}>{busy === 'xlsx' ? '导出中…' : 'Excel'}</button>
+        <button className="mz-btn mz-btn-s" disabled={!!busy || !lt.rows.length} onClick={() => doExport('pdf')}>{busy === 'pdf' ? '导出中…' : 'PDF'}</button></>}
         {bundle && <button className="mz-btn mz-btn-s" disabled={!!busy || bundle.disabled} title={bundle.title}
           onClick={() => run('zip', () => downloadUrl(bundle.url(), token, 'bundle.zip'))}>{busy === 'zip' ? '打包中…' : (bundle.label || '打包下载 PDF')}</button>}
       </div>

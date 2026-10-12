@@ -7,7 +7,7 @@ import { useTheme } from '../../context/ThemeContext.jsx';
 import { LogOut, Moon, Sun } from 'lucide-react';
 
 const ROLE_COLORS = { client:'#0ea5a4',admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
-const NAV_PERMISSION = { employees: 'employees.read' };
+const NAV_PERMISSION = { employees: 'employees.read', personnel_changes: 'changes.read' };
 
 function useUnreadCount(token, enabled = true) {
   const [count, setCount] = useState(0);
@@ -52,7 +52,7 @@ export default function Sidebar({ user, currentPage, onNavigate, onLogout }) {
           return (
             <button key={n.key} className={`ni ${currentPage === n.key ? 'on' : ''}`} onClick={() => onNavigate(n.key)}>
               <span className="ni-i">{Icon && <Icon size={16} strokeWidth={1.75} />}</span>
-              <span style={{ flex: 1 }}>{t(n.labelKey)}</span>
+              <span style={{ flex: 1 }}>{n.label || t(n.labelKey)}</span>
               {n.key === 'messages' && unreadCount > 0 && (
                 <span className="ni-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
               )}

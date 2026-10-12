@@ -11,8 +11,19 @@ from backend.models.supplier import Supplier
 from backend.models.user import User
 from backend.schemas.supplier import SupplierCreate, SupplierUpdate, SupplierOut
 from backend.middleware.auth import get_current_user
+from backend.services.access import require_permission
 
 router = APIRouter(prefix="/api/v1/suppliers", tags=["suppliers"])
+
+
+def _scoped_suppliers(stmt, user: User):
+    """A supplier account can discover only its own supplier record."""
+    supplier_id = getattr(user, "bound_supplier_id", None)
+    if user.role == "sup" and not supplier_id:
+        return stmt.where(Supplier.id == -1)
+    if supplier_id:
+        return stmt.where(Supplier.id == supplier_id)
+    return stmt
 
 
 @router.get("", response_model=list[SupplierOut])
@@ -23,7 +34,8 @@ def list_suppliers(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    stmt = select(Supplier)
+    require_permission(user, "employees.read")
+    stmt = _scoped_suppliers(select(Supplier), user)
     if status:
         stmt = stmt.where(Supplier.status == status)
     if q:
@@ -49,7 +61,8 @@ def create_supplier(
 
 @router.get("/{sup_id}", response_model=SupplierOut)
 def get_supplier(sup_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    sup = db.get(Supplier, sup_id)
+    require_permission(user, "employees.read")
+    sup = db.scalar(_scoped_suppliers(select(Supplier).where(Supplier.id == sup_id), user))
     if sup is None:
         raise HTTPException(404, "Supplier not found")
     return sup
