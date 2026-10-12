@@ -48,9 +48,8 @@ USERS = [
     {"username": "wh_una",   "password": "una123",         "display_name": "UNA仓管李强",  "role": "wh",  "bound_warehouse": "UNA"},
     {"username": "sup001",   "password": "sup123",         "display_name": "德信负责人",   "role": "sup"},
     {"username": "mgr",      "password": "mgr123",         "display_name": "运营经理陈杰", "role": "mgr"},
-    {"username": "worker01", "password": "worker123",      "display_name": "张三",         "role": "worker", "pin": "1001"},
-    # 周阳 — 小时工登录账号 (可用 PIN 打卡)
-    {"username": "zhouyang", "password": "zy2026",         "display_name": "周阳",         "role": "worker", "pin": "1002"},
+    # 周阳 — 小时工账号（用户名/密码登录后打卡）
+    {"username": "zhouyang", "password": "zy2026",         "display_name": "周阳",         "role": "worker"},
     {"username": "test_ruhr_east", "password": "test123", "display_name": "测试鲁尔东主管", "role": "mgr", "bound_zone": "鲁尔东"},
     {"username": "test_sup003", "password": "test123", "display_name": "测试志朋供应商", "role": "sup", "bound_supplier_code": "SUP-003"},
 ]
@@ -221,7 +220,6 @@ def run_seed(db: Session) -> None:
                 role=u["role"],
                 bound_warehouse=u.get("bound_warehouse"),
                 bound_zone=u.get("bound_zone"),
-                pin=u.get("pin"),
             )
             db.add(user)
         else:
@@ -241,8 +239,6 @@ def run_seed(db: Session) -> None:
                 existing.bound_warehouse = u["bound_warehouse"]
             if u.get("bound_zone") and not existing.bound_zone:
                 existing.bound_zone = u["bound_zone"]
-            if u.get("pin") and not existing.pin:
-                existing.pin = u["pin"]
 
     # ── Suppliers ────────────────────────────────────────────────────────────
     for s in SUPPLIERS:
@@ -279,6 +275,16 @@ def run_seed(db: Session) -> None:
                 values["supplier_id"] = db.scalar(select(Supplier.id).where(Supplier.code == supplier_code))
             emp = Employee(**values)
             db.add(emp)
+    db.flush()
+
+    # Seed accounts use the same explicit employee link required for attendance.
+    for emp_no, username in {"EMP-ZY-001": "zhouyang"}.items():
+        emp = db.scalar(select(Employee).where(Employee.emp_no == emp_no))
+        account = db.scalar(select(User).where(User.username == username))
+        if emp and account and emp.user_id is None and not db.scalar(
+            select(Employee.id).where(Employee.user_id == account.id)
+        ):
+            emp.user_id = account.id
 
     # ── Operation types ─────────────────────────────────────────────────────
     for t in OPERATION_TYPES:

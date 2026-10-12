@@ -4,18 +4,15 @@
 from __future__ import annotations
 import csv
 import io
-import os
 import re
 from datetime import datetime
 from typing import Optional
-import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 from backend.database import get_db
 from backend.models.employee import Employee
-from backend.models.user import User
 from backend.schemas.employee import EmployeeCreate, EmployeeUpdate, EmployeeOut
 from backend.middleware.auth import get_current_user
 from backend.services.access import (
@@ -164,32 +161,9 @@ def create_employee(
         biz_line=body.biz_line,
     )
 
-    pin = (body.pin or "").strip() or None
-    if pin is not None:
-        if not (len(pin) == 4 and pin.isdigit()):
-            raise HTTPException(400, "PIN 必须是 4 位数字")
-        if db.scalar(select(User.id).where(User.pin == pin)):
-            raise HTTPException(409, "PIN 已被其他账号使用")
     emp_no = _next_emp_no(db)
-    emp_data = body.model_dump(exclude={"pin"})
-    emp = Employee(**emp_data, emp_no=emp_no)
+    emp = Employee(**body.model_dump(), emp_no=emp_no)
     db.add(emp)
-    db.flush()  # get emp.id without committing
-
-    # If a 4-digit PIN is provided, auto-create a linked worker User account
-    if pin:
-        placeholder_hash = bcrypt.hashpw(os.urandom(24), bcrypt.gensalt()).decode()
-        worker_user = User(
-            username=f"worker_{emp.id}",
-            password_hash=placeholder_hash,
-            display_name=emp.name,
-            role="worker",
-            pin=pin,
-            is_active=True,
-        )
-        db.add(worker_user)
-        db.flush()
-        emp.user_id = worker_user.id
 
     db.commit()
     db.refresh(emp)
@@ -216,8 +190,7 @@ def update_employee(
 ):
     emp = require_employee_access(db, emp_id, user, "employees.write")
 
-    pin = body.pin
-    data = body.model_dump(exclude_unset=True, exclude={"pin"})
+    data = body.model_dump(exclude_unset=True)
     protected = {"hourly_rate", "status", "leave_date"}
     if protected.intersection(data):
         raise HTTPException(409, "时薪、离职日期和员工状态只能通过已执行的人事审批变更")
@@ -230,26 +203,6 @@ def update_employee(
     )
     for k, v in data.items():
         setattr(emp, k, v)
-
-    # Handle PIN update / creation for linked worker User
-    if pin and len(pin) == 4 and pin.isdigit():
-        if emp.user_id:
-            linked_user = db.get(User, emp.user_id)
-            if linked_user:
-                linked_user.pin = pin
-        else:
-            placeholder_hash = bcrypt.hashpw(os.urandom(24), bcrypt.gensalt()).decode()
-            worker_user = User(
-                username=f"worker_{emp.id}",
-                password_hash=placeholder_hash,
-                display_name=emp.name,
-                role="worker",
-                pin=pin,
-                is_active=True,
-            )
-            db.add(worker_user)
-            db.flush()
-            emp.user_id = worker_user.id
 
     emp.updated_at = datetime.utcnow()
     db.commit()

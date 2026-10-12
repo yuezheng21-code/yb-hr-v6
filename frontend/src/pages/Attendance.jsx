@@ -196,9 +196,6 @@ export default function Attendance({ token, user }) {
               <select className="fsl" value={form.tax_mode||'我方报税'} onChange={e => setForm({...form,tax_mode:e.target.value})}>
                 <option>我方报税</option><option>供应商报税</option>
               </select></div>
-            <div className="fg"><label className="fl">{t('emp.f_pin')}</label>
-              <input className="fi" maxLength={4} value={form.pin||''}
-                onChange={e => setForm({...form,pin:e.target.value.replace(/\D/g,'')})} /></div>
             <div className="fg ful"><label className="fl">住址 Anschrift（用于合同）</label>
               <input className="fi" value={form.address||''} onChange={e => setForm({...form,address:e.target.value})} /></div>
             <div className="fg ful"><label className="fl">{t('emp.f_notes')}</label>

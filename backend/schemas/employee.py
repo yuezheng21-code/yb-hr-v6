@@ -38,7 +38,7 @@ class EmployeeBase(BaseModel):
 
 
 class EmployeeCreate(EmployeeBase):
-    pin: Optional[str] = None   # 4-digit worker PIN — auto-creates a linked User account
+    pass
 
 
 class EmployeeUpdate(BaseModel):
@@ -67,7 +67,6 @@ class EmployeeUpdate(BaseModel):
     iban: Optional[str] = None
     datev_pnr: Optional[str] = None
     tax_mode: Optional[str] = None
-    pin: Optional[str] = None   # 4-digit worker PIN — updates / creates linked User account
 
 
 class EmployeeOut(EmployeeBase):

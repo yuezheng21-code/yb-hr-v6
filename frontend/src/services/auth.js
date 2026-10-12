@@ -37,16 +37,10 @@ export function clearSession() {
   localStorage.removeItem('hr6_user');
 }
 
-/** Admin login (username + password). Returns { token, user }. */
-export async function loginAdmin(username, password) {
+/** Username/password login. Returns { token, user }. */
+export async function loginWithPassword(username, password) {
   const data = await api('/api/v1/auth/login', { method: 'POST', body: { username, password } });
   // V7 returns { access_token, token_type, user } — normalise to { token, user }
-  return { token: data.access_token, user: data.user };
-}
-
-/** Worker PIN login — V7 PIN endpoint (may not be implemented yet). */
-export async function loginPin(pin) {
-  const data = await api('/api/v1/auth/pin', { method: 'POST', body: { pin } });
   return { token: data.access_token, user: data.user };
 }
 

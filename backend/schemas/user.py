@@ -22,7 +22,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
-    pin: Optional[str] = None
+    employee_id: Optional[int] = None
 
 
 class UserUpdate(BaseModel):
@@ -38,7 +38,7 @@ class UserUpdate(BaseModel):
     permissions: Optional[list[str]] = None
     is_active: Optional[bool] = None
     password: Optional[str] = None
-    pin: Optional[str] = None
+    employee_id: Optional[int] = None
 
 
 class UserOut(UserBase):
@@ -68,10 +68,6 @@ class TokenOut(BaseModel):
 class LoginIn(BaseModel):
     username: str
     password: str
-
-
-class PinLoginIn(BaseModel):
-    pin: str
 
 
 class ChangePasswordIn(BaseModel):

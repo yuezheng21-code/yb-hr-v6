@@ -18,7 +18,7 @@ const PERMISSIONS = [
 
 const EMPTY = {
   username: '', display_name: '', password: '', role: 'worker', lang: 'zh',
-  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', bound_zone: '', client_warehouses: '', permissions: null, pin: '', is_active: true,
+  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', bound_zone: '', client_warehouses: '', permissions: null, employee_id: '', is_active: true,
 };
 
 export default function Users({ token, user }) {
@@ -31,6 +31,7 @@ export default function Users({ token, user }) {
   const [drawer, setDrawer] = useState(null); // { mode: 'new'|'edit', form }
   const [warehouses, setWarehouses] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
   const load = () => {
     setLoading(true);
@@ -42,9 +43,14 @@ export default function Users({ token, user }) {
     load();
     api('/api/v1/warehouses', { token }).then(setWarehouses).catch(() => {});
     api('/api/v1/suppliers', { token }).then(setSuppliers).catch(() => {});
+    api('/api/v1/employees?limit=5000', { token }).then(setEmployees).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const supName = useMemo(() => Object.fromEntries(suppliers.map(s => [s.id, s.name])), [suppliers]);
+  const employeeName = useMemo(
+    () => Object.fromEntries(employees.map(e => [e.id, `${e.emp_no} · ${e.name}`])),
+    [employees],
+  );
 
   const byStatus = users.filter(u => status === 'all' || (status === 'active' ? u.is_active : !u.is_active));
   const counts = ROLES.reduce((acc, r) => ({ ...acc, [r]: byStatus.filter(u => u.role === r).length }), {});
@@ -64,7 +70,7 @@ export default function Users({ token, user }) {
   const openEdit = (u) => setDrawer({
     mode: 'edit',
     form: {
-      ...EMPTY, ...u, password: '', pin: u.pin || '',
+      ...EMPTY, ...u, password: '', employee_id: u.employee_id || '',
       bound_warehouse: u.bound_warehouse || '', bound_supplier_id: u.bound_supplier_id || '', bound_biz_line: u.bound_biz_line || '', bound_zone: u.bound_zone || '',
       client_warehouses: u.client_warehouses || '',
     },
@@ -84,12 +90,12 @@ export default function Users({ token, user }) {
       bound_zone: f.bound_zone || null,
       client_warehouses: f.role === 'client' ? f.client_warehouses : null,
       permissions: f.permissions,
-      pin: f.pin,
+      employee_id: f.employee_id ? parseInt(f.employee_id) : null,
     };
     try {
       if (drawer.mode === 'new') {
         if (!f.username || !f.password) { showToast('用户名和密码必填', 'err'); return; }
-        await api('/api/v1/admin/users', { method: 'POST', token, body: { ...body, username: f.username, password: f.password, pin: f.pin || null } });
+        await api('/api/v1/admin/users', { method: 'POST', token, body: { ...body, username: f.username, password: f.password } });
         showToast('用户已创建');
       } else {
         if (f.password) body.password = f.password;
@@ -150,7 +156,7 @@ export default function Users({ token, user }) {
         {loading ? <Loading /> : (
           <div className="mz-scroll">
             <table className="mz-table">
-              <thead><tr><th>用户</th><th>角色</th><th>数据范围</th><th>PIN</th><th>语言</th><th>最近登录</th><th>状态</th><th /></tr></thead>
+              <thead><tr><th>用户</th><th>角色</th><th>数据范围</th><th>关联员工</th><th>语言</th><th>最近登录</th><th>状态</th><th /></tr></thead>
               <tbody>
                 {lt.rows.map(u => (
                   <tr key={u.id} style={{ cursor: 'pointer', opacity: u.is_active ? 1 : .55 }} onClick={() => openEdit(u)}>
@@ -165,7 +171,7 @@ export default function Users({ token, user }) {
                     </td>
                     <td><span className="mz-tag"><span className="mz-dot" style={{ background: ROLE_META[u.role]?.color }} />{ROLE_META[u.role]?.label || u.role}</span></td>
                     <td style={{ fontSize: 12 }}>{scope(u)}</td>
-                    <td className="mz-muted">{u.pin ? '••••' : '—'}</td>
+                    <td className="mz-muted">{u.employee_id ? (employeeName[u.employee_id] || `员工 #${u.employee_id}`) : '—'}</td>
                     <td className="mz-muted">{(LANGS.find(l => l[0] === u.lang) || [, u.lang])[1]}</td>
                     <td className="mz-muted">{timeAgo(u.last_login)}</td>
                     <td><span className="mz-tag"><span className="mz-dot" style={{ background: u.is_active ? 'var(--gn)' : 'var(--tx3)' }} />{u.is_active ? '启用' : '停用'}</span></td>
@@ -182,14 +188,15 @@ export default function Users({ token, user }) {
       {drawer && (
         <UserDrawer
           drawer={drawer} setDrawer={setDrawer} onSave={save} onToggle={toggleActive}
-          warehouses={warehouses} suppliers={suppliers} isSelf={drawer.form.id === user.id}
+          warehouses={warehouses} suppliers={suppliers} employees={employees} users={users}
+          isSelf={drawer.form.id === user.id}
         />
       )}
     </div>
   );
 }
 
-function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers, isSelf }) {
+function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers, employees, users, isSelf }) {
   const f = drawer.form;
   const isNew = drawer.mode === 'new';
   const set = (k, v) => setDrawer({ ...drawer, form: { ...f, [k]: v } });
@@ -213,11 +220,24 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
           )}
           <div className="mz-field"><label>显示名称</label>
             <input className="mz-input" value={f.display_name} onChange={e => set('display_name', e.target.value)} />
-            {f.role === 'worker' && <span className="mz-hint">工人账号的显示名称需与员工花名册姓名一致，用于关联打卡和报工。</span>}
           </div>
           <div className="mz-field"><label>{isNew ? '密码' : '重置密码'}</label>
             <input className="mz-input" type="password" value={f.password} placeholder={isNew ? '至少 6 位' : '留空则不修改'}
               onChange={e => set('password', e.target.value)} /></div>
+          <div className="mz-field"><label>关联员工（用于打卡）</label>
+            <select className="mz-select" value={f.employee_id || ''} onChange={e => set('employee_id', e.target.value)}>
+              <option value="">不关联员工</option>
+              {employees.map(employee => {
+                const linkedElsewhere = users.some(u => u.id !== f.id && u.employee_id === employee.id);
+                return (
+                  <option key={employee.id} value={employee.id} disabled={linkedElsewhere}>
+                    {employee.emp_no} · {employee.name}{employee.status !== 'active' ? '（非在职）' : ''}{linkedElsewhere ? '（已关联）' : ''}
+                  </option>
+                );
+              })}
+            </select>
+            <span className="mz-hint">关联的在职员工可使用本账号登录后进行定位打卡；每个员工仅能关联一个账号。</span>
+          </div>
 
           <div className="mz-section">角色</div>
           <div className="mz-roles">
@@ -297,9 +317,6 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
               <select className="mz-select" value={f.lang} onChange={e => set('lang', e.target.value)}>
                 {LANGS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
               </select></div>
-            <div className="mz-field"><label>打卡 PIN（4 位）</label>
-              <input className="mz-input" inputMode="numeric" maxLength={4} value={f.pin} placeholder="可选"
-                onChange={e => set('pin', e.target.value.replace(/\D/g, '').slice(0, 4))} /></div>
           </div>
 
           {isNew && (

@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useLang, LangSwitcher } from '../context/LangContext.jsx';
 import { Spinner } from '../components/Spinner.jsx';
-import { loginAdmin, loginPin } from '../services/auth.js';
+import { loginWithPassword } from '../services/auth.js';
 
 export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErrDetail = '' }) {
-  const [mode, setMode] = useState('admin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [pin, setPin] = useState('');
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
   const { t } = useLang();
@@ -32,20 +30,7 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErr
     if (!username || !password) { setErr(t('login.err_empty')); return; }
     setLoading(true); setErr('');
     try {
-      const r = await loginAdmin(username, password);
-      onLogin(r.token, r.user);
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const doPin = async () => {
-    if (pin.length < 4) { setErr(t('login.err_pin')); return; }
-    setLoading(true); setErr('');
-    try {
-      const r = await loginPin(pin);
+      const r = await loginWithPassword(username, password);
       onLogin(r.token, r.user);
     } catch (e) {
       setErr(e.message);
@@ -79,43 +64,20 @@ export default function Login({ onLogin, srvReady = true, srvStatus = '', srvErr
           </div>
         )}
 
-        <div className="tb" style={{ marginBottom:20,width:'100%' }}>
-          <button className={`tbn ${mode==='admin'?'on':''}`} style={{ flex:1 }} onClick={() => setMode('admin')}>{t('login.admin')}</button>
-          <button className={`tbn ${mode==='worker'?'on':''}`} style={{ flex:1 }} onClick={() => setMode('worker')}>{t('login.worker')}</button>
+        <div style={{ marginBottom:12 }}>
+          <label className="fl" style={{ display:'block',marginBottom:6 }}>{t('login.username')}</label>
+          <input className="fi" value={username} onChange={e => { setUsername(e.target.value); setErr(''); }}
+            onKeyDown={e => e.key === 'Enter' && doLogin()} autoFocus />
         </div>
-
-        {mode === 'admin' ? (
-          <>
-            <div style={{ marginBottom:12 }}>
-              <label className="fl" style={{ display:'block',marginBottom:6 }}>{t('login.username')}</label>
-              <input className="fi" value={username} onChange={e => { setUsername(e.target.value); setErr(''); }}
-                onKeyDown={e => e.key === 'Enter' && doLogin()} autoFocus />
-            </div>
-            <div style={{ marginBottom:16 }}>
-              <label className="fl" style={{ display:'block',marginBottom:6 }}>{t('login.password')}</label>
-              <input className="fi" type="password" value={password} onChange={e => { setPassword(e.target.value); setErr(''); }}
-                onKeyDown={e => e.key === 'Enter' && doLogin()} />
-            </div>
-            <button className="b bga bl" style={{ width:'100%' }} onClick={doLogin} disabled={loading || !srvReady}>
-              {loading ? <Spinner /> : t('login.btn')}
-            </button>
-            <div style={{ marginTop:10,fontSize:11,color:'var(--tx3)',textAlign:'center' }}>{t('login.hint')}</div>
-          </>
-        ) : (
-          <>
-            <div style={{ marginBottom:16 }}>
-              <label className="fl" style={{ display:'block',marginBottom:6 }}>{t('login.pin_label')}</label>
-              <input className="fi" type="tel" maxLength={4}
-                style={{ fontSize:22,height:48,textAlign:'center',letterSpacing:12 }}
-                value={pin} onChange={e => { setPin(e.target.value.replace(/\D/g,'')); setErr(''); }}
-                onKeyDown={e => e.key === 'Enter' && doPin()} placeholder="••••" />
-            </div>
-            <button className="b bga bl" style={{ width:'100%' }} onClick={doPin} disabled={loading || !srvReady}>
-              {loading ? <Spinner /> : t('login.pin_btn')}
-            </button>
-            <div style={{ marginTop:10,fontSize:11,color:'var(--tx3)',textAlign:'center' }}>{t('login.pin_hint')}</div>
-          </>
-        )}
+        <div style={{ marginBottom:16 }}>
+          <label className="fl" style={{ display:'block',marginBottom:6 }}>{t('login.password')}</label>
+          <input className="fi" type="password" value={password} onChange={e => { setPassword(e.target.value); setErr(''); }}
+            onKeyDown={e => e.key === 'Enter' && doLogin()} />
+        </div>
+        <button className="b bga bl" style={{ width:'100%' }} onClick={doLogin} disabled={loading || !srvReady}>
+          {loading ? <Spinner /> : t('login.btn')}
+        </button>
+        <div style={{ marginTop:10,fontSize:11,color:'var(--tx3)',textAlign:'center' }}>{t('login.hint')}</div>
 
         {err && <div style={{ marginTop:8,fontSize:11,color:'var(--rd)',textAlign:'center' }}>{err}</div>}
       </div>
