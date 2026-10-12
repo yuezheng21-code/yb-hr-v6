@@ -14,6 +14,7 @@ class UserBase(BaseModel):
     bound_supplier_id: Optional[int] = None
     bound_warehouse: Optional[str] = None
     bound_biz_line: Optional[str] = None
+    bound_zone: Optional[str] = None
     client_warehouses: Optional[str] = None
     permissions: Optional[list[str]] = None
     is_active: bool = True
@@ -32,6 +33,7 @@ class UserUpdate(BaseModel):
     bound_supplier_id: Optional[int] = None
     bound_warehouse: Optional[str] = None
     bound_biz_line: Optional[str] = None
+    bound_zone: Optional[str] = None
     client_warehouses: Optional[str] = None
     permissions: Optional[list[str]] = None
     is_active: Optional[bool] = None

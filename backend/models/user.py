@@ -19,6 +19,7 @@ class User(Base):
     bound_supplier_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("suppliers.id"), nullable=True)
     bound_warehouse: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     bound_biz_line: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    bound_zone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     # role=client (warehouse operator / 甲方): comma-separated warehouse codes it may view
     client_warehouses: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     # JSON array of permission keys. NULL keeps the role's safe default permissions.

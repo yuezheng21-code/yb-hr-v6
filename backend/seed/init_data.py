@@ -51,6 +51,8 @@ USERS = [
     {"username": "worker01", "password": "worker123",      "display_name": "张三",         "role": "worker", "pin": "1001"},
     # 周阳 — 小时工登录账号 (可用 PIN 打卡)
     {"username": "zhouyang", "password": "zy2026",         "display_name": "周阳",         "role": "worker", "pin": "1002"},
+    {"username": "test_ruhr_east", "password": "test123", "display_name": "测试鲁尔东主管", "role": "mgr", "bound_zone": "鲁尔东"},
+    {"username": "test_sup003", "password": "test123", "display_name": "测试志朋供应商", "role": "sup", "bound_supplier_code": "SUP-003"},
 ]
 
 SUPPLIERS = [
@@ -145,6 +147,10 @@ EMPLOYEES = [
             "周K/周L 为其招募的子组, 独立结算但归属周阳管理。"
         ),
     },
+    {"emp_no": "TEST-UNA-001", "name": "测试自有 UNA", "source_type": "own", "biz_line": "渊博",
+     "settlement_type": "hourly", "grade": "P1", "primary_warehouse": "UNA", "position": "仓库工", "hourly_rate": 17.5, "status": "active"},
+    {"emp_no": "TEST-BOC-001", "name": "测试志朋 BOC", "source_type": "supplier", "supplier_code": "SUP-003", "biz_line": "579",
+     "settlement_type": "hourly", "grade": "P3", "primary_warehouse": "BOC", "position": "组长", "hourly_rate": 18, "status": "active"},
 ]
 
 # ── 分组标记→供应商代码 参考表 (供前端/结算模块使用) ────────────────────────────
@@ -214,6 +220,7 @@ def run_seed(db: Session) -> None:
                 display_name=u["display_name"],
                 role=u["role"],
                 bound_warehouse=u.get("bound_warehouse"),
+                bound_zone=u.get("bound_zone"),
                 pin=u.get("pin"),
             )
             db.add(user)
@@ -232,6 +239,8 @@ def run_seed(db: Session) -> None:
                 existing.is_active = True
             if u.get("bound_warehouse") and not existing.bound_warehouse:
                 existing.bound_warehouse = u["bound_warehouse"]
+            if u.get("bound_zone") and not existing.bound_zone:
+                existing.bound_zone = u["bound_zone"]
             if u.get("pin") and not existing.pin:
                 existing.pin = u["pin"]
 
@@ -245,6 +254,13 @@ def run_seed(db: Session) -> None:
                                    "contact_person", "phone", "status", "rating", "notes")}
             sup = Supplier(**sup_fields)
             db.add(sup)
+    db.flush()
+    for u in USERS:
+        if u.get("bound_supplier_code"):
+            account = db.scalar(select(User).where(User.username == u["username"]))
+            supplier = db.scalar(select(Supplier).where(Supplier.code == u["bound_supplier_code"]))
+            if account and supplier and account.bound_supplier_id is None:
+                account.bound_supplier_id = supplier.id
 
     # ── Warehouses ───────────────────────────────────────────────────────────
     for w in WAREHOUSES:
@@ -257,7 +273,11 @@ def run_seed(db: Session) -> None:
     for e in EMPLOYEES:
         existing = db.scalar(select(Employee).where(Employee.emp_no == e["emp_no"]))
         if existing is None:
-            emp = Employee(**e)
+            values = dict(e)
+            supplier_code = values.pop("supplier_code", None)
+            if supplier_code:
+                values["supplier_id"] = db.scalar(select(Supplier.id).where(Supplier.code == supplier_code))
+            emp = Employee(**values)
             db.add(emp)
 
     # ── Operation types ─────────────────────────────────────────────────────

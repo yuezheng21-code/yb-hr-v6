@@ -20,6 +20,8 @@ from backend.database import get_db
 from backend.middleware.auth import get_current_user
 from backend.models.user import User
 from backend.models.employee import Employee
+from backend.models.clock import ClockEvent
+from backend.models.timesheet import Timesheet
 from backend.models.dispatch import TalentPool
 from backend.models.personnel import (
     FileBlob, EmployeeDocument, EmployeeContract, LeaveRecord, EmployeeEvent, PersonnelApproval, DocTemplate, SopDocument, SopAck,
@@ -84,6 +86,65 @@ def _workdays(start: date, end: date) -> float:
 
 
 CHANGE_TYPES = {"hired", "contract", "amendment", "salary", "performance", "warning", "leave", "termination"}
+GRADE_STANDARDS = {
+    "P1": {"title": "新员工", "minimum_months": 0, "requirements": ["完成入职与安全培训", "连续 20 个排班日出勤率 ≥ 95%"]},
+    "P2": {"title": "熟练工", "minimum_months": 3, "requirements": ["近 3 个月出勤率 ≥ 96%", "无有效纪律处分", "岗位技能核验通过"]},
+    "P3": {"title": "高级熟练工", "minimum_months": 6, "requirements": ["近 3 个月出勤率 ≥ 97%", "质量/效率达到仓库目标", "可独立带教"]},
+    "P4": {"title": "组长", "minimum_months": 9, "requirements": ["近 6 个月无重大安全事故", "带班与交接核验通过", "主管审批"]},
+    "P5": {"title": "高级组长", "minimum_months": 12, "requirements": ["近 6 个月团队出勤率 ≥ 97%", "可处理异常与排班", "HR 与运营联合审批"]},
+    "P6": {"title": "主管", "minimum_months": 18, "requirements": ["负责仓库 KPI 达标", "成本与工时核验通过", "区域经理审批"]},
+    "P7": {"title": "高级主管", "minimum_months": 24, "requirements": ["跨仓调度能力核验", "连续两个季度 KPI 达标", "区域经理与 HR 审批"]},
+    "P8": {"title": "区域经理", "minimum_months": 36, "requirements": ["区域成本与合规达标", "人才梯队与客户满意度核验", "管理层审批"]},
+    "P9": {"title": "运营负责人", "minimum_months": 48, "requirements": ["年度经营目标达标", "全区域合规与风险核验", "管理员最终审批"]},
+}
+
+
+@router.get("/promotion-standards")
+def promotion_standards(user: User = Depends(get_current_user)):
+    require_permission(user, "personnel.read")
+    return GRADE_STANDARDS
+
+
+@router.get("/attendance-cost")
+def attendance_cost(month: str = Query(..., pattern=r"^\d{4}-\d{2}$"), warehouse: Optional[str] = Query(None),
+                    user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Monthly attendance, no-show and paid-absence cost; restricted to the caller's employee scope."""
+    require_permission(user, "changes.read")
+    try:
+        month_start = date.fromisoformat(month + "-01")
+    except ValueError:
+        raise HTTPException(400, "月份格式应为 YYYY-MM")
+    next_month = (month_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+    employees = db.scalars(scoped_employees(select(Employee).where(Employee.status == "active"), user)).all()
+    if warehouse:
+        employees = [emp for emp in employees if emp.primary_warehouse == warehouse]
+    employee_ids = [emp.id for emp in employees]
+    if not employee_ids:
+        return {"month": month, "employees": [], "summary": {"scheduled_days": 0, "attended_days": 0, "no_show_days": 0, "paid_absence_cost": 0, "late_paperwork_days": 0}}
+    clocked = {(row.employee_id, row.work_date) for row in db.scalars(select(ClockEvent).where(
+        ClockEvent.employee_id.in_(employee_ids), ClockEvent.clock_type == "in", ClockEvent.work_date >= month_start, ClockEvent.work_date < next_month)).all()}
+    documented = {(row.employee_id, row.work_date) for row in db.scalars(select(Timesheet).where(
+        Timesheet.employee_id.in_(employee_ids), Timesheet.work_date >= month_start, Timesheet.work_date < next_month)).all()}
+    approved_leave = {(row.employee_id, day) for row in db.scalars(select(LeaveRecord).where(
+        LeaveRecord.employee_id.in_(employee_ids), LeaveRecord.status == "approved", LeaveRecord.start_date < next_month, LeaveRecord.end_date >= month_start)).all()
+        for day in (row.start_date + timedelta(days=n) for n in range((row.end_date - row.start_date).days + 1))}
+    workdays = [month_start + timedelta(days=n) for n in range((next_month - month_start).days) if (month_start + timedelta(days=n)).weekday() < 5]
+    output, totals = [], {"scheduled_days": 0, "attended_days": 0, "no_show_days": 0, "paid_absence_cost": 0.0, "late_paperwork_days": 0}
+    for emp in employees:
+        scheduled = [day for day in workdays if not emp.join_date or day >= emp.join_date]
+        attended = sum((emp.id, day) in clocked for day in scheduled)
+        no_show = sum((emp.id, day) not in clocked and (emp.id, day) not in approved_leave for day in scheduled)
+        late = sum((emp.id, day) in clocked and (emp.id, day) not in documented for day in scheduled)
+        cost = round(no_show * 8 * (emp.hourly_rate or 0), 2)
+        row = {"employee_id": emp.id, "employee": emp.name, "emp_no": emp.emp_no, "warehouse": emp.primary_warehouse,
+               "grade": emp.grade, "scheduled_days": len(scheduled), "attended_days": attended, "no_show_days": no_show,
+               "attendance_rate": round(attended / len(scheduled) * 100, 1) if scheduled else 0, "paid_absence_cost": cost,
+               "late_paperwork_days": late}
+        output.append(row)
+        for key in ("scheduled_days", "attended_days", "no_show_days", "late_paperwork_days"): totals[key] += row[key]
+        totals["paid_absence_cost"] += cost
+    totals["paid_absence_cost"] = round(totals["paid_absence_cost"], 2)
+    return {"month": month, "employees": output, "summary": totals}
 
 
 def _change_rows(db: Session, user: User, employee_id: Optional[int] = None, warehouse: Optional[str] = None,

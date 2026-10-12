@@ -16,7 +16,7 @@ const PERMISSIONS = [
 
 const EMPTY = {
   username: '', display_name: '', password: '', role: 'worker', lang: 'zh',
-  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', client_warehouses: '', permissions: null, pin: '', is_active: true,
+  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', bound_zone: '', client_warehouses: '', permissions: null, pin: '', is_active: true,
 };
 
 export default function Users({ token, user }) {
@@ -63,7 +63,7 @@ export default function Users({ token, user }) {
     mode: 'edit',
     form: {
       ...EMPTY, ...u, password: '', pin: u.pin || '',
-      bound_warehouse: u.bound_warehouse || '', bound_supplier_id: u.bound_supplier_id || '', bound_biz_line: u.bound_biz_line || '',
+      bound_warehouse: u.bound_warehouse || '', bound_supplier_id: u.bound_supplier_id || '', bound_biz_line: u.bound_biz_line || '', bound_zone: u.bound_zone || '',
       client_warehouses: u.client_warehouses || '',
     },
   });
@@ -79,6 +79,7 @@ export default function Users({ token, user }) {
       bound_warehouse: f.bound_warehouse || null,
       bound_supplier_id: f.bound_supplier_id ? parseInt(f.bound_supplier_id) : null,
       bound_biz_line: f.bound_biz_line || null,
+      bound_zone: f.bound_zone || null,
       client_warehouses: f.role === 'client' ? f.client_warehouses : null,
       permissions: f.permissions,
       pin: f.pin,
@@ -264,6 +265,13 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
                 <option value="">不限</option>
                 {BIZ_LINES.map(b => <option key={b} value={b}>{b}</option>)}
               </select></div>
+          )}
+          {f.role !== 'client' && (
+            <div className="mz-field"><label>绑定区域</label>
+              <select className="mz-select" value={f.bound_zone} onChange={e => set('bound_zone', e.target.value)}>
+                <option value="">不限</option>
+                {[...new Set(warehouses.map(w => w.zone).filter(Boolean))].map(zone => <option key={zone} value={zone}>{zone}</option>)}
+              </select><span className="mz-hint">区域范围会与仓库、供应商和业务线范围同时生效。</span></div>
           )}
           <div className="mz-section">权限矩阵</div>
           <span className="mz-hint">未自定义时使用该角色的默认权限；勾选后仅授予所选权限。</span>

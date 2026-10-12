@@ -2,7 +2,9 @@
 from __future__ import annotations
 import json
 from fastapi import HTTPException
+from sqlalchemy import select
 from backend.models.employee import Employee
+from backend.models.warehouse import Warehouse
 
 ROLE_PERMISSIONS = {
     "admin": {"*"},
@@ -48,6 +50,8 @@ def scoped_employees(stmt, user):
         return stmt.where(Employee.id == -1)
     if user.bound_biz_line:
         stmt = stmt.where(Employee.biz_line == user.bound_biz_line)
+    if getattr(user, "bound_zone", None):
+        stmt = stmt.where(Employee.primary_warehouse.in_(select(Warehouse.code).where(Warehouse.zone == user.bound_zone)))
     return stmt
 
 
