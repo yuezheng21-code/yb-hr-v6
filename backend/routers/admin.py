@@ -13,8 +13,9 @@ from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
-from sqlalchemy import select, text, func
+from sqlalchemy import or_, select, text, func
 from backend.database import get_db
+from backend.models.employee import Employee
 from backend.models.user import User
 from backend.schemas.user import UserCreate, UserUpdate
 from backend.middleware.auth import get_current_user
@@ -33,21 +34,42 @@ def _admin_only(user: User):
         raise HTTPException(403, "Admin only")
 
 
-def _validate_pin(db: Session, pin: Optional[str], exclude_id: Optional[int] = None) -> Optional[str]:
-    """Empty string clears the PIN; otherwise must be 4 unique digits."""
-    if pin is None:
-        return None
-    pin = pin.strip()
-    if pin == "":
-        return ""
-    if not (len(pin) == 4 and pin.isdigit()):
-        raise HTTPException(400, "PIN 必须是 4 位数字")
-    stmt = select(User.id).where(User.pin == pin)
-    if exclude_id:
-        stmt = stmt.where(User.id != exclude_id)
-    if db.scalar(stmt):
-        raise HTTPException(409, "PIN 已被其他用户使用")
-    return pin
+def _employee_link_id(db: Session, user_id: int) -> Optional[int]:
+    return db.scalar(select(Employee.id).where(Employee.user_id == user_id))
+
+
+def _set_employee_link(db: Session, target: User, employee_id: Optional[int]) -> None:
+    """Make an employee-account association one-to-one without name matching."""
+    db.execute(select(User.id).where(User.id == target.id).with_for_update())
+    employee_filter = Employee.user_id == target.id
+    if employee_id is not None:
+        employee_filter = or_(employee_filter, Employee.id == employee_id)
+    linked_employees = db.scalars(
+        select(Employee)
+        .where(employee_filter)
+        .order_by(Employee.id)
+        .with_for_update()
+    ).all()
+    current_links = [employee for employee in linked_employees if employee.user_id == target.id]
+    if employee_id is None:
+        for employee in current_links:
+            employee.user_id = None
+        return
+
+    employee = next((employee for employee in linked_employees if employee.id == employee_id), None)
+    if employee is None:
+        raise HTTPException(404, "员工不存在")
+    if employee.status != "active":
+        raise HTTPException(400, "只能关联在职员工")
+    if employee.user_id is not None and employee.user_id != target.id:
+        raise HTTPException(409, "该员工已关联其他账号")
+
+    for current in current_links:
+        if current.id != employee.id:
+            current.user_id = None
+    employee.user_id = target.id
+    if target.account_category in {"non_employee", "unassigned", "terminated"}:
+        target.account_category = "employee"
 
 
 # ─── User Management ─────────────────────────────────────────────────────────
@@ -70,7 +92,10 @@ def list_users(
     if q:
         stmt = stmt.where(User.username.ilike(f"%{q}%") | User.display_name.ilike(f"%{q}%"))
     rows = db.scalars(stmt.offset(skip).limit(limit)).all()
-    return [_user_dict(u) for u in rows]
+    links = dict(db.execute(
+        select(Employee.user_id, Employee.id).where(Employee.user_id.is_not(None))
+    ).all())
+    return [_user_dict(u, links.get(u.id)) for u in rows]
 
 
 @router.post("/users", status_code=201)
@@ -87,14 +112,13 @@ def create_user(
         raise HTTPException(409, f"Username '{body.username}' already exists")
     if len(body.password) < 6:
         raise HTTPException(400, "密码至少 6 位")
-    pin = _validate_pin(db, body.pin)
     hashed = bcrypt.hashpw(body.password.encode(), bcrypt.gensalt()).decode()
     new_user = User(
-        pin=pin or None,
         username=body.username,
         password_hash=hashed,
         display_name=body.display_name,
         role=body.role,
+        account_category=body.account_category,
         lang=body.lang,
         avatar_color=body.avatar_color,
         bound_supplier_id=body.bound_supplier_id,
@@ -106,9 +130,11 @@ def create_user(
         is_active=body.is_active,
     )
     db.add(new_user)
+    db.flush()
+    _set_employee_link(db, new_user, body.employee_id)
     db.commit()
     db.refresh(new_user)
-    return _user_dict(new_user)
+    return _user_dict(new_user, _employee_link_id(db, new_user.id))
 
 
 @router.put("/users/{user_id}")
@@ -128,21 +154,21 @@ def update_user(
         raise HTTPException(400, "不能停用自己或修改自己的管理员角色")
     update_data = body.model_dump(exclude_unset=True)
     raw_password = update_data.pop("password", None)
+    employee_id_marker = object()
+    employee_id = update_data.pop("employee_id", employee_id_marker)
     if raw_password and len(raw_password) < 6:
         raise HTTPException(400, "密码至少 6 位")
-    if "pin" in update_data:
-        pin = _validate_pin(db, update_data.pop("pin"), exclude_id=user_id)
-        if pin is not None:
-            target.pin = pin or None
     if "permissions" in update_data:
         update_data["permissions"] = json.dumps(update_data["permissions"]) if update_data["permissions"] is not None else None
     for k, v in update_data.items():
         setattr(target, k, v)
     if raw_password:
         target.password_hash = bcrypt.hashpw(raw_password.encode(), bcrypt.gensalt()).decode()
+    if employee_id is not employee_id_marker:
+        _set_employee_link(db, target, employee_id)
     db.commit()
     db.refresh(target)
-    return _user_dict(target)
+    return _user_dict(target, _employee_link_id(db, target.id))
 
 
 @router.delete("/users/{user_id}", status_code=204)
@@ -369,12 +395,13 @@ def admin_overview(
 
 # ─── Helper ───────────────────────────────────────────────────────────────────
 
-def _user_dict(u: User) -> dict:
+def _user_dict(u: User, employee_id: Optional[int] = None) -> dict:
     return {
         "id": u.id,
         "username": u.username,
         "display_name": u.display_name,
         "role": u.role,
+        "account_category": u.account_category,
         "lang": u.lang,
         "avatar_color": u.avatar_color,
         "bound_supplier_id": u.bound_supplier_id,
@@ -384,7 +411,7 @@ def _user_dict(u: User) -> dict:
         "client_warehouses": u.client_warehouses,
         "permissions": json.loads(u.permissions) if u.permissions else None,
         "is_active": u.is_active,
-        "pin": u.pin,
+        "employee_id": employee_id,
         "created_at": u.created_at.isoformat() if u.created_at else None,
         "last_login": u.last_login.isoformat() if u.last_login else None,
     }

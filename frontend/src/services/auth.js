@@ -1,56 +1,49 @@
 /**
  * Auth service — thin wrappers around the V7 auth endpoints.
- * Token and user are stored in localStorage under hr7_token / hr7_user.
+ * Token and user are retained only in memory. The browser restores sessions
+ * through the HttpOnly server cookie, which JavaScript cannot read.
  */
 import { api, resetSessionGuard } from './api.js';
 
-const TOKEN_KEY = 'hr7_token';
-const USER_KEY  = 'hr7_user';
+let sessionToken = null;
+let sessionUser = null;
 
 /** Retrieve the stored token, or null. */
 export function getToken() {
-  return localStorage.getItem(TOKEN_KEY) || null;
+  return sessionToken;
 }
 
 /** Retrieve the stored user object, or null. */
 export function getUser() {
-  try {
-    return JSON.parse(localStorage.getItem(USER_KEY)) || null;
-  } catch {
-    return null;
-  }
+  return sessionUser;
 }
 
 /** Persist token + user. */
 export function persistSession(token, user) {
   resetSessionGuard();
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  sessionToken = token;
+  sessionUser = user;
 }
 
-/** Clear persisted session data. */
+/** Clear current session data. */
 export function clearSession() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+  sessionToken = null;
+  sessionUser = null;
+  localStorage.removeItem('hr7_token');
+  localStorage.removeItem('hr7_user');
   // Also clear legacy V6 keys
   localStorage.removeItem('hr6_token');
   localStorage.removeItem('hr6_user');
 }
 
-/** Admin login (username + password). Returns { token, user }. */
-export async function loginAdmin(username, password) {
+/** Username/password login. Returns { token, user }. */
+export async function loginWithPassword(username, password) {
   const data = await api('/api/v1/auth/login', { method: 'POST', body: { username, password } });
   // V7 returns { access_token, token_type, user } — normalise to { token, user }
   return { token: data.access_token, user: data.user };
 }
 
-/** Worker PIN login — V7 PIN endpoint (may not be implemented yet). */
-export async function loginPin(pin) {
-  const data = await api('/api/v1/auth/pin', { method: 'POST', body: { pin } });
-  return { token: data.access_token, user: data.user };
-}
-
-/** Logout — best-effort server call; always clears local session. */
+/** Logout — best-effort server call; always clears the in-memory session. */
 export async function logout(token) {
   try {
     await api('/api/v1/auth/logout', { method: 'POST', token });

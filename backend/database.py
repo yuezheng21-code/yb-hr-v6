@@ -154,7 +154,7 @@ def _migrate_schema() -> None:
         _add_column_if_missing(conn, "employees", "referrer_emp_id", "INTEGER")
         # suppliers.tax_handle — supplier tax-handling mode
         _add_column_if_missing(conn, "suppliers", "tax_handle", "VARCHAR(50)")
-        # users.pin — 4-digit PIN for worker clock-in login
+        # users.pin — retained legacy data; no longer used for login or attendance
         _add_column_if_missing(conn, "users", "pin", "VARCHAR(4)")
         # users.lang — user interface language preference
         _add_column_if_missing(conn, "users", "lang", "VARCHAR(5) DEFAULT 'zh'")
@@ -299,12 +299,55 @@ def _sync_columns() -> None:
                     print(f"   relaxed NOT NULL on legacy column {table.name}.{name}")
 
 
+def _ensure_employee_user_link_uniqueness() -> None:
+    """Repair legacy duplicate links and enforce one account per employee."""
+    from sqlalchemy import inspect
+
+    inspector = inspect(engine)
+    if "employees" not in inspector.get_table_names():
+        return
+    existing_unique_link = any(
+        constraint.get("column_names") == ["user_id"]
+        for constraint in inspector.get_unique_constraints("employees")
+    ) or any(
+        index.get("unique") and index.get("column_names") == ["user_id"]
+        for index in inspector.get_indexes("employees")
+    )
+
+    with engine.begin() as conn:
+        duplicate_ids = conn.execute(text(
+            "SELECT user_id FROM employees WHERE user_id IS NOT NULL "
+            "GROUP BY user_id HAVING COUNT(*) > 1"
+        )).scalars().all()
+        for user_id in duplicate_ids:
+            employee_ids = conn.execute(
+                text(
+                    "SELECT id FROM employees WHERE user_id = :user_id "
+                    "ORDER BY CASE WHEN status = 'active' THEN 0 ELSE 1 END, id"
+                ),
+                {"user_id": user_id},
+            ).scalars().all()
+            for employee_id in employee_ids[1:]:
+                conn.execute(
+                    text("UPDATE employees SET user_id = NULL WHERE id = :employee_id"),
+                    {"employee_id": employee_id},
+                )
+            print(f"   repaired duplicate employee links for user {user_id}")
+        if not existing_unique_link:
+            conn.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_employees_user_id "
+                "ON employees (user_id) WHERE user_id IS NOT NULL"
+            ))
+            print("   added unique employee account link index")
+
+
 def init_db() -> None:
     """Create all tables (if not exist) and reconcile existing ones. Called at startup."""
     from backend.models import user, employee, supplier, warehouse, timesheet, container, clock, settlement, referral, commission, quotation, dispatch, message, integration, audit_log, operation, system_setting, personnel, website, finance  # noqa: F401
     _migrate_schema()
     _archive_incompatible_tables()
     _sync_columns()
+    _ensure_employee_user_link_uniqueness()
     Base.metadata.create_all(bind=engine)
 
 

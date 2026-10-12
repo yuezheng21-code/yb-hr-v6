@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import date, datetime
 from typing import Optional
-from sqlalchemy import String, Integer, Date, ForeignKey
+from sqlalchemy import String, Integer, Float, Date, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from backend.database import Base
 
@@ -16,4 +16,8 @@ class ClockEvent(Base):
     clock_type: Mapped[str] = mapped_column(String(10), nullable=False)   # in/out
     clock_time: Mapped[str] = mapped_column(String(8), nullable=False)    # HH:MM:SS
     warehouse_code: Mapped[Optional[str]] = mapped_column(String(10))
+    latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    accuracy_m: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    distance_m: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())

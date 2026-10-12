@@ -13,6 +13,7 @@ from backend.database import get_db
 from backend.models.user import User
 
 bearer_scheme = HTTPBearer(auto_error=False)
+SESSION_COOKIE_NAME = "hr7_access_token"
 
 ROLES = {"admin", "hr", "fin", "wh", "sup", "mgr", "worker", "client"}
 
@@ -41,9 +42,10 @@ def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    if not credentials:
+    token = credentials.credentials if credentials else request.cookies.get(SESSION_COOKIE_NAME)
+    if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    payload = _decode_token(credentials.credentials)
+    payload = _decode_token(token)
     user_id: Optional[int] = payload.get("sub")
     if user_id is None:
         raise HTTPException(status_code=401, detail="Invalid token payload")

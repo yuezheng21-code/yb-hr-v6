@@ -8,6 +8,17 @@ import { ROLE_META, ROLES, initials, timeAgo } from './shared.js';
 const LANGS = [['zh', '中文'], ['en', 'English'], ['de', 'Deutsch'], ['tr', 'Türkçe'], ['ar', 'العربية'],
   ['hu', 'Magyar'], ['vi', 'Tiếng Việt'], ['pl', 'Polski']];
 const BIZ_LINES = ['渊博', '579'];
+const ACCOUNT_CATEGORIES = [
+  ['non_employee', '非员工'],
+  ['employee', '员工'],
+  ['client', '甲方'],
+  ['prospective_client', '潜在甲方'],
+  ['supplier', '供应商'],
+  ['applicant', '应聘者'],
+  ['probationary_worker', '试用工'],
+  ['unassigned', '待分配'],
+  ['terminated', '已离职'],
+];
 const PERMISSIONS = [
   ['employees.read', '查看花名册'], ['employees.write', '维护花名册'], ['employees.export', '导出花名册'],
   ['personnel.read', '查看人事档案'], ['personnel.request', '提交人事申请'],
@@ -17,8 +28,8 @@ const PERMISSIONS = [
 ];
 
 const EMPTY = {
-  username: '', display_name: '', password: '', role: 'worker', lang: 'zh',
-  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', bound_zone: '', client_warehouses: '', permissions: null, pin: '', is_active: true,
+  username: '', display_name: '', password: '', role: 'worker', account_category: 'unassigned', lang: 'zh',
+  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', bound_zone: '', client_warehouses: '', permissions: null, employee_id: '', is_active: true,
 };
 
 export default function Users({ token, user }) {
@@ -27,10 +38,12 @@ export default function Users({ token, user }) {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [role, setRole] = useState('');
+  const [category, setCategory] = useState('');
   const [status, setStatus] = useState('active');
   const [drawer, setDrawer] = useState(null); // { mode: 'new'|'edit', form }
   const [warehouses, setWarehouses] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
   const load = () => {
     setLoading(true);
@@ -42,13 +55,18 @@ export default function Users({ token, user }) {
     load();
     api('/api/v1/warehouses', { token }).then(setWarehouses).catch(() => {});
     api('/api/v1/suppliers', { token }).then(setSuppliers).catch(() => {});
+    api('/api/v1/employees?limit=5000', { token }).then(setEmployees).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const supName = useMemo(() => Object.fromEntries(suppliers.map(s => [s.id, s.name])), [suppliers]);
+  const employeeName = useMemo(
+    () => Object.fromEntries(employees.map(e => [e.id, `${e.emp_no} · ${e.name}`])),
+    [employees],
+  );
 
   const byStatus = users.filter(u => status === 'all' || (status === 'active' ? u.is_active : !u.is_active));
   const counts = ROLES.reduce((acc, r) => ({ ...acc, [r]: byStatus.filter(u => u.role === r).length }), {});
-  const list = byStatus.filter(u => (!role || u.role === role) && (!q ||
+  const list = byStatus.filter(u => (!role || u.role === role) && (!category || u.account_category === category) && (!q ||
     `${u.username} ${u.display_name}`.toLowerCase().includes(q.toLowerCase())));
   const lt = useListTools(list, { date: 'created_at', warehouse: 'bound_warehouse', supplier: 'bound_supplier_id' }, token);
   const COLS = [
@@ -64,7 +82,7 @@ export default function Users({ token, user }) {
   const openEdit = (u) => setDrawer({
     mode: 'edit',
     form: {
-      ...EMPTY, ...u, password: '', pin: u.pin || '',
+      ...EMPTY, ...u, password: '', employee_id: u.employee_id || '',
       bound_warehouse: u.bound_warehouse || '', bound_supplier_id: u.bound_supplier_id || '', bound_biz_line: u.bound_biz_line || '', bound_zone: u.bound_zone || '',
       client_warehouses: u.client_warehouses || '',
     },
@@ -77,19 +95,19 @@ export default function Users({ token, user }) {
     if (f.role === 'client' && !f.client_warehouses) { showToast('甲方账号至少选择一个仓库', 'err'); return; }
     if (f.role === 'wh' && !f.bound_warehouse) { showToast('仓管账号必须绑定仓库', 'err'); return; }
     const body = {
-      display_name: f.display_name, role: f.role, lang: f.lang, is_active: f.is_active,
+      display_name: f.display_name, role: f.role, account_category: f.account_category, lang: f.lang, is_active: f.is_active,
       bound_warehouse: f.bound_warehouse || null,
       bound_supplier_id: f.bound_supplier_id ? parseInt(f.bound_supplier_id) : null,
       bound_biz_line: f.bound_biz_line || null,
       bound_zone: f.bound_zone || null,
       client_warehouses: f.role === 'client' ? f.client_warehouses : null,
       permissions: f.permissions,
-      pin: f.pin,
+      employee_id: f.employee_id ? parseInt(f.employee_id) : null,
     };
     try {
       if (drawer.mode === 'new') {
         if (!f.username || !f.password) { showToast('用户名和密码必填', 'err'); return; }
-        await api('/api/v1/admin/users', { method: 'POST', token, body: { ...body, username: f.username, password: f.password, pin: f.pin || null } });
+        await api('/api/v1/admin/users', { method: 'POST', token, body: { ...body, username: f.username, password: f.password } });
         showToast('用户已创建');
       } else {
         if (f.password) body.password = f.password;
@@ -139,6 +157,10 @@ export default function Users({ token, user }) {
               <button key={r} className={role === r ? 'on' : ''} onClick={() => setRole(r)}>{ROLE_META[r].label}<em>{counts[r]}</em></button>
             ))}
           </div>
+          <select className="mz-select" style={{ width: 140 }} value={category} onChange={e => setCategory(e.target.value)}>
+           <option value="">全部分类</option>
+           {ACCOUNT_CATEGORIES.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+          </select>
           <div className="mz-seg" style={{ marginLeft: 'auto' }}>
             {[['active', '启用'], ['inactive', '停用'], ['all', '全部']].map(([k, l]) => (
               <button key={k} className={status === k ? 'on' : ''} onClick={() => setStatus(k)}>{l}</button>
@@ -150,7 +172,7 @@ export default function Users({ token, user }) {
         {loading ? <Loading /> : (
           <div className="mz-scroll">
             <table className="mz-table">
-              <thead><tr><th>用户</th><th>角色</th><th>数据范围</th><th>PIN</th><th>语言</th><th>最近登录</th><th>状态</th><th /></tr></thead>
+              <thead><tr><th>用户</th><th>角色</th><th>分类</th><th>数据范围</th><th>关联员工</th><th>语言</th><th>最近登录</th><th>状态</th><th /></tr></thead>
               <tbody>
                 {lt.rows.map(u => (
                   <tr key={u.id} style={{ cursor: 'pointer', opacity: u.is_active ? 1 : .55 }} onClick={() => openEdit(u)}>
@@ -164,8 +186,9 @@ export default function Users({ token, user }) {
                       </div>
                     </td>
                     <td><span className="mz-tag"><span className="mz-dot" style={{ background: ROLE_META[u.role]?.color }} />{ROLE_META[u.role]?.label || u.role}</span></td>
+                    <td>{ACCOUNT_CATEGORIES.find(([key]) => key === u.account_category)?.[1] || u.account_category || '非员工'}</td>
                     <td style={{ fontSize: 12 }}>{scope(u)}</td>
-                    <td className="mz-muted">{u.pin ? '••••' : '—'}</td>
+                    <td className="mz-muted">{u.employee_id ? (employeeName[u.employee_id] || `员工 #${u.employee_id}`) : '—'}</td>
                     <td className="mz-muted">{(LANGS.find(l => l[0] === u.lang) || [, u.lang])[1]}</td>
                     <td className="mz-muted">{timeAgo(u.last_login)}</td>
                     <td><span className="mz-tag"><span className="mz-dot" style={{ background: u.is_active ? 'var(--gn)' : 'var(--tx3)' }} />{u.is_active ? '启用' : '停用'}</span></td>
@@ -182,14 +205,15 @@ export default function Users({ token, user }) {
       {drawer && (
         <UserDrawer
           drawer={drawer} setDrawer={setDrawer} onSave={save} onToggle={toggleActive}
-          warehouses={warehouses} suppliers={suppliers} isSelf={drawer.form.id === user.id}
+          warehouses={warehouses} suppliers={suppliers} employees={employees} users={users}
+          isSelf={drawer.form.id === user.id}
         />
       )}
     </div>
   );
 }
 
-function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers, isSelf }) {
+function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers, employees, users, isSelf }) {
   const f = drawer.form;
   const isNew = drawer.mode === 'new';
   const set = (k, v) => setDrawer({ ...drawer, form: { ...f, [k]: v } });
@@ -213,11 +237,29 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
           )}
           <div className="mz-field"><label>显示名称</label>
             <input className="mz-input" value={f.display_name} onChange={e => set('display_name', e.target.value)} />
-            {f.role === 'worker' && <span className="mz-hint">工人账号的显示名称需与员工花名册姓名一致，用于关联打卡和报工。</span>}
           </div>
           <div className="mz-field"><label>{isNew ? '密码' : '重置密码'}</label>
             <input className="mz-input" type="password" value={f.password} placeholder={isNew ? '至少 6 位' : '留空则不修改'}
               onChange={e => set('password', e.target.value)} /></div>
+          <div className="mz-field"><label>账号分类</label>
+            <select className="mz-select" value={f.account_category} onChange={e => set('account_category', e.target.value)}>
+              {ACCOUNT_CATEGORIES.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+            </select>
+          </div>
+          <div className="mz-field"><label>关联员工（用于打卡）</label>
+            <select className="mz-select" value={f.employee_id || ''} onChange={e => set('employee_id', e.target.value)}>
+              <option value="">不关联员工</option>
+              {employees.map(employee => {
+                const linkedElsewhere = users.some(u => u.id !== f.id && u.employee_id === employee.id);
+                return (
+                  <option key={employee.id} value={employee.id} disabled={linkedElsewhere}>
+                    {employee.emp_no} · {employee.name}{employee.status !== 'active' ? '（非在职）' : ''}{linkedElsewhere ? '（已关联）' : ''}
+                  </option>
+                );
+              })}
+            </select>
+            <span className="mz-hint">关联的在职员工可使用本账号登录后进行定位打卡；每个员工仅能关联一个账号。</span>
+          </div>
 
           <div className="mz-section">角色</div>
           <div className="mz-roles">
@@ -297,9 +339,6 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
               <select className="mz-select" value={f.lang} onChange={e => set('lang', e.target.value)}>
                 {LANGS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
               </select></div>
-            <div className="mz-field"><label>打卡 PIN（4 位）</label>
-              <input className="mz-input" inputMode="numeric" maxLength={4} value={f.pin} placeholder="可选"
-                onChange={e => set('pin', e.target.value.replace(/\D/g, '').slice(0, 4))} /></div>
           </div>
 
           {isNew && (

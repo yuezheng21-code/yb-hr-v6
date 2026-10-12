@@ -49,7 +49,7 @@ export default function Attendance({ token, user }) {
   useEffect(() => { load(); }, [load]);
 
   const openNew = () => {
-    setForm({ biz_line:'渊博',source_type:'own',grade:'P1',settlement_type:'hourly',hourly_rate:13,status:'active',contract_hours:8 });
+    setForm({ biz_line:'渊博',source_type:'own',grade:'P1',settlement_type:'hourly',hourly_rate:13,status:'active',contract_hours:8,account_username:'',account_password:'' });
     setEditModal('new');
   };
   const openEdit = (e) => { setForm({ ...e }); setEditModal(e.id); };
@@ -65,7 +65,9 @@ export default function Attendance({ token, user }) {
       }
       setEditModal(null);
       load();
-      showToast(editModal === 'new' ? '员工已创建' : '员工已更新');
+      showToast(editModal === 'new'
+        ? (form.account_password ? '员工和登录账号已创建' : '员工和登录账号已创建；请在用户管理中设置初始密码')
+        : '员工已更新');
     } catch (e) {
       showToast(e.message, 'err');
     }
@@ -154,6 +156,15 @@ export default function Attendance({ token, user }) {
               <input className="fi" value={form.name||''} onChange={e => setForm({...form,name:e.target.value})} /></div>
             <div className="fg"><label className="fl">{t('emp.f_phone')}</label>
               <input className="fi" value={form.phone||''} onChange={e => setForm({...form,phone:e.target.value})} /></div>
+            {editModal === 'new' && <>
+              <div className="fg"><label className="fl">登录用户名（可选）</label>
+                <input className="fi" value={form.account_username||''} placeholder="留空自动生成"
+                  onChange={e => setForm({...form,account_username:e.target.value})} /></div>
+              <div className="fg"><label className="fl">初始登录密码（可选）</label>
+                <input className="fi" type="password" value={form.account_password||''} placeholder="至少 6 位"
+                  onChange={e => setForm({...form,account_password:e.target.value})} /></div>
+              <div className="fg ful mz-hint">保存员工档案会自动创建并绑定一个员工账号。未填写用户名时系统自动生成；未填写密码时请管理员在「用户管理」中重置密码后再发给员工。</div>
+            </>}
             <div className="fg"><label className="fl">{t('emp.f_biz')}</label>
               <select className="fsl" value={form.biz_line||'渊博'} onChange={e => setForm({...form,biz_line:e.target.value})}>
                 <option>渊博</option><option>579</option>
@@ -196,9 +207,6 @@ export default function Attendance({ token, user }) {
               <select className="fsl" value={form.tax_mode||'我方报税'} onChange={e => setForm({...form,tax_mode:e.target.value})}>
                 <option>我方报税</option><option>供应商报税</option>
               </select></div>
-            <div className="fg"><label className="fl">{t('emp.f_pin')}</label>
-              <input className="fi" maxLength={4} value={form.pin||''}
-                onChange={e => setForm({...form,pin:e.target.value.replace(/\D/g,'')})} /></div>
             <div className="fg ful"><label className="fl">住址 Anschrift（用于合同）</label>
               <input className="fi" value={form.address||''} onChange={e => setForm({...form,address:e.target.value})} /></div>
             <div className="fg ful"><label className="fl">{t('emp.f_notes')}</label>

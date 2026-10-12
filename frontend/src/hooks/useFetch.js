@@ -3,8 +3,8 @@ import { apiClient } from '../services/api.js';
 
 /**
  * Data-fetching hook backed by apiClient (Axios).
- * Authentication is handled automatically by the apiClient request interceptor
- * (reads the JWT from localStorage), so no token needs to be passed here.
+ * Authentication is handled automatically by the HttpOnly session cookie, so no
+ * token needs to be passed here.
  * @param {string} url  - API path to GET
  * @param {object} axiosConfig - Optional Axios request config (params, headers, etc.)
  */
