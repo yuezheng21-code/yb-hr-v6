@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
-from sqlalchemy import select, text, func
+from sqlalchemy import or_, select, text, func
 from backend.database import get_db
 from backend.models.employee import Employee
 from backend.models.user import User
@@ -40,13 +40,23 @@ def _employee_link_id(db: Session, user_id: int) -> Optional[int]:
 
 def _set_employee_link(db: Session, target: User, employee_id: Optional[int]) -> None:
     """Make an employee-account association one-to-one without name matching."""
-    current_links = db.scalars(select(Employee).where(Employee.user_id == target.id)).all()
+    db.execute(select(User.id).where(User.id == target.id).with_for_update())
+    employee_filter = Employee.user_id == target.id
+    if employee_id is not None:
+        employee_filter = or_(employee_filter, Employee.id == employee_id)
+    linked_employees = db.scalars(
+        select(Employee)
+        .where(employee_filter)
+        .order_by(Employee.id)
+        .with_for_update()
+    ).all()
+    current_links = [employee for employee in linked_employees if employee.user_id == target.id]
     if employee_id is None:
         for employee in current_links:
             employee.user_id = None
         return
 
-    employee = db.get(Employee, employee_id)
+    employee = next((employee for employee in linked_employees if employee.id == employee_id), None)
     if employee is None:
         raise HTTPException(404, "员工不存在")
     if employee.status != "active":

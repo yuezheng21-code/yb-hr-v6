@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 from sqlalchemy import create_engine, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from backend.database import Base
@@ -111,6 +112,20 @@ class ClockGeofenceTests(unittest.TestCase):
         self.assertEqual(account.username, f"employee_{employee.id}")
         self.assertEqual(account.account_category, "employee")
         self.assertTrue(account.is_active)
+
+    def test_employee_account_link_is_unique(self):
+        duplicate = Employee(
+            emp_no="E-DUPLICATE",
+            name="Duplicate Link",
+            primary_warehouse="TEST",
+            status="active",
+            user_id=self.user.id,
+        )
+        self.db.add(duplicate)
+
+        with self.assertRaises(IntegrityError):
+            self.db.commit()
+        self.db.rollback()
 
     def test_clock_rejects_missing_inaccurate_or_out_of_range_location(self):
         with self.assertRaises(HTTPException) as missing:
