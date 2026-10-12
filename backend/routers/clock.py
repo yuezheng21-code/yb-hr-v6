@@ -31,11 +31,12 @@ EARTH_RADIUS_M = 6_371_000.0
 MAX_LOCATION_ACCURACY_M = 200.0
 
 
-def _resolve_employee(user: User, db: Session) -> Employee:
+def _resolve_employee(user: User, db: Session, *, lock: bool = False) -> Employee:
     """Return the active employee explicitly linked to this authenticated account."""
-    employee = db.scalar(
-        select(Employee).where(Employee.user_id == user.id, Employee.status == "active")
-    )
+    stmt = select(Employee).where(Employee.user_id == user.id, Employee.status == "active")
+    if lock:
+        stmt = stmt.with_for_update()
+    employee = db.scalar(stmt)
     if employee is None:
         raise HTTPException(
             status_code=404,
@@ -86,7 +87,7 @@ def _distance_m(latitude: float, longitude: float, target_latitude: float, targe
     )
     dlat, dlon = lat2 - lat1, lon2 - lon1
     a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
-    return EARTH_RADIUS_M * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return EARTH_RADIUS_M * 2 * math.atan2(math.sqrt(a), math.sqrt(max(0.0, 1 - a)))
 
 
 def _resolve_clock_warehouse(
@@ -108,7 +109,12 @@ def _resolve_clock_warehouse(
     configured = [
         warehouse
         for warehouse in warehouses
-        if warehouse.latitude is not None and warehouse.longitude is not None
+        if (
+            warehouse.latitude is not None
+            and warehouse.longitude is not None
+            and math.isfinite(float(warehouse.latitude))
+            and math.isfinite(float(warehouse.longitude))
+        )
     ]
     if not configured:
         raise HTTPException(409, "所属仓库尚未配置打卡坐标，请联系管理员")
@@ -173,7 +179,7 @@ def clock_punch(
     if body.clock_type not in {"in", "out"}:
         raise HTTPException(400, "打卡类型必须为 in 或 out")
     latitude, longitude, accuracy_m = _validate_location(body)
-    employee = _resolve_employee(user, db)
+    employee = _resolve_employee(user, db, lock=True)
     warehouse, distance_m = _resolve_clock_warehouse(db, employee, latitude, longitude)
 
     now = datetime.utcnow()

@@ -5,6 +5,18 @@ from sqlalchemy import String, Boolean, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.database import Base
 
+ACCOUNT_CATEGORIES = {
+    "non_employee",
+    "employee",
+    "client",
+    "prospective_client",
+    "supplier",
+    "applicant",
+    "probationary_worker",
+    "unassigned",
+    "terminated",
+}
+
 
 class User(Base):
     __tablename__ = "users"
@@ -14,6 +26,7 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(200), nullable=False)
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
     role: Mapped[str] = mapped_column(String(20), nullable=False, default="worker")
+    account_category: Mapped[str] = mapped_column(String(30), nullable=False, default="non_employee")
     lang: Mapped[str] = mapped_column(String(5), default="zh")
     avatar_color: Mapped[str] = mapped_column(String(20), default="#4f6ef7")
     bound_supplier_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("suppliers.id"), nullable=True)
@@ -24,6 +37,7 @@ class User(Base):
     client_warehouses: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     # JSON array of permission keys. NULL keeps the role's safe default permissions.
     permissions: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True)
+    # Legacy PIN data is retained for backward-compatible migrations but is not used for authentication.
     pin: Mapped[Optional[str]] = mapped_column(String(4), nullable=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())

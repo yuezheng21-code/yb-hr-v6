@@ -3,12 +3,14 @@ from datetime import datetime
 from typing import Optional, Any
 import json
 from pydantic import BaseModel, field_validator
+from backend.models.user import ACCOUNT_CATEGORIES
 
 
 class UserBase(BaseModel):
     username: str
     display_name: str
     role: str = "worker"
+    account_category: str = "non_employee"
     lang: str = "zh"
     avatar_color: str = "#4f6ef7"
     bound_supplier_id: Optional[int] = None
@@ -19,6 +21,13 @@ class UserBase(BaseModel):
     permissions: Optional[list[str]] = None
     is_active: bool = True
 
+    @field_validator("account_category")
+    @classmethod
+    def validate_account_category(cls, value: str) -> str:
+        if value not in ACCOUNT_CATEGORIES:
+            raise ValueError("无效的账号分类")
+        return value
+
 
 class UserCreate(UserBase):
     password: str
@@ -28,6 +37,7 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     display_name: Optional[str] = None
     role: Optional[str] = None
+    account_category: Optional[str] = None
     lang: Optional[str] = None
     avatar_color: Optional[str] = None
     bound_supplier_id: Optional[int] = None
@@ -39,6 +49,13 @@ class UserUpdate(BaseModel):
     is_active: Optional[bool] = None
     password: Optional[str] = None
     employee_id: Optional[int] = None
+
+    @field_validator("account_category")
+    @classmethod
+    def validate_account_category(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and value not in ACCOUNT_CATEGORIES:
+            raise ValueError("无效的账号分类")
+        return value
 
 
 class UserOut(UserBase):

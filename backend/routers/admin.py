@@ -58,6 +58,8 @@ def _set_employee_link(db: Session, target: User, employee_id: Optional[int]) ->
         if current.id != employee.id:
             current.user_id = None
     employee.user_id = target.id
+    if target.account_category in {"non_employee", "unassigned", "terminated"}:
+        target.account_category = "employee"
 
 
 # ─── User Management ─────────────────────────────────────────────────────────
@@ -106,6 +108,7 @@ def create_user(
         password_hash=hashed,
         display_name=body.display_name,
         role=body.role,
+        account_category=body.account_category,
         lang=body.lang,
         avatar_color=body.avatar_color,
         bound_supplier_id=body.bound_supplier_id,
@@ -388,6 +391,7 @@ def _user_dict(u: User, employee_id: Optional[int] = None) -> dict:
         "username": u.username,
         "display_name": u.display_name,
         "role": u.role,
+        "account_category": u.account_category,
         "lang": u.lang,
         "avatar_color": u.avatar_color,
         "bound_supplier_id": u.bound_supplier_id,

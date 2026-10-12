@@ -49,7 +49,7 @@ USERS = [
     {"username": "sup001",   "password": "sup123",         "display_name": "德信负责人",   "role": "sup"},
     {"username": "mgr",      "password": "mgr123",         "display_name": "运营经理陈杰", "role": "mgr"},
     # 周阳 — 小时工账号（用户名/密码登录后打卡）
-    {"username": "zhouyang", "password": "zy2026",         "display_name": "周阳",         "role": "worker"},
+    {"username": "zhouyang", "password": "zy2026",         "display_name": "周阳",         "role": "worker", "account_category": "employee"},
     {"username": "test_ruhr_east", "password": "test123", "display_name": "测试鲁尔东主管", "role": "mgr", "bound_zone": "鲁尔东"},
     {"username": "test_sup003", "password": "test123", "display_name": "测试志朋供应商", "role": "sup", "bound_supplier_code": "SUP-003"},
 ]
@@ -218,6 +218,7 @@ def run_seed(db: Session) -> None:
                 password_hash=pw_hash,
                 display_name=u["display_name"],
                 role=u["role"],
+                account_category=u.get("account_category", "non_employee"),
                 bound_warehouse=u.get("bound_warehouse"),
                 bound_zone=u.get("bound_zone"),
             )
@@ -285,6 +286,10 @@ def run_seed(db: Session) -> None:
             select(Employee.id).where(Employee.user_id == account.id)
         ):
             emp.user_id = account.id
+            account.account_category = "employee"
+    from backend.routers.employees import _create_employee_account
+    for emp in db.scalars(select(Employee).where(Employee.user_id.is_(None))).all():
+        _create_employee_account(db, emp)
 
     # ── Operation types ─────────────────────────────────────────────────────
     for t in OPERATION_TYPES:

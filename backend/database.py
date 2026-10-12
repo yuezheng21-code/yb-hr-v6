@@ -154,7 +154,7 @@ def _migrate_schema() -> None:
         _add_column_if_missing(conn, "employees", "referrer_emp_id", "INTEGER")
         # suppliers.tax_handle — supplier tax-handling mode
         _add_column_if_missing(conn, "suppliers", "tax_handle", "VARCHAR(50)")
-        # users.pin — 4-digit PIN for worker clock-in login
+        # users.pin — retained legacy data; no longer used for login or attendance
         _add_column_if_missing(conn, "users", "pin", "VARCHAR(4)")
         # users.lang — user interface language preference
         _add_column_if_missing(conn, "users", "lang", "VARCHAR(5) DEFAULT 'zh'")

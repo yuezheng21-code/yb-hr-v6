@@ -5,14 +5,17 @@ from __future__ import annotations
 import csv
 import io
 import re
+import secrets
 from datetime import datetime
 from typing import Optional
+import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 from backend.database import get_db
 from backend.models.employee import Employee
+from backend.models.user import User
 from backend.schemas.employee import EmployeeCreate, EmployeeUpdate, EmployeeOut
 from backend.middleware.auth import get_current_user
 from backend.services.access import (
@@ -49,6 +52,51 @@ def _next_emp_no(db: Session) -> str:
     else:
         seq = 1
     return f"{prefix}{seq:03d}"
+
+
+def _create_employee_account(
+    db: Session,
+    employee: Employee,
+    *,
+    username: Optional[str] = None,
+    initial_secret: Optional[str] = None,
+) -> User:
+    """Create the normal login account required for a newly filed employee."""
+    requested_username = (username or "").strip()
+    account_username = requested_username or f"employee_{employee.id}"
+    if not account_username:
+        raise HTTPException(400, "员工账号用户名不能为空")
+    if len(account_username) > 50:
+        raise HTTPException(400, "员工账号用户名不能超过 50 个字符")
+    if db.scalar(select(User.id).where(User.username == account_username)):
+        if requested_username:
+            raise HTTPException(409, "员工账号用户名已被使用")
+        suffix = 1
+        while True:
+            base = account_username[: 49 - len(str(suffix))]
+            candidate = f"{base}_{suffix}"
+            if not db.scalar(select(User.id).where(User.username == candidate)):
+                account_username = candidate
+                break
+            suffix += 1
+    if initial_secret is not None and initial_secret != "" and len(initial_secret) < 6:
+        raise HTTPException(400, "初始密码至少 6 位")
+
+    # When HR does not issue an initial password, create a cryptographically
+    # random one. An administrator can safely set a known password later.
+    initial_password = initial_secret or secrets.token_urlsafe(32)
+    account = User(
+        username=account_username,
+        password_hash=bcrypt.hashpw(initial_password.encode(), bcrypt.gensalt()).decode(),
+        display_name=employee.name,
+        role="worker",
+        account_category="employee" if employee.status == "active" else "terminated",
+        is_active=employee.status == "active",
+    )
+    db.add(account)
+    db.flush()
+    employee.user_id = account.id
+    return account
 
 
 def _apply_row_filter(stmt, user: User):
@@ -162,8 +210,16 @@ def create_employee(
     )
 
     emp_no = _next_emp_no(db)
-    emp = Employee(**body.model_dump(), emp_no=emp_no)
+    emp_data = body.model_dump(exclude={"account_username", "account_password"})
+    emp = Employee(**emp_data, emp_no=emp_no)
     db.add(emp)
+    db.flush()
+    _create_employee_account(
+        db,
+        emp,
+        username=body.account_username,
+        initial_secret=body.account_password,
+    )
 
     db.commit()
     db.refresh(emp)
@@ -191,6 +247,8 @@ def update_employee(
     emp = require_employee_access(db, emp_id, user, "employees.write")
 
     data = body.model_dump(exclude_unset=True)
+    account_username = data.pop("account_username", None)
+    account_password = data.pop("account_password", None)
     protected = {"hourly_rate", "status", "leave_date"}
     if protected.intersection(data):
         raise HTTPException(409, "时薪、离职日期和员工状态只能通过已执行的人事审批变更")
@@ -203,6 +261,20 @@ def update_employee(
     )
     for k, v in data.items():
         setattr(emp, k, v)
+
+    if emp.user_id is None:
+        _create_employee_account(
+            db,
+            emp,
+            username=account_username,
+            initial_secret=account_password,
+        )
+    elif account_username or account_password:
+        raise HTTPException(409, "员工账号已存在，请在用户管理中修改账号或密码")
+    else:
+        linked_account = db.get(User, emp.user_id)
+        if linked_account:
+            linked_account.display_name = emp.name
 
     emp.updated_at = datetime.utcnow()
     db.commit()

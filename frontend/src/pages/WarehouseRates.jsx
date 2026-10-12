@@ -112,7 +112,7 @@ export default function WarehouseRates({ token, user }) {
                 默认半径为 1000 米。员工打卡时将以此坐标和半径验证位置。
               </div>
             </div>
-            {(!rates.latitude || !rates.longitude) && (
+            {(rates.latitude == null || rates.longitude == null) && (
               <div style={{ marginBottom:16,padding:'8px 10px',fontSize:12,color:'var(--og)',background:'color-mix(in srgb, var(--og) 8%, transparent)',borderRadius:'var(--R2)' }}>
                 请由管理员填写经纬度后启用该仓库的定位打卡。
               </div>

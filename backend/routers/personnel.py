@@ -448,7 +448,7 @@ def hire_from_talent(talent_id: int, body: HireIn, user: User = Depends(get_curr
         raise HTTPException(404, "候选人不存在")
     if t.pool_status == "hired" and "→ 员工" in (t.notes or ""):
         raise HTTPException(400, "该候选人已转为员工")
-    from backend.routers.employees import _next_emp_no
+    from backend.routers.employees import _create_employee_account, _next_emp_no
     emp = Employee(emp_no=_next_emp_no(db), name=t.name, phone=t.phone, nationality=t.nationality,
                    languages=t.languages, skills=t.skills, position=body.position or t.position,
                    primary_warehouse=body.primary_warehouse, grade=body.grade,
@@ -456,6 +456,7 @@ def hire_from_talent(talent_id: int, body: HireIn, user: User = Depends(get_curr
                    supplier_id=body.supplier_id, biz_line=body.biz_line, status="active", join_date=body.join_date)
     db.add(emp)
     db.flush()
+    _create_employee_account(db, emp)
     t.pool_status = "hired"
     t.notes = ((t.notes + "\n") if t.notes else "") + f"→ 员工 {emp.emp_no}（{date.today():%Y-%m-%d} {user.display_name}）"
     ev = _event(db, emp, "hired", "录用入职", user, event_date=body.join_date,
@@ -923,10 +924,12 @@ def _execute_approval(db: Session, approval: PersonnelApproval, emp: Employee, u
             contract.status = "ended"
             if not contract.end_date or contract.end_date > last_day:
                 contract.end_date = last_day
-        if p.get("deactivate_login") and emp.user_id and last_day <= date.today():
+        if emp.user_id and last_day <= date.today():
             linked = db.get(User, emp.user_id)
             if linked:
-                linked.is_active = False
+                if p.get("deactivate_login"):
+                    linked.is_active = False
+                linked.account_category = "terminated"
         return _event(db, emp, "termination", f"离职（{p['termination_type']}），最后工作日 {last_day:%Y-%m-%d}", user,
                       event_date=date.fromisoformat(p["notice_date"]) if p.get("notice_date") else date.today(),
                       details={**p, "approval_id": approval.id, "approval_status": "executed"})

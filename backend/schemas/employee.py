@@ -38,7 +38,8 @@ class EmployeeBase(BaseModel):
 
 
 class EmployeeCreate(EmployeeBase):
-    pass
+    account_username: Optional[str] = None
+    account_password: Optional[str] = None
 
 
 class EmployeeUpdate(BaseModel):
@@ -67,6 +68,8 @@ class EmployeeUpdate(BaseModel):
     iban: Optional[str] = None
     datev_pnr: Optional[str] = None
     tax_mode: Optional[str] = None
+    account_username: Optional[str] = None
+    account_password: Optional[str] = None
 
 
 class EmployeeOut(EmployeeBase):
