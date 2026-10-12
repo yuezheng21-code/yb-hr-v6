@@ -7,6 +7,7 @@
 """
 from __future__ import annotations
 import bcrypt
+import json
 import os
 from datetime import datetime, timedelta
 from typing import Optional
@@ -100,6 +101,7 @@ def create_user(
         bound_warehouse=body.bound_warehouse,
         bound_biz_line=body.bound_biz_line,
         client_warehouses=body.client_warehouses,
+        permissions=json.dumps(body.permissions) if body.permissions is not None else None,
         is_active=body.is_active,
     )
     db.add(new_user)
@@ -131,6 +133,8 @@ def update_user(
         pin = _validate_pin(db, update_data.pop("pin"), exclude_id=user_id)
         if pin is not None:
             target.pin = pin or None
+    if "permissions" in update_data:
+        update_data["permissions"] = json.dumps(update_data["permissions"]) if update_data["permissions"] is not None else None
     for k, v in update_data.items():
         setattr(target, k, v)
     if raw_password:
@@ -376,6 +380,7 @@ def _user_dict(u: User) -> dict:
         "bound_warehouse": u.bound_warehouse,
         "bound_biz_line": u.bound_biz_line,
         "client_warehouses": u.client_warehouses,
+        "permissions": json.loads(u.permissions) if u.permissions else None,
         "is_active": u.is_active,
         "pin": u.pin,
         "created_at": u.created_at.isoformat() if u.created_at else None,

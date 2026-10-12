@@ -7,6 +7,7 @@ import { useTheme } from '../../context/ThemeContext.jsx';
 import { LogOut, Moon, Sun } from 'lucide-react';
 
 const ROLE_COLORS = { client:'#0ea5a4',admin:'#4f6ef7',hr:'#a78bfa',wh:'#f5a623',fin:'#2dd4a0',mgr:'#ff6b9d',sup:'#f0526c',worker:'#38bdf8' };
+const NAV_PERMISSION = { employees: 'employees.read' };
 
 function useUnreadCount(token, enabled = true) {
   const [count, setCount] = useState(0);
@@ -33,7 +34,8 @@ export default function Sidebar({ user, currentPage, onNavigate, onLogout }) {
 
   // Keep a separator only between two groups that both have visible items
   const navItems = user
-    ? NAV_ITEMS.filter(n => n.sep || !n.roles || n.roles.includes(user.role))
+    ? NAV_ITEMS.filter(n => n.sep || ((!n.roles || n.roles.includes(user.role)) &&
+        (!user.permissions || !NAV_PERMISSION[n.key] || user.permissions.includes(NAV_PERMISSION[n.key]))))
         .filter((n, i, arr) => !n.sep || (i > 0 && !arr[i - 1].sep && arr.slice(i + 1).some(x => !x.sep)))
     : [];
 

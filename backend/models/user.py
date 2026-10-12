@@ -21,6 +21,8 @@ class User(Base):
     bound_biz_line: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     # role=client (warehouse operator / 甲方): comma-separated warehouse codes it may view
     client_warehouses: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    # JSON array of permission keys. NULL keeps the role's safe default permissions.
+    permissions: Mapped[Optional[str]] = mapped_column(String(2000), nullable=True)
     pin: Mapped[Optional[str]] = mapped_column(String(4), nullable=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())

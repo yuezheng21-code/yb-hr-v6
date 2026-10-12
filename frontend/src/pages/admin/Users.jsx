@@ -8,10 +8,15 @@ import { ROLE_META, ROLES, initials, timeAgo } from './shared.js';
 const LANGS = [['zh', '中文'], ['en', 'English'], ['de', 'Deutsch'], ['tr', 'Türkçe'], ['ar', 'العربية'],
   ['hu', 'Magyar'], ['vi', 'Tiếng Việt'], ['pl', 'Polski']];
 const BIZ_LINES = ['渊博', '579'];
+const PERMISSIONS = [
+  ['employees.read', '查看花名册'], ['employees.write', '维护花名册'],
+  ['personnel.read', '查看人事档案'], ['personnel.request', '提交人事申请'],
+  ['personnel.approve', '审批人事申请'], ['changes.read', '查看变更汇总'], ['changes.export', '导出变更汇总'],
+];
 
 const EMPTY = {
   username: '', display_name: '', password: '', role: 'worker', lang: 'zh',
-  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', client_warehouses: '', pin: '', is_active: true,
+  bound_warehouse: '', bound_supplier_id: '', bound_biz_line: '', client_warehouses: '', permissions: null, pin: '', is_active: true,
 };
 
 export default function Users({ token, user }) {
@@ -75,6 +80,7 @@ export default function Users({ token, user }) {
       bound_supplier_id: f.bound_supplier_id ? parseInt(f.bound_supplier_id) : null,
       bound_biz_line: f.bound_biz_line || null,
       client_warehouses: f.role === 'client' ? f.client_warehouses : null,
+      permissions: f.permissions,
       pin: f.pin,
     };
     try {
@@ -259,6 +265,17 @@ function UserDrawer({ drawer, setDrawer, onSave, onToggle, warehouses, suppliers
                 {BIZ_LINES.map(b => <option key={b} value={b}>{b}</option>)}
               </select></div>
           )}
+          <div className="mz-section">权限矩阵</div>
+          <span className="mz-hint">未自定义时使用该角色的默认权限；勾选后仅授予所选权限。</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+            {PERMISSIONS.map(([key, label]) => {
+              const selected = f.permissions || [];
+              const on = selected.includes(key);
+              return <button key={key} type="button" className={`mz-role ${on ? 'on' : ''}`} style={{ padding: '6px 10px' }}
+                onClick={() => set('permissions', (on ? selected.filter(x => x !== key) : [...selected, key]))}>{label}</button>;
+            })}
+          </div>
+          {f.permissions && <button type="button" className="mz-link" style={{ marginTop: 8 }} onClick={() => set('permissions', null)}>恢复角色默认权限</button>}
           {f.role !== 'wh' && f.role !== 'sup' && f.role !== 'client' && !f.bound_warehouse && !f.bound_supplier_id && (
             <span className="mz-hint">{f.role === 'worker' ? '工人只能看到自己的数据。' : '该角色默认可查看全部仓库与供应商数据。'}</span>
           )}

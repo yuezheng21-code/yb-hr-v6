@@ -1,6 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
+import json
 from pydantic import BaseModel, field_validator
 
 
@@ -14,6 +15,7 @@ class UserBase(BaseModel):
     bound_warehouse: Optional[str] = None
     bound_biz_line: Optional[str] = None
     client_warehouses: Optional[str] = None
+    permissions: Optional[list[str]] = None
     is_active: bool = True
 
 
@@ -31,6 +33,7 @@ class UserUpdate(BaseModel):
     bound_warehouse: Optional[str] = None
     bound_biz_line: Optional[str] = None
     client_warehouses: Optional[str] = None
+    permissions: Optional[list[str]] = None
     is_active: Optional[bool] = None
     password: Optional[str] = None
     pin: Optional[str] = None
@@ -42,6 +45,16 @@ class UserOut(UserBase):
     last_login: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
+
+    @field_validator("permissions", mode="before")
+    @classmethod
+    def parse_permissions(cls, value: Any):
+        if isinstance(value, str):
+            try:
+                return json.loads(value)
+            except json.JSONDecodeError:
+                return None
+        return value
 
 
 class TokenOut(BaseModel):

@@ -115,6 +115,23 @@ class EmployeeEvent(Base):
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())
 
 
+class PersonnelApproval(Base):
+    """A requested personnel change. Its payload is only applied after approval."""
+    __tablename__ = "personnel_approvals"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    employee_id: Mapped[int] = mapped_column(Integer, ForeignKey("employees.id"), nullable=False, index=True)
+    approval_type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)  # leave / salary / termination
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="requested", index=True)
+    payload: Mapped[str] = mapped_column(Text, nullable=False)
+    requested_by: Mapped[str] = mapped_column(String(100), nullable=False)
+    requested_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())
+    decided_by: Mapped[Optional[str]] = mapped_column(String(100))
+    decided_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    decision_note: Mapped[Optional[str]] = mapped_column(Text)
+    event_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("employee_events.id"), nullable=True)
+
+
 class DocTemplate(Base):
     __tablename__ = "doc_templates"
 
