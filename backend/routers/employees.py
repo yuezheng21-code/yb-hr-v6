@@ -18,6 +18,7 @@ from backend.models.employee import Employee
 from backend.models.user import User
 from backend.schemas.employee import EmployeeCreate, EmployeeUpdate, EmployeeOut
 from backend.middleware.auth import get_current_user
+from backend.services.access import require_permission, require_employee_access, scoped_employees
 
 router = APIRouter(prefix="/api/v1/employees", tags=["employees"])
 
@@ -49,13 +50,7 @@ def _next_emp_no(db: Session) -> str:
 
 
 def _apply_row_filter(stmt, user: User):
-    if user.role == "sup":
-        stmt = stmt.where(Employee.supplier_id == user.bound_supplier_id)
-    elif user.role == "wh":
-        stmt = stmt.where(Employee.primary_warehouse == user.bound_warehouse)
-    elif user.role == "worker":
-        stmt = stmt.where(Employee.id == -1)
-    return stmt
+    return scoped_employees(stmt, user)
 
 
 @router.get("", response_model=list[EmployeeOut])
@@ -69,6 +64,7 @@ def list_employees(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    require_permission(user, "employees.read")
     stmt = select(Employee)
     stmt = _apply_row_filter(stmt, user)
     if status:
@@ -99,8 +95,7 @@ def export_employees(
     db: Session = Depends(get_db),
 ):
     """Export employee roster as CSV (admin/hr only)."""
-    if user.role not in {"admin", "hr"}:
-        raise HTTPException(403, "Forbidden")
+    require_permission(user, "changes.export")
 
     stmt = select(Employee).order_by(Employee.emp_no)
     stmt = _apply_row_filter(stmt, user)
@@ -155,8 +150,7 @@ def create_employee(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user.role not in {"admin", "hr"}:
-        raise HTTPException(403, "Forbidden")
+    require_permission(user, "employees.write")
 
     pin = (body.pin or "").strip() or None
     if pin is not None:
@@ -196,9 +190,7 @@ def get_employee(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    emp = db.get(Employee, emp_id)
-    if emp is None:
-        raise HTTPException(404, "Employee not found")
+    emp = require_employee_access(db, emp_id, user)
     d = EmployeeOut.model_validate(emp).model_dump()
     return _strip_sensitive(d, user.role)
 
@@ -210,11 +202,7 @@ def update_employee(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user.role not in {"admin", "hr"}:
-        raise HTTPException(403, "Forbidden")
-    emp = db.get(Employee, emp_id)
-    if emp is None:
-        raise HTTPException(404, "Employee not found")
+    emp = require_employee_access(db, emp_id, user, "employees.write")
 
     pin = body.pin
     for k, v in body.model_dump(exclude_unset=True, exclude={"pin"}).items():
@@ -252,10 +240,7 @@ def delete_employee(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if user.role != "admin":
-        raise HTTPException(403, "Forbidden")
-    emp = db.get(Employee, emp_id)
-    if emp is None:
-        raise HTTPException(404, "Employee not found")
+    require_permission(user, "employees.write")
+    emp = require_employee_access(db, emp_id, user, "employees.write")
     emp.status = "inactive"
     db.commit()

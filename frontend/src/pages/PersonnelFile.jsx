@@ -82,11 +82,15 @@ export default function PersonnelFile({ token, user }) {
   const [action, setAction] = useState(null);    // {kind, ...}
   const [gen, setGen] = useState(null);          // {templateCode?, eventId?, contractId?}
   const [templates, setTemplates] = useState([]);
+  const [changes, setChanges] = useState([]);
+  const [approvals, setApprovals] = useState([]);
 
   const load = () => api(`${P}/employees/${id}`, { token }).then(setD).catch(e => setErr(e.message));
   useEffect(() => {
     load();
     api(`${P}/templates`, { token }).then(setTemplates).catch(() => {});
+    api(`${P}/changes?employee_id=${id}`, { token }).then(setChanges).catch(() => {});
+    api(`${P}/approvals?employee_id=${id}&status=requested`, { token }).then(setApprovals).catch(() => {});
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!['admin', 'hr'].includes(user?.role)) return <div className="mz-empty">人事档案仅 HR / 管理员可查看</div>;
@@ -146,11 +150,13 @@ export default function PersonnelFile({ token, user }) {
 
       <div className="mz-card">
         <div className="tb" style={{ marginBottom: 16 }}>
-          {[['timeline', `时间线 ${d.events.length}`], ['contracts', `合同 ${d.contracts.length}`], ['documents', `档案文件 ${d.documents.length}`], ['leaves', `请假 ${d.leaves.length}`], ['basic', '个人信息']].map(([k, l]) => (
+          {[['timeline', `时间线 ${d.events.length}`], ['approvals', `待审批 ${approvals.length}`], ['changes', `变更汇总 ${changes.length}`], ['contracts', `合同 ${d.contracts.length}`], ['documents', `档案文件 ${d.documents.length}`], ['leaves', `请假 ${d.leaves.length}`], ['basic', '个人信息']].map(([k, l]) => (
             <button key={k} className={`tbn ${tab === k ? 'on' : ''}`} onClick={() => setTab(k)}>{l}</button>
           ))}
         </div>
         {tab === 'timeline' && <Timeline events={d.events} docs={d.documents} token={token} />}
+        {tab === 'approvals' && <Approvals approvals={approvals} token={token} onChange={() => { load(); api(`${P}/approvals?employee_id=${id}&status=requested`, { token }).then(setApprovals).catch(() => {}); }} />}
+        {tab === 'changes' && <ChangeSummary changes={changes} employeeId={id} token={token} />}
         {tab === 'contracts' && <Contracts contracts={d.contracts} onAmend={c => setAction({ kind: 'amend', contract: c })} onGenerate={c => setGen({ templateCode: 'AV_BEFRISTET', contractId: c.id })} />}
         {tab === 'documents' && <Documents docs={d.documents} token={token} onChange={load} />}
         {tab === 'leaves' && <Leaves leaves={d.leaves} token={token} onChange={load} />}
@@ -161,6 +167,34 @@ export default function PersonnelFile({ token, user }) {
       {gen && <GenerateDrawer init={gen} emp={e} templates={templates} token={token} onClose={() => setGen(null)} onSaved={() => { setGen(null); load(); }} />}
     </div>
   );
+}
+
+function ChangeSummary({ changes, employeeId, token }) {
+  const download = (format) => saveFile(`${P}/changes/export?employee_id=${employeeId}&format=${format}`, token, `employee_changes.${format}`);
+  return <div>
+    <div className="mz-actions" style={{ marginBottom: 12 }}>
+      <button className="mz-btn" onClick={() => download('xlsx')}>下载 Excel</button>
+      <button className="mz-btn" onClick={() => download('pdf')}>下载 PDF</button>
+    </div>
+    {!changes.length ? <div className="mz-empty">暂无人员变更</div> : <div className="mz-scroll"><table className="mz-table">
+      <thead><tr><th>日期</th><th>类别</th><th>变更内容</th><th>操作人</th></tr></thead>
+      <tbody>{changes.map(c => <tr key={c.id}><td>{c.date}</td><td>{EVENT[c.type]?.[0] || c.type}</td><td>{c.title}</td><td>{c.created_by || '—'}</td></tr>)}</tbody>
+    </table></div>}
+  </div>;
+}
+
+function Approvals({ approvals, token, onChange }) {
+  const showToast = useToast();
+  const decide = async (id, status) => {
+    const note = window.prompt(status === 'approved' ? '审批意见（可选）' : '驳回原因（可选）') ?? '';
+    try { await api(`${P}/approvals/${id}/decision`, { method: 'POST', token, body: { status, note } }); showToast(status === 'approved' ? '已批准并执行' : '已驳回'); onChange(); }
+    catch (e) { showToast(e.message, 'err'); }
+  };
+  if (!approvals.length) return <div className="mz-empty">没有待审批申请，或您没有审批权限。</div>;
+  return <div className="mz-scroll"><table className="mz-table"><thead><tr><th>类型</th><th>申请人</th><th>申请时间</th><th>内容</th><th /></tr></thead><tbody>
+    {approvals.map(a => <tr key={a.id}><td>{a.approval_type}</td><td>{a.requested_by}</td><td>{a.requested_at?.slice(0, 16)}</td><td>{a.payload?.reason || a.payload?.notes || '—'}</td>
+      <td><button className="mz-btn mz-btn-s" onClick={() => decide(a.id, 'approved')}>批准</button><button className="mz-btn mz-btn-d mz-btn-s" onClick={() => decide(a.id, 'rejected')}>驳回</button></td></tr>)}
+  </tbody></table></div>;
 }
 
 function fileCategory(kind) {
@@ -350,7 +384,7 @@ function ActionDrawer({ action, emp, contract, token, onClose, onDone }) {
     amend: { effective_date: today(), change_summary: '', hourly_rate: '', weekly_hours: '', warehouse_code: '', position: '', end_date: '' },
     salary: { new_rate: emp.hourly_rate ? (emp.hourly_rate + 0.5).toFixed(2) : '', effective_date: today(), reason: '' },
     performance: { period_from: plusDays(today(), -90), period_to: today(), rating: 3, summary: '', strengths: '', improvements: '', goals: '', include_ops: true },
-    leave: { leave_type: 'urlaub', start_date: today(), end_date: today(), status: 'approved', notes: '' },
+    leave: { leave_type: 'urlaub', start_date: today(), end_date: today(), status: 'requested', notes: '' },
     warning: { incident_date: today(), reason: '', description: '' },
     termination: { last_day: plusDays(today(), 28), termination_type: 'ordentlich', notice_date: today(), reason: '', deactivate_login: true },
     note: { title: '', text: '', event_date: today() },
@@ -382,7 +416,7 @@ function ActionDrawer({ action, emp, contract, token, onClose, onDone }) {
         termination: `${P}/employees/${emp.id}/terminate`, note: `${P}/employees/${emp.id}/notes`,
       }[kind];
       res = await api(url, { method: 'POST', body: clean, token });
-      showToast('已保存' + (res.ops ? `（已带入作业绩效：效率 ${res.ops.efficiency ?? '—'}%）` : ''));
+      showToast(res.approval_id ? `申请已提交，等待审批（#${res.approval_id}）` : '已保存' + (res.ops ? `（已带入作业绩效：效率 ${res.ops.efficiency ?? '—'}%）` : ''));
       onDone(kind, res, file, useTpl, prefillFor(kind, f, emp));
     } catch (e) { showToast(e.message, 'err'); }
     setBusy(false);
